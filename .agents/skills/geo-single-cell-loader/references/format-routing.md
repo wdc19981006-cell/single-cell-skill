@@ -1,0 +1,23 @@
+# Format routing and count provenance
+
+| Manifest file_type | Input | Reader / required choices |
+|---|---|---|
+| 10x_mtx | Canonical trio directory, gzipped or plain, features.tsv or legacy genes.tsv | Read10X; count_source=counts |
+| 10x_h5 | 10x matrix/data, barcodes, features HDF5 schema | Read10X_h5; count_source=counts |
+| h5ad | .h5ad or .h5ad.gz | Prefer zellkonverter::readH5AD(reader="R"); explicit Python anndata fallback -> Matrix Market -> CreateSeuratObject |
+| text | TXT/CSV/TSV, optionally gzip | Explicit delimiter, ID column, orientation and dropped nonexpression columns |
+| rds | Seurat RDS | ReadRDS, explicit RNA assay/counts layer, fresh counts-only object |
+
+Extensions only identify candidates. H5AD always precedes generic H5 routing, and `.h5ad` never reaches Read10X_h5. H5 schema is checked before the 10x reader. Unsupported old H5 layouts stop rather than being misread. H5AD native R reader warnings are fatal; test installed versions using synthetic fixtures. No automatic normalized-X fallback.
+
+H5AD `count_source` is an exact SCE assay/AnnData layer name (e.g. `counts` or `X`) or `raw:X` for an explicit raw alternative. Inspect available names and public processing descriptions. Document selection in `count_evidence`; counts must be nonnegative, finite integers, but this numerical check cannot establish biological provenance. If raw counts cannot be established, stop. Extra layers, embeddings and obs metadata are not silently imported as authoritative metadata. For multi-sample H5AD, supply `cell_map_path` from a verified obs/public metadata mapping. The Python fallback runs only with an explicit `GEO_SINGLE_CELL_PYTHON`; it exports one selected matrix and stable feature/cell IDs to a temporary directory, which R removes after reading.
+
+For text, `orientation` is `genes_by_cells` or `cells_by_genes`; `delimiter` is `comma`, `tab`, or `space`; `feature_column` is the first-axis identifier column (genes or cells depending on orientation). `drop_columns` is an optional semicolon-separated list of explicitly inspected nonexpression columns. The loader rejects remaining nonnumeric data, duplicate IDs and missing counts. Ambiguous orientation requires evidence and a report update; do not infer from matrix dimensions alone. Dense text import has substantial RAM overhead.
+
+For Seurat RDS, optional `assay` defaults to RNA. Seurat v5 requires exact `count_source` counts layer. Split layers must be resolved explicitly before ingestion; do not pick an arbitrary layer. Old embeddings, normalization and original cell metadata are not carried into the new object. Non-Seurat RDS objects stop with their class name.
+
+For the same evidenced sample, `choose_filtered` selects filtered_feature_bc_matrix over raw_feature_bc_matrix. Multiple filtered candidates are ambiguous. Neither raw filename nor GEO's `RAW.tar` archive naming implies FASTQ: inspect member descriptions. Unknown archives need an exact member map; do not unzip everything into the Skill directory. Only FASTQ/SRA available means no V1 processed matrix route.
+
+Create each sample with min.cells=3 and min.features=200 as requested; these construction thresholds can remove cells/features and are recorded. No other QC. Prefix cells, use a proper list, merge counts only (`merge.data=FALSE`, since normalized data are not imported), and JoinLayers for Assay5. Metadata uses stable cell and sample keys. Final validation includes a serialized round trip before atomic RDS finalization.
+
+Primary documentation: [Seurat Read10X](https://satijalab.org/seurat/reference/read10x), [Read10X_h5](https://satijalab.org/seurat/reference/read10x_h5), [Seurat v5 layers](https://satijalab.org/seurat/articles/seurat5_essential_commands), [zellkonverter readH5AD](https://theislab.github.io/zellkonverter/reference/readH5AD.html).

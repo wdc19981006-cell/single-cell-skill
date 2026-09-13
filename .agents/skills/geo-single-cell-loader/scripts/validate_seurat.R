@@ -1,0 +1,10 @@
+#!/usr/bin/env Rscript
+argv <- commandArgs(trailingOnly=TRUE)
+script <- sub("^--file=", "", commandArgs()[grepl("^--file=",commandArgs())][1])
+source(file.path(dirname(normalizePath(script)),"seurat_common.R"))
+if (length(argv)!=3L) stop("Usage: Rscript validate_seurat.R REPOSITORY_ROOT MANIFEST_RELATIVE_PATH RDS_RELATIVE_PATH")
+root <- normalizePath(argv[1],winslash="/",mustWork=TRUE)
+m <- read_manifest(repo_path(root,argv[2],"manifests"),root)
+object <- readRDS(repo_path(root,argv[3],"output"))
+validate_object(object,m)
+cat("Seurat metadata and cell alignment validated\n")
