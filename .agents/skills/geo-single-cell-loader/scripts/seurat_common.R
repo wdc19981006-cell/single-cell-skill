@@ -159,8 +159,40 @@ map_metadata <- function(object, manifest, expected_samples) {
   idx <- match(expected_samples, manifest$sample)
   if (anyNA(idx)) stop("Unmapped cell sample")
   for (field in c(required_fields, intersect(optional_fields,names(manifest)))) object[[field]] <- manifest[[field]][idx]
+  object$orig.ident <- expected_samples
   if (!identical(unname(as.character(object$sample)), unname(expected_samples))) stop("Sample changed during mapping")
   object
+}
+combine_counts_and_create <- function(counts_list, cell_sample_map, gse) {
+  need(c("Seurat", "Matrix"))
+  if (!length(counts_list) || is.null(names(counts_list)) || any(blank(names(counts_list))) || anyDuplicated(names(counts_list))) stop("Counts list requires unique sample names")
+  reference_features <- rownames(counts_list[[1]])
+  aligned <- vector("list", length(counts_list)); names(aligned) <- names(counts_list)
+  for (i in seq_along(counts_list)) {
+    counts <- assert_counts(counts_list[[i]])
+    if (!identical(rownames(counts), reference_features)) {
+      if (!setequal(rownames(counts), reference_features)) stop("Feature sets differ between samples; explicit reconciliation is required.")
+      counts <- counts[match(reference_features, rownames(counts)),,drop=FALSE]
+      if (!identical(rownames(counts), reference_features)) stop("Feature order reconciliation failed")
+    }
+    if (!inherits(counts,"sparseMatrix")) counts <- Matrix::Matrix(counts,sparse=TRUE)
+    aligned[[i]] <- counts
+  }
+  merged_counts <- do.call(cbind, unname(aligned))
+  if (!inherits(merged_counts,"sparseMatrix")) stop("Merged counts must remain sparse")
+  assert_counts(merged_counts)
+  cells <- colnames(merged_counts)
+  if (anyDuplicated(cells)) stop("Cell IDs collide across samples")
+  if (is.null(names(cell_sample_map)) || anyDuplicated(names(cell_sample_map)) || !setequal(names(cell_sample_map),cells)) stop("Cell-to-sample map must exactly match merged count matrix cells")
+  expected_samples <- unname(cell_sample_map[cells])
+  if (any(blank(expected_samples)) || any(!expected_samples %in% names(aligned))) stop("Cell-to-sample map contains an unknown sample")
+  seurat <- Seurat::CreateSeuratObject(counts=merged_counts,min.cells=3,min.features=200,project=gse)
+  if (!ncol(seurat) || !nrow(seurat)) stop("Merged dataset empty after requested construction thresholds")
+  retained_samples <- unname(cell_sample_map[SeuratObject::Cells(seurat)])
+  if (any(blank(retained_samples))) stop("Retained cell is missing from cell-to-sample map")
+  seurat$sample <- retained_samples
+  seurat$orig.ident <- retained_samples
+  seurat
 }
 validate_object <- function(object, manifest=NULL) {
   need("Seurat")
@@ -168,6 +200,7 @@ validate_object <- function(object, manifest=NULL) {
   if (ncol(object) < 1 || nrow(object) < 1 || anyDuplicated(colnames(object))) stop("Empty object/duplicate cells")
   if (!identical(rownames(object@meta.data), SeuratObject::Cells(object)) || !identical(colnames(object), SeuratObject::Cells(object))) stop("Metadata/cell order mismatch")
   for (field in required_fields) if (!field %in% names(object@meta.data) || any(blank(object[[field]][,1]))) stop("Missing metadata: ", field)
+  if (!"orig.ident" %in% names(object@meta.data) || !identical(unname(as.character(object$orig.ident)),unname(as.character(object$sample)))) stop("orig.ident/sample mismatch")
   if (any(!startsWith(colnames(object), paste0(object$sample,"_")))) stop("Sample prefix mismatch")
   if (!is.null(manifest)) {
     if (!setequal(unique(object$sample),manifest$sample)) stop("Matrix/manifest sample sets differ")

@@ -19,8 +19,9 @@ need(c("Seurat","Matrix"))
 if (gse != m$database[1]) stop("Manifest belongs to a different GSE")
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 warnings_seen <- character()
-scelist <- list()
-input_records <- character()
+counts_list <- list()
+cell_sample_map <- character()
+input_details <- list()
 withCallingHandlers({
   for (i in seq_len(nrow(m))) {
     row <- m[i,,drop=FALSE]
@@ -38,21 +39,19 @@ withCallingHandlers({
     prefixed <- paste0(row$sample,"_",colnames(counts))
     if (anyDuplicated(prefixed)) stop("Duplicate prefixed barcode")
     colnames(counts) <- prefixed
-    object <- Seurat::CreateSeuratObject(counts=counts,min.cells=3,min.features=200,project=gse)
-    if (!ncol(object) || !nrow(object)) stop("Sample empty after requested construction thresholds: ",row$sample)
-    object$sample <- rep(row$sample,ncol(object))
-    object <- map_metadata(object,m,rep(row$sample,ncol(object)))
-    scelist[[row$sample]] <- object
-    input_records <- c(input_records,paste(row$sample,row$file_type,row$local_path,paste0("count_source=",row$count_source),paste0("reader=",reader_used),paste0("input_cells=",ncol(counts)),paste0("retained_cells=",ncol(object)),sep="\t"))
+    counts_list[[row$sample]] <- counts
+    cell_sample_map <- c(cell_sample_map,setNames(rep(row$sample,ncol(counts)),colnames(counts)))
+    input_details[[row$sample]] <- c(file_type=row$file_type,local_path=row$local_path,count_source=row$count_source,reader=reader_used,input_cells=ncol(counts))
   }
-  expected <- unlist(lapply(scelist,function(s) setNames(s$sample,colnames(s))),use.names=FALSE)
-  # Explicit cell-key map protects against merge reordering.
-  keys <- unlist(lapply(scelist,colnames),use.names=FALSE)
-  sample_by_cell <- setNames(expected,keys)
-  if (anyDuplicated(keys)) stop("Cell IDs collide across samples")
-  seurat <- if (length(scelist)==1L) scelist[[1]] else merge(scelist[[1]],y=scelist[-1],merge.data=FALSE)
-  if (inherits(seurat[["RNA"]],"Assay5")) seurat <- SeuratObject::JoinLayers(seurat,assay="RNA")
-  seurat <- map_metadata(seurat,m,unname(sample_by_cell[colnames(seurat)]))
+  if (anyDuplicated(names(cell_sample_map))) stop("Cell IDs collide across samples")
+  seurat <- combine_counts_and_create(counts_list,cell_sample_map,gse)
+  if (!setequal(unique(seurat$sample),m$sample)) stop("One or more samples are empty after requested construction thresholds")
+  seurat <- map_metadata(seurat,m,unname(cell_sample_map[SeuratObject::Cells(seurat)]))
+  retained <- table(seurat$sample)
+  input_records <- vapply(names(input_details),function(sample) {
+    detail <- input_details[[sample]]
+    paste(sample,detail[["file_type"]],detail[["local_path"]],paste0("count_source=",detail[["count_source"]]),paste0("reader=",detail[["reader"]]),paste0("input_cells=",detail[["input_cells"]]),paste0("retained_cells=",unname(retained[sample])),sep="\t")
+  },character(1))
   validate_object(seurat,m)
   partial <- file.path(workflow,"seurat_raw.pending.rds")
   saveRDS(seurat,partial)
@@ -62,7 +61,10 @@ withCallingHandlers({
   partial_optional <- optional[vapply(m[optional],function(x) any(blank(x)),logical(1))]
   if (length(partial_optional)) warnings_seen <- c(warnings_seen,paste("Partial optional metadata (NA retained):",paste(partial_optional,collapse=", ")))
   summary <- c(paste("GSE:",gse),paste("Created UTC:",format(Sys.time(),tz="UTC",usetz=TRUE)),paste("R:",R.version.string),paste("Seurat:",packageVersion("Seurat")),paste("SeuratObject:",packageVersion("SeuratObject")),
-    "Construction thresholds: min.cells=3; min.features=200. No additional QC or downstream analysis.",
+    "Construction strategy:","All sample count matrices were combined before CreateSeuratObject.",
+    "CreateSeuratObject thresholds:","min.cells = 3","min.features = 200",
+    "min.cells scope:","Entire merged GSE dataset",
+    "No additional QC or downstream analysis.",
     paste("Total cells:",ncol(seurat)),paste("Total genes:",nrow(seurat)),paste("Samples:",nrow(m)),
     "Cells per sample:",capture.output(table(seurat$sample)),"Cells per group:",capture.output(table(seurat$group)),
     paste("tissue:",paste(unique(m$tissue),collapse=", ")),paste("disease:",paste(unique(m$disease),collapse=", ")),paste("source_type:",paste(unique(m$source_type),collapse=", ")),

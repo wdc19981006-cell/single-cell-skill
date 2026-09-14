@@ -21,6 +21,7 @@ stopifnot(all(object$group=="Fixture_B")); validate_object(object,m[m$sample=="F
 expect_error(map_metadata(object,m,rep("FixtureA",ncol(object))))
 for(field in required_fields) {badmeta <- object; badmeta[[field]] <- rep(NA_character_,ncol(object)); expect_error(validate_object(badmeta))}
 badmeta <- object; badmeta$group <- rep("wrong",ncol(object)); expect_error(validate_object(badmeta,m[m$sample=="FixtureZ",,drop=FALSE]))
+badmeta <- object; badmeta$orig.ident <- rep("wrong",ncol(object)); expect_error(validate_object(badmeta,m[m$sample=="FixtureZ",,drop=FALSE]))
 badmeta <- Seurat::RenameCells(object,new.names=sub("^FixtureZ_","",colnames(object))); expect_error(validate_object(badmeta))
 badmeta <- object; rownames(badmeta@meta.data) <- rev(rownames(badmeta@meta.data)); expect_error(validate_object(badmeta))
 localrds <- file.path(root,"data/GSE999999999/raw/input.rds"); saveRDS(object,localrds)

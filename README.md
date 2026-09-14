@@ -59,14 +59,16 @@ single-cell-skill/
 
 ## 已发布数据
 
-[GSE231993：UC 8 个样本、HC 4 个样本](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-20260914)（2026-09-14）：完整数据包包含 36 个 GEO 源表达文件、`seurat_raw.rds`、`sample_info.txt` 和本次运行的 `.workflow` 核心记录，保留 `data/GSE231993/` 布局，附有 SHA256 校验清单。
+[GSE231993 v2：修正全局 gene filtering，UC 8 个样本、HC 4 个样本](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-v2-20260914)（2026-09-14）：完整数据包包含 36 个 GEO 源表达文件、`seurat_raw.rds`、`sample_info.txt` 和本次运行的 `.workflow` 核心记录，保留 `data/GSE231993/` 布局，附有 SHA256 校验清单。
 
 | 用户确认的 group | 样本 | 最终细胞数 |
 |---|---|---:|
 | UC | GSM7307094–GSM7307101，8 个样本 | 37,967 |
 | HC | GSM7307102–GSM7307105，4 个样本 | 22,698 |
 
-此处 UC 按用户要求同时包含作者的 UC-self control 和 UC 炎症样本，原始来源描述仍完整保留。最终对象共 60,665 个细胞、23,183 个基因；仅使用约定的构建阈值，未进行额外 QC、归一化或下游分析。构建、序列化重读及独立 metadata 验证均通过。
+此处 UC 按用户要求同时包含作者的 UC-self control 和 UC 炎症样本，原始来源描述仍完整保留。v2 对象共 60,665 个细胞、25,953 个基因、305,606,810 UMI 和 58,767,679 个非零表达项；仅使用约定的构建阈值，未进行额外 QC、归一化或下游分析。构建、序列化重读及独立 metadata 验证均通过。
+
+[旧版 Release](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-20260914) 保留为历史记录，其中 60,665 cells × 23,183 genes 的 RDS 在每个 GSM 内分别执行了 `min.cells=3`，现已由 v2 取代。样本身份、cell barcode、group 和 metadata 映射没有改变。
 
 ## sample_info.txt
 
@@ -90,7 +92,9 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 
 支持 10x 三联（gzip/plain/genes.tsv）、10x H5、H5AD/H5AD.gz、明确方向的 TXT/CSV/TSV counts、Seurat RDS counts，以及 manifest 精确指定的 tar/zip 成员。同一样本优先 filtered，多份 ambiguous filtered 则停止。H5AD 不会交给 Read10X_h5；normalized matrix 不能当 raw counts。pooled matrix 必须有精确 cell-to-sample mapping。路径必须是 repository-relative、没有 `..`、不越出所属 GSE；expression 在 `raw/`，映射文件在 `.workflow/`。
 
-保留 `CreateSeuratObject(counts=counts, min.cells=3, min.features=200)`。这些构建阈值会过滤部分细胞/基因，summary 如实记录。没有额外 QC，不执行 NormalizeData、SCTransform、FindVariableFeatures、ScaleData、PCA/UMAP、邻居图、聚类、DoubletFinder、细胞注释、差异或富集分析。只有 FASTQ/SRA 的数据需要重新定量，超出当前范围。
+多个样本先验证 feature 集合、统一顺序，并在原始稀疏 counts 矩阵层面合并，再统一执行一次 `CreateSeuratObject(counts=counts, min.cells=3, min.features=200)`。因此 `min.cells` 针对整个 GSE 数据集，而不是在每个 GSM 内分别过滤。feature 集合真正不同时停止，不能静默取交集或补零取并集。`min.features` 过滤后按最终 cell key 映射 sample，保持 `orig.ident = sample`。
+
+这些构建阈值会过滤部分细胞/基因，summary 如实记录。没有额外 QC，不执行 NormalizeData、SCTransform、FindVariableFeatures、ScaleData、PCA/UMAP、邻居图、聚类、DoubletFinder、细胞注释、差异或富集分析。只有 FASTQ/SRA 的数据需要重新定量，超出当前范围。
 
 ## Advanced / Developer usage
 
@@ -121,6 +125,7 @@ $Workflow = 'data/GSE231993/.workflow'
 & $PythonExe tests/make_fixtures.py
 $env:GEO_SINGLE_CELL_PYTHON = $PythonExe
 & $RscriptExe tests/test_seurat.R .
+& $RscriptExe tests/test_global_min_cells.R .
 & $PythonExe tests/run_end_to_end.py --rscript $RscriptExe
 ```
 

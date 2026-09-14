@@ -28,8 +28,9 @@ Implicit invocation remains enabled. Chinese and English natural-language entry 
 
 ## R regression checks
 
-- Parsed all five Skill R files plus both R test files: **7 files parsed**.
+- Parsed all five Skill R files plus three R test files: **8 files parsed**.
 - `tests/test_seurat.R`: passed, process exit 0, after the final R path changes.
+- `tests/test_global_min_cells.R`: passed, process exit 0. A feature expressed in one cell in each of three samples was retained because it reached three cells globally; a feature expressed in only two cells globally was removed. The same test safely reordered an identical feature set, rejected a genuinely different set, confirmed sparse combination, one RNA counts layer, unique prefixed cells and `orig.ident=sample`. The old per-sample construction demonstrably removed the three-cell cross-sample feature.
 - Actual readers exercised: 10x trio, 10x H5, uncompressed H5AD, H5AD.gz counts layer, H5AD raw:X, genes-by-cells CSV, cells-by-genes TSV, and Seurat RDS counts.
 - Expected failures verified: normalized H5AD X, H5AD on the H5 route, non-Seurat RDS, missing required metadata, wrong group mapping, changed sample keys, missing barcode prefixes and reordered metadata rows. Expected error output from these negative cases is not a test failure.
 
@@ -65,15 +66,19 @@ data/GSE999999999/
 
 The synthetic sources were generated locally, so `download.json` is an empty plan. Real downloader IO/reuse/checksum behavior is covered separately by mocked HTTPS responses in the 28 offline tests. Additional pooled/failure fixtures used system temporary directories and were cleaned. No new root datasets/manifests/logs/output directory was created.
 
-## Real GEO metadata-only discovery
+## Real GSE231993 corrected rebuild
 
-[GSE231993](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE231993) was rerun without `--max-samples`, using the existing HTTPS SOFT fallback because bio-server GEO MCP tools were not exposed in this session. The initial sandbox network denial was resolved through an authorized network escalation.
+[GSE231993](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE231993) was rebuilt from the previously downloaded 36-file 10x dataset after validating all existing URL, byte-size and SHA256 provenance records. `download_processed.py` reused every source; no GEO file was downloaded again. Group confirmation remained GSM7307094–GSM7307101 = UC and GSM7307102–GSM7307105 = HC.
 
-- **12/12 GSM records inspected**, complete=true; no partial inventory accepted.
-- **37 processed-file candidate URLs**: 36 per-sample trio member links and one Series RAW.tar link; **12 complete candidate 10x input plans** under the new raw layout.
-- Linked PubMed abstract **37344477** retrieved. Public GSM characteristics and processing descriptions were reviewed: colon tissue, ulcerative colitis/healthy donor background, explicit individual IDs, and Cell Ranger processing. Original source/inflammation and author sample labels remain in sample descriptions.
-- `data/GSE231993/.workflow/inspection.json`, `sample_report.csv` and UTF-8 `data/GSE231993/sample_info.txt` generated. TXT contains all twelve samples, reviewed metadata and **WAITING_FOR_GROUP_CONFIRMATION**.
-- Verified no real `raw/`, RDS, group confirmation, manifest or download log was created. No bulk expression matrix was downloaded; counts content and clinical downstream outcomes were not tested.
+- Corrected object: **60,665 cells × 25,953 genes**, **305,606,810 total UMI**, **58,767,679 nonzero entries**, exactly matching the stated manual-import acceptance metrics.
+- The corrected object was also compared directly with `D:/Desktop/测试/单细胞数据下载/seurat_raw-1.rds`. Sparse matrix class, dimensions, feature names/order, cell names/order, and the complete `p`, `i`, and `x` sparse slots are **exactly identical**. Thus the count matrix matches the manual object element for element, not only by aggregate metrics.
+- Common per-cell metadata `orig.ident`, `nCount_RNA`, `nFeature_RNA`, `database` and `sample` are exactly identical to the manual RDS. The Skill correctly retains the additional `tissue`, `disease`, `source_type`, `group` and `patient` columns.
+- Previous object: 60,665 cells × 23,183 genes, 305,547,970 total UMI and 58,711,488 nonzero entries. All 23,183 old genes remain in the corrected object; **2,770 genes were restored**. Cell names and cell order are exactly identical between old and corrected objects.
+- The twelve retained sample counts exactly match the required values: 4,481; 5,993; 3,866; 6,421; 776; 6,529; 4,596; 5,305; 5,270; 4,633; 6,578; 6,217.
+- Independent serialized validation passed. The counts layer is sparse and singular. Per-cell `nCount_RNA` equals sparse column sums; `nFeature_RNA` equals per-cell nonzero feature counts. `orig.ident` equals `sample` for every cell.
+- Required metadata `database`, `sample`, `tissue`, `disease`, `source_type`, `group` and the evidence-backed optional `patient` are complete and match the manifest. Author sample and source distinctions remain in the report/manifest.
+- `.workflow/run_summary.txt` records that all matrices were combined before one CreateSeuratObject call and that `min.cells` applies to the entire merged GSE. `sample_info.txt` contains the same concise construction statement.
+- The superseded RDS, prior sample_info and prior run summary were moved to `.workflow/archive/before_global_filter_fix/`. The RDS is 139,224,106 bytes with SHA256 `a3dbb122a00e0da4561f654b782c42bc05c3920355a5b637bd684445e50d826f`; archive size/hash verification passed.
 
 GSE202051, GSE211644 and GSE229413 were **not rerun in this revision**. Their 2026-09-13 two-GSM development records were preserved during migration; those historical partial checks are not reported as current full-discovery passes. Additional full-text publication supplements were not exhaustively reviewed during this metadata-only regression.
 
@@ -87,4 +92,4 @@ Old root folders and their tracked `.gitkeep` files were removed. `data/.gitkeep
 
 ## Remaining limits
 
-Public metadata still needs evidence review and explicit user grouping. Download instructions alone do not authorize choosing groups. No real large-matrix end-to-end run was performed. Native zellkonverter remains unverified on this environment. Arbitrary author formats, ambiguous pooled ownership and matrices larger than available memory may need additional work. SHA256 provenance detects local changes; it is not an author signature. Existing RDS and changed confirmations require explicit archiving/reconfirmation; there is no automatic overwrite or legacy-receipt conversion.
+Public metadata still needs evidence review and explicit user grouping. Download instructions alone do not authorize choosing groups. Native zellkonverter remains unverified on this environment. Arbitrary author formats, genuinely different feature sets, ambiguous pooled ownership and matrices larger than available memory may need additional work. Feature-set differences stop for explicit reconciliation; the current implementation does not silently intersect or union them. SHA256 provenance detects local changes; it is not an author signature. Existing RDS and changed confirmations require explicit archiving/reconfirmation; there is no automatic overwrite or legacy-receipt conversion.

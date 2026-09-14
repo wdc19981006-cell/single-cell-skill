@@ -31,6 +31,10 @@ For a trio, put three entries in the same array, with canonical matrix/features/
 
 When multiple samples share an input, every related manifest row must identify the same `cell_map_path`. This is a CSV with columns `cell,sample`; cell IDs exactly match the input matrix, without prefixes. Duplicate cells, extra cells, missing cells, missing samples or foreign samples stop loading. The manifest references this mapping as an explicit subordinate artifact; expression/clinical columns are never joined using position or filename guessing. Record the cell map source in `metadata_evidence`.
 
+## Multi-sample construction
+
+Multiple biological samples are combined at the raw sparse count-matrix level before the single `CreateSeuratObject` call, so `min.cells` is evaluated across the entire GSE dataset rather than independently within each sample. Feature sets must match exactly. A matrix with the same features in a different order is reordered to the reference order; a genuinely different feature set stops the build and requires explicit reconciliation. Barcodes are sample-prefixed before combination, and a named cell-to-sample map is reindexed against final `Cells(seurat)` after `min.features` filtering. Final `orig.ident` must equal `sample` for every cell.
+
 ## Group confirmation
 
 Save the user's reply in `data/<GSE>/.workflow/group_confirmation.json`:
