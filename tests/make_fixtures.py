@@ -1,4 +1,4 @@
-"""Generate tiny format fixtures in ignored datasets; never store binary inputs in Git."""
+"""Generate tiny format fixtures in ignored data; never store binary inputs in Git."""
 import csv
 import gzip
 import json
@@ -21,7 +21,10 @@ def strings(group,name,values):
     d=group.create_dataset(name,data=np.array(values,dtype=object),dtype=h5py.string_dtype('utf-8')); encoding(d,'string-array'); return d
 
 def main():
-    gse='GSE999999999'; base=ROOT/'datasets'/gse; base.mkdir(parents=True,exist_ok=True)
+    gse='GSE999999999'
+    if (ROOT/'data'/gse/'seurat_raw.rds').exists():
+        raise ValueError('Archive the existing synthetic RDS explicitly before regenerating fixtures')
+    base=ROOT/'data'/gse/'raw'; base.mkdir(parents=True,exist_ok=True)
     genes=['Gene'+str(i) for i in range(250)]; cells=['AAAC'+str(i)+'-1' for i in range(4)]
     counts=np.ones((250,4),dtype=np.int32); counts[0,:]=[2,3,4,5]
     trio=base/'trio'; trio.mkdir(exist_ok=True)
@@ -50,11 +53,11 @@ def main():
         for cell,values in zip(cells,counts.T): w.writerow([cell]+list(values))
     rows=[]
     for sample,kind,path,source in [('FixtureZ','10x_mtx','trio','counts'),('FixtureA','10x_h5','filtered_feature_bc_matrix.h5','counts'),('FixtureH','h5ad','counts.h5ad.gz','counts'),('FixtureT','text','counts.csv','counts')]:
-        rows.append(dict(database=gse,sample=sample,tissue='Synthetic',disease='Synthetic',source_type='Tissue',local_path=f'datasets/{gse}/{path}',file_type=kind,count_source=source,count_evidence='Generated integer fixture counts; H5AD X intentionally normalized',metadata_evidence='Synthetic test only',files_json='[]',delimiter='comma',feature_column='gene',drop_columns='description',orientation='genes_by_cells'))
-    folder=ROOT/'manifests'; folder.mkdir(exist_ok=True)
-    report=folder/'synthetic_report.csv'; write_csv(report,rows)
-    approval=folder/'synthetic_approval.json'; approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED FIXTURE APPROVAL ONLY; no real biological data',groups={r['sample']:('Fixture_A' if r['sample']=='FixtureA' else 'Fixture_B') for r in reversed(rows)})))
-    output=folder/(gse+'_sample_manifest.csv')
+        rows.append(dict(database=gse,sample=sample,tissue='Synthetic',disease='Synthetic',source_type='Tissue',local_path=f'data/{gse}/raw/{path}',file_type=kind,count_source=source,count_evidence='Generated integer fixture counts; H5AD X intentionally normalized',metadata_evidence='Synthetic test only',files_json='[]',delimiter='comma',feature_column='gene',drop_columns='description',orientation='genes_by_cells'))
+    folder=ROOT/'data'/gse/'.workflow'; folder.mkdir(parents=True,exist_ok=True)
+    report=folder/'sample_report.csv'; write_csv(report,rows)
+    approval=folder/'group_confirmation.json'; approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED FIXTURE APPROVAL ONLY; no real biological data',groups={r['sample']:('Fixture_A' if r['sample']=='FixtureA' else 'Fixture_B') for r in reversed(rows)})))
+    output=folder/'sample_manifest.csv'
     if output.exists(): output.unlink() # Only this generated, reserved fixture manifest.
     confirm(report,approval,output,ROOT)
     print('Generated synthetic fixtures and mock manifest:',gse)

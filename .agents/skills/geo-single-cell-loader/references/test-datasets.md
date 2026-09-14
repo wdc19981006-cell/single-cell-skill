@@ -14,9 +14,9 @@ GEO Series `RAW.tar` may contain processed files, so do not classify it as FASTQ
 Run metadata-only discovery:
 
 ```text
-<python-executable> .agents/skills/geo-single-cell-loader/scripts/inspect_geo.py GSE231993 --max-samples 2
+<python-executable> .agents/skills/geo-single-cell-loader/scripts/inspect_geo.py GSE231993
 ```
 
-Repeat for the other accessions. Omit `--max-samples` for a complete Stage A sample inventory. Confirm format links in the resulting inspection JSON. The report has no group column; fill biological fields only from evidence before presenting the complete report to a user.
+Repeat for the other accessions when needed. A `--max-samples 2` development probe is incomplete and isolated under `data/<GSE>/.workflow/development/`; it cannot replace the full inventory or authorize a manifest. Complete discovery writes `.workflow/inspection.json`, `.workflow/sample_report.csv` and the visible `sample_info.txt`. The report has no group column; fill biological fields only from evidence and refresh the TXT before presenting the complete report to a user.
 
-See [actual test report](../../../../../../tests/validation-report.md) for executed tests and limitations. The synthetic generator creates 250-gene/4-cell count matrices with reused barcodes across samples, a deliberately normalized H5AD X plus integer counts layer/raw, and unsorted simulated sample/group mapping.
+See [actual test report](../../../../../tests/validation-report.md) for executed tests and limitations. The synthetic generator creates 250-gene/4-cell count matrices with reused barcodes across samples, a deliberately normalized H5AD X plus integer counts layer/raw, and unsorted simulated sample/group mapping.

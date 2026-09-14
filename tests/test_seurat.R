@@ -3,15 +3,16 @@ root <- normalizePath(if(length(args)) args[1] else ".",winslash="/",mustWork=TR
 scripts <- file.path(root,".agents/skills/geo-single-cell-loader/scripts")
 source(file.path(scripts,"seurat_common.R"))
 need(c("Seurat","Matrix"))
-m <- read_manifest(file.path(root,"manifests/GSE999999999_sample_manifest.csv"),root)
+m <- read_manifest(file.path(root,"data/GSE999999999/.workflow/sample_manifest.csv"),root)
 expect_error <- function(code) {result <- tryCatch({force(code); FALSE},error=function(e) {cat("Expected rejection:",conditionMessage(e),"\n"); TRUE}); stopifnot(result)}
 counts <- lapply(seq_len(nrow(m)),function(i) read_counts(m[i,,drop=FALSE],root))
 stopifnot(all(vapply(counts,function(x) identical(dim(x),c(250L,4L)),logical(1))))
 stopifnot(all(vapply(counts,function(x) identical(as.numeric(x[1,]),c(2,3,4,5)),logical(1))))
 bad <- m[3,,drop=FALSE]; bad$count_source <- "X"; expect_error(read_counts(bad,root))
 raw <- m[3,,drop=FALSE]; raw$count_source <- "raw:X"; stopifnot(all(as.matrix(read_counts(raw,root))==as.matrix(counts[[3]])))
+plain <- m[3,,drop=FALSE]; plain$local_path <- "data/GSE999999999/raw/counts.h5ad"; stopifnot(all(as.matrix(read_counts(plain,root))==as.matrix(counts[[3]])))
 wrong <- m[3,,drop=FALSE]; wrong$file_type <- "10x_h5"; expect_error(read_counts(wrong,root))
-transposed <- m[4,,drop=FALSE]; transposed$local_path <- "datasets/GSE999999999/transposed.tsv"; transposed$orientation <- "cells_by_genes"; transposed$delimiter <- "tab"; transposed$feature_column <- "cell"; transposed$drop_columns <- ""
+transposed <- m[4,,drop=FALSE]; transposed$local_path <- "data/GSE999999999/raw/transposed.tsv"; transposed$orientation <- "cells_by_genes"; transposed$delimiter <- "tab"; transposed$feature_column <- "cell"; transposed$drop_columns <- ""
 stopifnot(all(as.matrix(read_counts(transposed,root))==as.matrix(counts[[4]])))
 object <- Seurat::CreateSeuratObject(counts[[1]],min.cells=3,min.features=200)
 object <- Seurat::RenameCells(object,new.names=paste0("FixtureZ_",colnames(object))); object$sample <- rep("FixtureZ",ncol(object))
@@ -22,8 +23,8 @@ for(field in required_fields) {badmeta <- object; badmeta[[field]] <- rep(NA_cha
 badmeta <- object; badmeta$group <- rep("wrong",ncol(object)); expect_error(validate_object(badmeta,m[m$sample=="FixtureZ",,drop=FALSE]))
 badmeta <- Seurat::RenameCells(object,new.names=sub("^FixtureZ_","",colnames(object))); expect_error(validate_object(badmeta))
 badmeta <- object; rownames(badmeta@meta.data) <- rev(rownames(badmeta@meta.data)); expect_error(validate_object(badmeta))
-localrds <- file.path(root,"datasets/GSE999999999/input.rds"); saveRDS(object,localrds)
-row <- m[1,,drop=FALSE]; row$local_path <- "datasets/GSE999999999/input.rds"; row$file_type <- "rds"
+localrds <- file.path(root,"data/GSE999999999/raw/input.rds"); saveRDS(object,localrds)
+row <- m[1,,drop=FALSE]; row$local_path <- "data/GSE999999999/raw/input.rds"; row$file_type <- "rds"
 stopifnot(ncol(read_counts(row,root))==4L)
-saveRDS(list(counts=counts[[1]]),file.path(root,"datasets/GSE999999999/not_seurat.rds")); row$local_path <- "datasets/GSE999999999/not_seurat.rds"; expect_error(read_counts(row,root))
+saveRDS(list(counts=counts[[1]]),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); row$local_path <- "data/GSE999999999/raw/not_seurat.rds"; expect_error(read_counts(row,root))
 cat("PASS: real readers for trio, H5, H5AD layer/raw/gzip, text orientations, RDS; count rejection; stable metadata; cell prefix/alignment.\n")

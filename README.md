@@ -1,144 +1,118 @@
-# GEO single-cell Seurat loader skill
+# GEO single-cell loader Skill
 
-Windows 11 项目级 Codex Skill：搜索 GEO、检查样本来源、等待用户确认分组、下载 processed counts、创建并验证 `seurat_raw.rds`。不执行正式单细胞下游分析。
+在 Codex 中打开 `single-cell-skill` 项目根目录，然后直接输入：
 
-Skill 位置：`.agents/skills/geo-single-cell-loader/`。在 Codex 中打开整个 `single-cell-skill` 文件夹作为 workspace/repository root；不要把 Skill 放进全局目录或 `.codex/skills`。脚本默认从自身位置解析 repository root，支持含空格路径，不包含电脑用户名或固定盘符。
-
-## 工作目录
-
-部署时用 PowerShell 读取真实桌面：
-
-```powershell
-$Desktop = [Environment]::GetFolderPath('Desktop')
-if (-not $Desktop) { throw '无法解析当前用户真实桌面；请在用户本机会话重试。' }
-$Project = Join-Path $Desktop 'single-cell-skill'
-Set-Location $Project
+```text
+下载单细胞数据 GSE231993
 ```
+
+也支持“下载 GSE231993”“处理 GSE231993”“读取 GSE231993”“分析单细胞数据 GSE231993”“帮我下载并整理 GSE229413”，以及英文 “Download and prepare GSE231993”。普通用户不需要输入 Skill 名称、阶段名称，也不需要手动运行 Python/R 脚本。
+
+1. Skill 搜索 GEO Series、全部 GSM、关联论文和公开样本 metadata。
+2. 返回完整样本属性：sample、author_sample、tissue、disease、source_type、sample_description；有可靠证据时补充 patient、specimen、cohort、treatment。
+3. 告诉用户“group 尚未创建，请确认分组方式。”确认前不批量下载表达矩阵。
+4. 用户确认后，保存分组记录、生成并校验 manifest、自动下载源表达文件。
+5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
+6. 全部结果保存在 `data/<GSE>/`。
+
+在样本资料确实支持这些类别时，用户可回复：
+
+```text
+健康人为 HC；UC患者非炎症组织为 UC_control；UC炎症组织为 UC。
+```
+
+这是确认方式示例，不是预设分组。group 只能由用户决定，不能根据 disease、文件名、Tumor/Normal 字样自动产生。PDAC 的 uninvolved 样本仍有 PDAC 疾病背景，不能因此自动归入 Tumor 或 Healthy。
+
+## 一个 GSE，一个目录
 
 ```text
 single-cell-skill/
 ├── .agents/skills/geo-single-cell-loader/
-│   ├── SKILL.md
-│   ├── agents/openai.yaml
-│   ├── scripts/
-│   │   ├── inspect_geo.py
-│   │   ├── build_manifest.py
-│   │   ├── download_processed.py
-│   │   ├── build_seurat.R
-│   │   ├── validate_seurat.R
-│   │   ├── common.py
-│   │   ├── seurat_common.R
-│   │   └── check_dependencies.R
-│   └── references/
-├── datasets/       # 下载数据与已验证 cell map，绝不放进 Skill
-├── manifests/      # 样本报告、分组确认、正式 manifest
-├── output/         # 每个 GSE 的 RDS 和 run_summary.txt
-├── logs/           # 下载日期、SHA256、运行记录
-├── tests/          # 合成 fixture 生成器和离线测试
+├── data/
+│   ├── .gitkeep
+│   └── GSE231993/
+│       ├── raw/
+│       ├── seurat_raw.rds
+│       ├── sample_info.txt
+│       └── .workflow/
+│           ├── inspection.json
+│           ├── sample_report.csv
+│           ├── group_confirmation.json
+│           ├── sample_manifest.csv
+│           ├── sample_manifest.confirmation.json
+│           ├── download.json
+│           └── run_summary.txt
+├── tests/
 ├── README.md
 └── .gitignore
 ```
 
-## 两阶段工作流
+日常关注三个内容：
 
-**阶段 A：先搜索、后报告。** 优先调用可用的 bio-server GEO MCP 工具；不可用时运行本项目的 HTTPS SOFT 查询。读取 Series、GSM、相关论文以及公开 supplementary sample/clinical metadata。脚本保留原始事实和来源，Codex 负责依据公开证据规范化组织、疾病和材料类型；空白和歧义不能靠猜测填充。
-
-返回所有样本的 `sample、author_sample、tissue、disease、source_type、sample_description`，说明测序类型、processed 格式、raw/filtered 与独立 metadata 的存在情况。**group 尚未创建，请确认分组方式。** 不下载整套表达矩阵。开发用 `--max-samples` 的部分报告不能伪装成完整样本报告。
-
-**阶段 B：用户明确决定 group。** 保存用户原话及精确 sample→group 映射，构建正式 manifest 和内容校验回执后才允许批量下载。用户改变任何映射，需重新确认。receipt 只是可追溯的确认记录，不是身份认证或证据真实性证明。
-
-输入示例：
-
-> 分析 GSE231993，先告诉我所有样本的来源和疾病状态。
-
-确认示例（只在实际样本报告支持这些类别时使用）：
-
-> HC样本group设为HC，UC-self control设为UC_control，UC炎症组织设为UC。继续下载并创建Seurat。
-
-另一种输入：
-
-> 下载并读取 GSE229413
-
-这仍然必须先返回 sample report，不能立即开始大型下载。示例不构成任何真实数据的预设分组。
-
-## metadata 规则
-
-| 强制字段 | 含义 |
+| 内容 | 用途 |
 |---|---|
-| database | 同一对象内一致的 GSE 来源 |
-| sample | GSM 优先；或有公开映射的稳定测序样本 ID |
-| tissue | 解剖组织；不能写 Tumor/Normal |
-| disease | 供体疾病背景；PDAC uninvolved tissue 仍是 PDAC |
-| source_type | Tissue / PBMC / Whole_Blood / Organoid / Cultured_TIL 等材料类型 |
-| group | 仅由用户确认的分析分组 |
+| `raw/` | 从 GEO 下载且未经本 Skill 修改的源 expression 文件。这里的 raw 不一定表示测序 FASTQ raw reads；GEO 的 processed counts 也放在这里。10x 三联/H5 按样本存放，pooled H5AD 可以共用一个源文件。 |
+| `seurat_raw.rds` | 仅从明确的 counts 构建并验证的 Seurat 对象。已有文件不会静默覆盖。 |
+| `sample_info.txt` | UTF-8 纯文本说明，记录研究、样本、用户分组、运行状态及最终统计。 |
 
-`patient/specimen/cohort/treatment` 只在资料可靠时添加，并有逐样本 evidence；不能猜 P01/donor3/T01 是患者 ID。部分缺失用 NA，并在 summary 报告。辅助 `author_sample/sample_description` 保留在 report/manifest。
+`.workflow/` 保存程序内部记录，包括 cell_map、确认回执、下载来源和详细 summary。Windows 不一定隐藏以点开头的目录；其用途仍是内部工作记录。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 不上传 GitHub。
 
-manifest 是唯一映射依据。混合样本矩阵还需 manifest 显式引用的 `cell_map_path`，其中 `cell,sample` 必须与整个输入矩阵和相关 manifest 样本精确对应。加载时绝不从文件名重新推断 biological metadata。barcode 在合并前加 sample 前缀；缺失、重复、错配、合并后样本消失均报错。metadata 行顺序必须和 Cells 完全一致。
+## sample_info.txt
 
-## 支持格式
+完整检索后即创建，不必等分组确认。第一行是：
 
-- 标准 10x 三联文件，gzip/plain/legacy genes.tsv；规范化临时文件后用 Read10X。
-- 10x HDF5：验证 HDF5 schema 后 Read10X_h5；同一样本默认 filtered，多个 filtered 则停止消歧。
-- H5AD / H5AD.gz：zellkonverter 原生 R reader → SingleCellExperiment → 显式选择的 counts assay → Seurat；支持显式 raw alternative experiment。绝不使用 Read10X_h5，不静默使用 normalized X。
-- TXT/CSV/TSV count matrix（可 gzip）：先确认方向、delimiter、ID 列、非表达列，再读取。拒绝无法解释的非数值列。
-- Seurat RDS：检查对象类型及 counts layer，重建 counts-only Seurat；其他 RDS 类型明确报错。
-- tar/zip：由 manifest 指定精确文件成员，安全地按成员释放；不递归盲解压。
+```text
+STATUS: WAITING_FOR_GROUP_CONFIRMATION
+```
 
-具体 schema、下载 JSON 字段、pooled 数据和 counts provenance 见 Skill 的 [metadata-schema](.agents/skills/geo-single-cell-loader/references/metadata-schema.md) 和 [format-routing](.agents/skills/geo-single-cell-loader/references/format-routing.md)。
+文件包括研究标题/说明、测序类型、组织、候选 processed 格式、总样本数，以及逐样本属性。尚未由证据确定的内容明确标注；整套资料没有的 optional 字段不会显示大量 NA。公开事实经 Skill 审阅后同步更新 TXT。
 
-## 依赖与命令行
+确认分组后状态为 `GROUP_CONFIRMED`，逐样本增加 group，并增加 GROUP SUMMARY。创建、序列化并验证成功后状态为 `COMPLETE`，附加 PROCESSING SUMMARY：总样本/细胞/基因数、sample/group 细胞数、输出位置、实际读取格式和 reader、counts source、Seurat 版本、创建时间和 warnings。
 
-Python 3.10+；GEO、manifest 和下载脚本仅用标准库。开发 fixture 额外需要 `numpy、h5py`；H5AD fallback 需要 `anndata、numpy、scipy`。先定位实际解释器；不要使用 Windows Store 的 python/python3 占位程序。若使用 fallback，显式设置 `$env:GEO_SINGLE_CELL_PYTHON = $PythonExe`。
+构建失败时尽可能写入 `BUILD_FAILED` 和 `Failure:` 原因，保留已经下载的数据。确认前仍保持等待状态。部分开发检索保存在 `.workflow/development/`，不能覆盖完整报告，也不能用于后续分组确认。
 
-R、Seurat、SeuratObject、Matrix、jsonlite 是核心依赖；hdf5r 用于 H5；zellkonverter、SingleCellExperiment、SummarizedExperiment 用于 H5AD。检查同时列出常用 dplyr、data.table 版本，本实现不依赖它们进行 metadata join。
+## 数据与验证规则
+
+manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包含 `database/sample/tissue/disease/source_type/group`。可选 patient/specimen/cohort/treatment 每个非空值需要可靠 evidence。barcode 在合并前添加 sample 前缀；按稳定 cell/sample key 映射，验证 `rownames(meta.data) == Cells(seurat)`、样本集合和全部 manifest metadata。
+
+确认回执绑定 manifest 内容 hash；修改后重新确认。下载记录保存 URL、SHA256、bytes、UTC timestamp；重复运行先验证后复用，checksum、来源或 archive member 不一致立即停止，绝不覆盖。归档成员也有独立 SHA256 校验。中断后可利用逐文件保存的 provenance 继续。`files_json=[]` 仅供明确审阅的本地输入，不能用来跳过下载校验。
+
+支持 10x 三联（gzip/plain/genes.tsv）、10x H5、H5AD/H5AD.gz、明确方向的 TXT/CSV/TSV counts、Seurat RDS counts，以及 manifest 精确指定的 tar/zip 成员。同一样本优先 filtered，多份 ambiguous filtered 则停止。H5AD 不会交给 Read10X_h5；normalized matrix 不能当 raw counts。pooled matrix 必须有精确 cell-to-sample mapping。路径必须是 repository-relative、没有 `..`、不越出所属 GSE；expression 在 `raw/`，映射文件在 `.workflow/`。
+
+保留 `CreateSeuratObject(counts=counts, min.cells=3, min.features=200)`。这些构建阈值会过滤部分细胞/基因，summary 如实记录。没有额外 QC，不执行 NormalizeData、SCTransform、FindVariableFeatures、ScaleData、PCA/UMAP、邻居图、聚类、DoubletFinder、细胞注释、差异或富集分析。只有 FASTQ/SRA 的数据需要重新定量，超出当前范围。
+
+## Advanced / Developer usage
+
+以下命令供维护和诊断使用，日常工作由 Skill 内部执行。脚本从自身位置解析 repository root，Python 支持 `--root`；R 显式接收 repository root。
+
+依赖：Python 3.10+（检索、manifest、下载只用标准库）；R + Seurat、SeuratObject、Matrix、jsonlite；H5 需要 hdf5r。H5AD 优先 zellkonverter、SingleCellExperiment、SummarizedExperiment；缺失时显式设置 `GEO_SINGLE_CELL_PYTHON` 指向已验证安装 anndata/numpy/scipy 的解释器。不会自动安装环境。合成 fixture 另需 h5py、pandas。先定位实际 Python/R，不使用 Windows Store 的 python/python3 占位程序。
 
 ```powershell
-# 用实际安装路径设置，不要假定 PATH 中的 R 就是装有 Seurat 的版本。
-$PythonExe = (Get-Command py -ErrorAction Stop).Source  # 或设置已核实的 Python 可执行文件
-$RscriptExe = (Get-Command Rscript -ErrorAction Stop).Source
+# 将变量设置为本机已验证的 Python 与 Rscript 可执行文件绝对路径。
 $Scripts = '.agents/skills/geo-single-cell-loader/scripts'
+$Workflow = 'data/GSE231993/.workflow'
 & $RscriptExe "$Scripts/check_dependencies.R"
 & $PythonExe "$Scripts/inspect_geo.py" GSE231993
-# 先在 Codex 中完成证据审阅、样本报告和用户明确分组。
-& $PythonExe "$Scripts/build_manifest.py" --report manifests/GSE231993_sample_report.csv --confirmation manifests/GSE231993_group_confirmation.json --output manifests/GSE231993_sample_manifest.csv
-& $PythonExe "$Scripts/build_manifest.py" --validate manifests/GSE231993_sample_manifest.csv
-& $PythonExe "$Scripts/download_processed.py" manifests/GSE231993_sample_manifest.csv
-& $RscriptExe "$Scripts/build_seurat.R" . manifests/GSE231993_sample_manifest.csv
-& $RscriptExe "$Scripts/validate_seurat.R" . manifests/GSE231993_sample_manifest.csv output/GSE231993/seurat_raw.rds
+# Skill 审阅证据、完善 sample_report.csv 与 inspection.json 后：
+& $PythonExe "$Scripts/sample_info.py" GSE231993
+# 用户确认 group，并保存 group_confirmation.json 后：
+& $PythonExe "$Scripts/build_manifest.py" --report "$Workflow/sample_report.csv" --confirmation "$Workflow/group_confirmation.json" --output "$Workflow/sample_manifest.csv"
+& $PythonExe "$Scripts/build_manifest.py" --validate "$Workflow/sample_manifest.csv"
+& $PythonExe "$Scripts/download_processed.py" "$Workflow/sample_manifest.csv"
+& $RscriptExe "$Scripts/build_seurat.R" . "$Workflow/sample_manifest.csv"
+& $RscriptExe "$Scripts/validate_seurat.R" . "$Workflow/sample_manifest.csv" data/GSE231993/seurat_raw.rds
 ```
 
-在选定的 R 环境安装缺包：
-
-```r
-install.packages(c("Seurat", "dplyr", "data.table", "Matrix", "jsonlite", "hdf5r", "BiocManager"))
-BiocManager::install(c("zellkonverter", "SingleCellExperiment"), ask=FALSE, update=FALSE)
-```
-
-Windows 源码安装需要匹配 R 的 Rtools，并把其 `usr/bin` 加到**当前安装进程** PATH；无需修改系统设置。缺少 zellkonverter 时可在明确的 Python 环境安装 `anndata numpy scipy` 并设置 `GEO_SINGLE_CELL_PYTHON`。缺少 H5AD 读取依赖只阻止 H5AD 路线，不影响项目文件创建或其他格式。原生 R reader 出现 warning 或 fallback 发现 normalized matrix 时停止。每次运行记录实际 reader 和包版本。
-
-在某些精简的 Windows 非交互进程里，标准 `PROCESSOR_ARCHITECTURE` 变量可能缺失。`cli` 3.6.6 的卸载代码会因此触发访问冲突；本项目只在该变量缺失时，根据 R 架构为当前 R 进程补齐它，不修改系统环境。见 [r-lib/cli issue #375](https://github.com/r-lib/cli/issues/375) 和候选修复 [PR #838](https://github.com/r-lib/cli/pull/838)。
-
-## 输出
-
-`output/<GSE>/seurat_raw.rds` 和 `run_summary.txt`；`manifests/<GSE>_sample_manifest.csv`、confirmation 回执；`logs/<GSE>_download.json`。summary 包含日期、格式、读取方法/count source、细胞/基因/样本数量、sample/group 计数、组织/疾病/材料类型、可选字段、输入输出、warnings、sessionInfo。已有正式 RDS 不会被静默覆盖。
-
-## 测试
+测试：
 
 ```powershell
 & $PythonExe -m unittest discover -s tests -p 'test_*.py' -v
 & $PythonExe tests/make_fixtures.py
+$env:GEO_SINGLE_CELL_PYTHON = $PythonExe
 & $RscriptExe tests/test_seurat.R .
-& $RscriptExe "$Scripts/build_seurat.R" . manifests/GSE999999999_sample_manifest.csv
-& $RscriptExe "$Scripts/validate_seurat.R" . manifests/GSE999999999_sample_manifest.csv output/GSE999999999/seurat_raw.rds
+& $PythonExe tests/run_end_to_end.py --rscript $RscriptExe
 ```
 
-合成数据用保留测试编号 `GSE999999999`，不查询 GEO，不对应真实生物学组。生成器只重写该测试 manifest；重复运行端到端之前需明确清理/归档其旧输出。测试实际读取 10x/H5/H5AD/text/RDS，覆盖错误分组、排序、normalized X、barcode 和错误映射。
+合成数据使用保留测试编号 `GSE999999999`，分组批准明确标注 SIMULATED；不对应真实临床组。重复端到端测试前显式归档已有测试 RDS，构建脚本不会覆盖。旧布局数据需按 GSE 迁移并比较大小/hash；保留原始 manifest/receipt，不自动修改 hash 来认可新路径。无法确定归属的文件保留并报告。
 
-真实测试类型：[GSE231993](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE231993)、[GSE202051](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE202051)、[GSE211644](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211644)、[GSE229413](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229413)。实际执行范围和结果见 [test-datasets.md](.agents/skills/geo-single-cell-loader/references/test-datasets.md) 与 [validation-report.md](tests/validation-report.md)。大型真实数据不重复下载，真实 group 仍须用户决定。
-
-## V1 边界
-
-不跑 Cell Ranger/FASTQ/SRA 重新定量，不做额外 QC、NormalizeData、SCTransform、变异基因、ScaleData、PCA/UMAP、邻居图、聚类、DoubletFinder、注释、差异或富集分析。按要求使用 CreateSeuratObject(min.cells=3, min.features=200)，这些创建阈值会删除部分细胞/基因并记录，除此以外不做过滤。
-
-不保证任意作者私有格式、异常 H5AD、混合 assay 或超内存数据能直接读取；歧义时停止。公开元数据缺失时，需要补充证据才能继续。Stage A 不是完全无人监督的临床信息推断器。Git 忽略 datasets/output/logs/manifests、RDS/H5/H5AD/FASTQ/SRA 和凭据；只上传代码、文档及小型测试生成器。
+详见 [metadata contract](.agents/skills/geo-single-cell-loader/references/metadata-schema.md)、[format routing](.agents/skills/geo-single-cell-loader/references/format-routing.md) 和 [实际验证报告](tests/validation-report.md)。公开元数据仍需证据审阅，任意作者私有格式或超内存矩阵可能需要额外适配。Skill 已启用隐式调用，但是否自动选中取决于 Codex 会话的 Skill 发现；自动选择不由 Python 单元测试保证。

@@ -1,6 +1,6 @@
 interface:
   display_name: "GEO Single-cell Loader"
-  short_description: "Inspect GEO, confirm groups, build validated Seurat"
-  default_prompt: "Use $geo-single-cell-loader to inspect GSE231993 and report sample sources and disease backgrounds before asking me to define groups."
+  short_description: "下载、读取和整理 GEO 单细胞数据，确认分组后创建 Seurat"
+  default_prompt: "使用 $geo-single-cell-loader 下载并整理 GSE231993，先展示全部样本信息并等待我确认 group，再下载和创建 Seurat。"
 policy:
   allow_implicit_invocation: true

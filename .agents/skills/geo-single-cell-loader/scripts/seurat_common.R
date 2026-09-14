@@ -11,11 +11,12 @@ need <- function(packages) {
   absent <- packages[!vapply(packages, requireNamespace, quietly = TRUE, FUN.VALUE = logical(1))]
   if (length(absent)) stop("Missing R packages: ", paste(absent, collapse = ", "), ". See README dependency commands.")
 }
-repo_path <- function(root, relative, area = "datasets") {
+repo_path <- function(root, relative, area = "data") {
   if (blank(relative) || grepl("^[/\\\\]|^[A-Za-z]:|\\\\", relative) || ".." %in% strsplit(relative, "/", fixed=TRUE)[[1]]) stop("Unsafe relative path: ", relative)
   base <- normalizePath(file.path(root, area), winslash="/", mustWork=TRUE)
+  if (!identical(tolower(base),tolower(paste0(root,"/",area)))) stop("Permitted directory redirects outside its declared location")
   path <- normalizePath(file.path(root, relative), winslash="/", mustWork=TRUE)
-  if (!startsWith(tolower(path), paste0(tolower(base), "/"))) stop("Input outside datasets")
+  if (!startsWith(tolower(path), paste0(tolower(base), "/"))) stop("Input outside permitted dataset directory")
   path
 }
 read_manifest <- function(path, root) {
@@ -35,7 +36,14 @@ read_manifest <- function(path, root) {
     evidence <- paste0(field, "_evidence")
     if (any(!blank(m[[field]])) && (!evidence %in% names(m) || any(!blank(m[[field]]) & blank(m[[evidence]])))) stop("Missing public evidence for ", field)
   }
-  for (i in seq_len(nrow(m))) repo_path(root, m$local_path[i], paste0("datasets/", m$database[i]))
+  repo_path(root, substring(normalizePath(path,winslash="/"), nchar(root)+2L), paste0("data/",m$database[1],"/.workflow"))
+  for (i in seq_len(nrow(m))) {
+    repo_path(root, m$local_path[i], paste0("data/", m$database[i],"/raw"))
+    if (nzchar(value(m[i,,drop=FALSE],"cell_map_path"))) {
+      cellmap <- repo_path(root,m$cell_map_path[i],paste0("data/",m$database[i],"/.workflow"))
+      if (!identical(unname(tools::md5sum(cellmap)),value(m[i,,drop=FALSE],"cell_map_md5"))) stop("Cell map changed; review and reconfirm")
+    }
+  }
   m
 }
 value <- function(row, field, default = "") {
@@ -57,7 +65,7 @@ select_rna <- function(x) {
 }
 read_counts <- function(row, root) {
   need(c("Seurat", "Matrix"))
-  path <- repo_path(root, row$local_path, paste0("datasets/", row$database))
+  path <- repo_path(root, row$local_path, paste0("data/", row$database,"/raw"))
   type <- row$file_type
   chosen <- row$count_source
   if (type == "10x_mtx") {

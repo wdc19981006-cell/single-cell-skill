@@ -12,10 +12,12 @@ OPTIONAL = ('patient', 'specimen', 'cohort', 'treatment')
 
 def local(root, value, area=None):
     p = Path(value)
-    if p.is_absolute() or re.match(r'^[A-Za-z]:', value) or '\\' in value:
+    if p.is_absolute() or re.match(r'^[A-Za-z]:', value) or '\\' in value or '..' in p.parts:
         raise ValueError('Use repository-relative forward-slash paths: ' + value)
     target = (root / p).resolve()
     base = (root / area).resolve() if area else root.resolve()
+    if not base.is_relative_to(root.resolve()) or (area and base != root.resolve() / area):
+        raise ValueError('Permitted directory redirects outside its declared location')
     if not target.is_relative_to(base) or target == base:
         raise ValueError('Path escapes permitted directory: ' + value)
     return target
@@ -74,8 +76,8 @@ def validate_manifest(rows, root):
         seen.add(sample)
         if not re.fullmatch(r'GSE\d+', row['database']): raise ValueError('Invalid GSE')
         databases.add(row['database'])
-        area = 'datasets/' + row['database']
-        local(root, row['local_path'], area)
+        area = 'data/' + row['database']
+        local(root, row['local_path'], area + '/raw')
         if row['file_type'] not in ('10x_mtx', '10x_h5', 'h5ad', 'text', 'rds'): raise ValueError('Unsupported file_type')
         if row['file_type'] == 'h5ad' and not row['local_path'].lower().endswith(('.h5ad', '.h5ad.gz')): raise ValueError('H5AD extension mismatch')
         if row['file_type'] == '10x_h5' and row['local_path'].lower().endswith(('.h5ad', '.h5ad.gz')): raise ValueError('H5AD is not 10x H5')
@@ -83,13 +85,13 @@ def validate_manifest(rows, root):
         for field in OPTIONAL:
             if not missing(row.get(field)) and missing(row.get(field + '_evidence')): raise ValueError('Missing evidence for ' + field)
         if not missing(row.get('cell_map_path')):
-            cellmap = local(root, row['cell_map_path'], area)
+            cellmap = local(root, row['cell_map_path'], area + '/.workflow')
             if missing(row.get('cell_map_md5')) or not cellmap.is_file() or digest(cellmap) != row['cell_map_md5']:
                 raise ValueError('Cell map missing or changed; review and reconfirm')
         files = json.loads(row.get('files_json') or '[]')
         if not isinstance(files, list): raise ValueError('files_json must be a list')
         for item in files:
-            local(root, item['local_path'], area)
+            local(root, item['local_path'], area + '/raw')
             u = urlparse(item['url'])
             if u.scheme != 'https' or not u.hostname or u.username or u.password: raise ValueError('HTTPS public URL required')
             if u.query and re.search(r'token|signature|credential|key=', u.query, re.I): raise ValueError('Do not store credentials in URLs')
@@ -109,6 +111,22 @@ def digest(path):
 def verify_confirmation(path):
     receipt = path.with_suffix('.confirmation.json')
     value = json.loads(receipt.read_text(encoding='utf-8'))
-    if value.get('manifest_md5') != digest(path) or not value.get('user_statement', '').strip():
+    if value.get('manifest_md5') != digest(path) or not value.get('user_statement', '').strip() or value.get('confirmed_by') != 'user':
         raise ValueError('Manifest changed or missing user confirmation; reconfirm before continuing')
+    rows = read_csv(path)
+    if value.get('groups') != {r['sample']: r['group'] for r in rows}:
+        raise ValueError('Confirmed groups differ from manifest')
     return value
+
+def dataset_paths(root, gse):
+    if not re.fullmatch(r'GSE\d+', gse):
+        raise ValueError('Expected GSE accession')
+    base = local(root, 'data/' + gse, 'data')
+    return dict(dataset=base, raw=local(root, f'data/{gse}/raw', f'data/{gse}'),
+                workflow=local(root, f'data/{gse}/.workflow', f'data/{gse}'),
+                final=local(root, f'data/{gse}/seurat_raw.rds', f'data/{gse}'),
+                info=local(root, f'data/{gse}/sample_info.txt', f'data/{gse}'))
+
+def workflow_path(root, path, gse):
+    relative = Path(path).resolve().relative_to(root.resolve()).as_posix()
+    return local(root, relative, f'data/{gse}/.workflow')

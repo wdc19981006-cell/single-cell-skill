@@ -7,11 +7,12 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from common import ROOT, choose_filtered, file_type, write_csv
+from common import ROOT, choose_filtered, dataset_paths, file_type, write_csv
+from sample_info import render
 
 def propose_input(gse, sample, urls):
     """Use GEO's sample ownership, never infer biological IDs from filenames."""
-    base = 'datasets/' + gse + '/' + sample
+    base = 'data/' + gse + '/raw/' + sample
     trio = {}
     for role in ('matrix.mtx', 'features.tsv', 'barcodes.tsv'):
         matches = [u for u in urls if u.endswith((role, role + '.gz'))]
@@ -64,10 +65,16 @@ def supplementary(fields):
 
 def inspect(gse, root, max_samples=None):
     if not re.fullmatch(r'GSE\d+', gse): raise ValueError('Expected GSE accession')
+    paths = dataset_paths(root, gse)
+    if paths['final'].exists() or (paths['workflow'] / 'sample_manifest.csv').exists():
+        raise ValueError('Confirmed dataset exists; archive workflow explicitly before repeating discovery')
+    if max_samples is not None and max_samples < 1: raise ValueError('max-samples must be positive')
     text, url = soft(gse)
     series = next(r for r in parse_soft(text) if r['kind'] == 'SERIES')
     fields = series['fields']
     samples = fields.get('Series_sample_id', [])
+    if series['accession'] != gse or not samples or len(set(samples)) != len(samples):
+        raise ValueError('Missing, duplicate or mismatched GEO Series sample inventory')
     chosen = samples if max_samples is None else samples[:max_samples]
     records, report, files, input_plans = [], [], [], {}
     for u in supplementary(fields): files.append(dict(scope=gse, url=u, format=file_type(u)))
@@ -75,6 +82,7 @@ def inspect(gse, root, max_samples=None):
         time.sleep(0.4)
         raw, source = soft(gsm)
         record = next(r for r in parse_soft(raw) if r['kind'] == 'SAMPLE')
+        if record['accession'] != gsm: raise ValueError('GEO returned a different GSM')
         records.append(record)
         f = record['fields']
         characteristics = f.get('Sample_characteristics_ch1', [])
@@ -87,10 +95,15 @@ def inspect(gse, root, max_samples=None):
         paper_url = 'https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pubmed.cgi/BioC_xml/' + pmid + '/unicode'
         try: papers.append(dict(pmid=pmid, url=paper_url, text=fetch(paper_url, 4 * 1024 * 1024)))
         except (OSError, ValueError) as e: papers.append(dict(pmid=pmid, url=paper_url, error=str(e)))
-    folder = root / 'manifests'; folder.mkdir(parents=True, exist_ok=True)
+    folder = paths['workflow']; folder.mkdir(parents=True, exist_ok=True)
+    if max_samples is not None:
+        # Development probes never replace a complete report.
+        folder = folder / 'development'; folder.mkdir(exist_ok=True)
     result = dict(gse=gse, series_url=url, series=series, samples=records, files=files, input_plans=input_plans, papers=papers, total_samples=len(samples), inspected_samples=len(records), complete=len(records) == len(samples), note='group 尚未创建，请确认分组方式。Blank biological fields require evidence review, never infer group.')
-    (folder / (gse + '_inspection.json')).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
-    write_csv(folder / (gse + '_sample_report.csv'), report, ['database','sample','author_sample','tissue','disease','source_type','sample_description','metadata_evidence'])
+    (folder / 'inspection.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+    write_csv(folder / 'sample_report.csv', report, ['database','sample','author_sample','tissue','disease','source_type','sample_description','metadata_evidence'])
+    if max_samples is None:
+        render(root, gse, report, result)
     print(json.dumps(dict(gse=gse, title=fields.get('Series_title'), total_samples=len(samples), inspected_samples=len(records), files=files, note=result['note']), ensure_ascii=False))
     return result
 

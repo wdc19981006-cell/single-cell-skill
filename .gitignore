@@ -1,11 +1,5 @@
-datasets/*
-!datasets/.gitkeep
-output/*
-!output/.gitkeep
-logs/*
-!logs/.gitkeep
-manifests/*
-!manifests/.gitkeep
+data/*
+!data/.gitkeep
 *.rds
 *.RData
 *.h5
