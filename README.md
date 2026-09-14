@@ -55,7 +55,18 @@ single-cell-skill/
 | `seurat_raw.rds` | 仅从明确的 counts 构建并验证的 Seurat 对象。已有文件不会静默覆盖。 |
 | `sample_info.txt` | UTF-8 纯文本说明，记录研究、样本、用户分组、运行状态及最终统计。 |
 
-`.workflow/` 保存程序内部记录，包括 cell_map、确认回执、下载来源和详细 summary。Windows 不一定隐藏以点开头的目录；其用途仍是内部工作记录。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 不上传 GitHub。
+`.workflow/` 保存程序内部记录，包括 cell_map、确认回执、下载来源和详细 summary。Windows 不一定隐藏以点开头的目录；其用途仍是内部工作记录。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 默认只保存在本地。用户明确要求分享时，可将数据包上传到本仓库的 Releases，数据不进入 Git 历史。
+
+## 已发布数据
+
+[GSE231993：UC 8 个样本、HC 4 个样本](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-20260914)（2026-09-14）：完整数据包包含 36 个 GEO 源表达文件、`seurat_raw.rds`、`sample_info.txt` 和本次运行的 `.workflow` 核心记录，保留 `data/GSE231993/` 布局，附有 SHA256 校验清单。
+
+| 用户确认的 group | 样本 | 最终细胞数 |
+|---|---|---:|
+| UC | GSM7307094–GSM7307101，8 个样本 | 37,967 |
+| HC | GSM7307102–GSM7307105，4 个样本 | 22,698 |
+
+此处 UC 按用户要求同时包含作者的 UC-self control 和 UC 炎症样本，原始来源描述仍完整保留。最终对象共 60,665 个细胞、23,183 个基因；仅使用约定的构建阈值，未进行额外 QC、归一化或下游分析。构建、序列化重读及独立 metadata 验证均通过。
 
 ## sample_info.txt
 
