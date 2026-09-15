@@ -22,12 +22,13 @@ warnings_seen <- character()
 counts_list <- list()
 cell_sample_map <- character()
 input_details <- list()
+counts_cache <- new.env(parent=emptyenv())
 withCallingHandlers({
   for (i in seq_len(nrow(m))) {
     row <- m[i,,drop=FALSE]
-    counts <- read_counts(row,root)
-    reader_used <- attr(counts,"geo_reader")
     sharing <- m[m$local_path == row$local_path,,drop=FALSE]
+    counts <- read_counts_cached(row,sharing,root,counts_cache)
+    reader_used <- attr(counts,"geo_reader")
     if (nzchar(value(row,"cell_map_path"))) {
       cellmap <- read.csv(repo_path(root,row$cell_map_path,paste0("data/",gse,"/.workflow")), stringsAsFactors=FALSE,check.names=FALSE,colClasses="character")
       if (!all(c("cell","sample") %in% names(cellmap)) || anyDuplicated(cellmap$cell) || any(blank(cellmap$cell)) || any(blank(cellmap$sample))) stop("Invalid cell map")
@@ -66,6 +67,7 @@ withCallingHandlers({
     "min.cells scope:","Entire merged GSE dataset",
     "No additional QC or downstream analysis.",
     paste("Total cells:",ncol(seurat)),paste("Total genes:",nrow(seurat)),paste("Samples:",nrow(m)),
+    paste("Unique source matrices read:",length(ls(counts_cache,all.names=TRUE))),
     "Cells per sample:",capture.output(table(seurat$sample)),"Cells per group:",capture.output(table(seurat$group)),
     paste("tissue:",paste(unique(m$tissue),collapse=", ")),paste("disease:",paste(unique(m$disease),collapse=", ")),paste("source_type:",paste(unique(m$source_type),collapse=", ")),
     paste("Optional metadata:",paste(optional,collapse=", ")),"Inputs and selected count matrices:",input_records,

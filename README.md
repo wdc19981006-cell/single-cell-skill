@@ -65,6 +65,8 @@ single-cell-skill/
 
 ## 已发布数据
 
+性能案例：[GSE181919 运行过程与慢速原因分析](docs/GSE181919-runtime-analysis.md)。该案例记录了合并宽表、缺失 feature 表头和共享矩阵重复读取造成的性能问题，以及对应修复；原始矩阵和 RDS 不进入 Git 历史。
+
 [GSE231993 v2：修正全局 gene filtering，UC 8 个样本、HC 4 个样本](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-v2-20260914)（2026-09-14）：完整数据包包含 36 个 GEO 源表达文件、`seurat_raw.rds`、`sample_info.txt` 和本次运行的 `.workflow` 核心记录，保留 `data/GSE231993/` 布局，附有 SHA256 校验清单。
 
 | 用户确认的 group | 样本 | 最终细胞数 |

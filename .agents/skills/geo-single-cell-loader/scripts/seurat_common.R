@@ -126,12 +126,14 @@ read_counts <- function(row, root) {
     sep <- switch(value(row,"delimiter"), comma=",", tab="\t", space="", stop("Explicit inspected delimiter required"))
     tab <- read.table(path, header=TRUE, sep=sep, check.names=FALSE, stringsAsFactors=FALSE, comment.char="", quote="\"", row.names=NULL)
     key <- value(row,"feature_column")
-    if (!key %in% names(tab) || anyDuplicated(names(tab))) stop("Missing ID column or duplicate headers")
-    ids <- tab[[key]]
+    rowname_key <- identical(key,"__row_names__")
+    if (anyDuplicated(names(tab)) || (!rowname_key && !key %in% names(tab))) stop("Missing ID column or duplicate headers")
+    key_columns <- if (rowname_key && "row.names" %in% names(tab)) "row.names" else if (rowname_key) character() else key
+    ids <- if (length(key_columns)) tab[[key_columns]] else rownames(tab)
     dropped <- strsplit(value(row,"drop_columns"),";",fixed=TRUE)[[1]]
     dropped <- dropped[nzchar(dropped)]
-    if (!all(dropped %in% names(tab)) || key %in% dropped) stop("Invalid excluded columns")
-    numeric <- tab[setdiff(names(tab), c(key,dropped))]
+    if (!all(dropped %in% names(tab)) || any(key_columns %in% dropped)) stop("Invalid excluded columns")
+    numeric <- tab[setdiff(names(tab), c(key_columns,dropped))]
     if (!ncol(numeric) || !all(vapply(numeric,is.numeric,logical(1)))) stop("Nonexpression column found; inspect and specify drop_columns")
     x <- as.matrix(numeric); rownames(x) <- ids
     orientation <- value(row,"orientation")
@@ -153,6 +155,14 @@ read_counts <- function(row, root) {
     reader_used <- "readRDS/Seurat counts extraction"
   } else stop("Unsupported input format: ", type)
   x <- assert_counts(x); attr(x,"geo_reader") <- reader_used; x
+}
+read_counts_cached <- function(row,sharing,root,cache,reader=read_counts) {
+  if (!is.environment(cache)) stop("Counts cache must be an environment")
+  routing_fields <- intersect(c("file_type","count_source","orientation","delimiter","feature_column","drop_columns","assay"),names(sharing))
+  if (any(vapply(routing_fields,function(field) length(unique(sharing[[field]])) != 1L,logical(1)))) stop("Shared matrix rows must use identical reader settings")
+  cache_key <- value(row,"local_path")
+  if (!exists(cache_key,envir=cache,inherits=FALSE)) assign(cache_key,reader(row,root),envir=cache)
+  get(cache_key,envir=cache,inherits=FALSE)
 }
 map_metadata <- function(object, manifest, expected_samples) {
   if (!identical(unname(as.character(object$sample)), unname(expected_samples))) stop("Cell sample mapping changed")
