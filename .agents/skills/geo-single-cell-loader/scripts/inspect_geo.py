@@ -1,4 +1,4 @@
-"""Metadata-only GEO discovery. Prefer bio-server MCP when available."""
+"""Metadata-only GEO discovery fallback for when the global geo MCP is unavailable."""
 import argparse
 import json
 import re

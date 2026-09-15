@@ -15,6 +15,12 @@
 5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
 6. 全部结果保存在 `data/<GSE>/`。
 
+## 与全局 GEO MCP 联用
+
+Stage A 优先调用用户级全局 MCP `geo`：关键词检索使用 `search_geo`；已知 GSE 使用 `get_geo_info` 获取完整 Series/GSM 清单，再用 `list_geo_files` 获取带 owner 的公开文件清单；只有 Series 结果缺少某个 GSM 的细节时才补充调用 `get_geo_sample`。只有 `complete=true` 且 `sample_count` 与返回的 GSM 清单一致时，才把 Series 清单视为完整。MCP 只提供公开 metadata 与文件 URL，分组、下载、manifest 和 Seurat 构建仍全部由本 Skill 负责。
+
+如果 `geo` MCP 不可用或实际工具调用失败，Skill 才调用 `scripts/inspect_geo.py`。该 fallback 保持独立，MCP 故障不会阻断后续工作流；不能仅因当前会话尚未尝试工具就声称 MCP 不可用。
+
 在样本资料确实支持这些类别时，用户可回复：
 
 ```text
@@ -107,6 +113,7 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 $Scripts = '.agents/skills/geo-single-cell-loader/scripts'
 $Workflow = 'data/GSE231993/.workflow'
 & $RscriptExe "$Scripts/check_dependencies.R"
+# 仅在全局 geo MCP 不可用或实际调用失败时使用此 fallback：
 & $PythonExe "$Scripts/inspect_geo.py" GSE231993
 # Skill 审阅证据、完善 sample_report.csv 与 inspection.json 后：
 & $PythonExe "$Scripts/sample_info.py" GSE231993
