@@ -6,6 +6,7 @@ while each following row starts with a gene ID.
 """
 
 import gzip
+import itertools
 import json
 import sys
 import warnings
@@ -22,7 +23,20 @@ def convert(source: Path, output: Path) -> dict:
             (output / "x.bin").open("wb") as counts, \
             (output / "genes.tsv").open("w", encoding="utf-8", newline="\n") as genes_file:
         header = src.readline().rstrip(b"\r\n")
-        cells = [item.decode("utf-8-sig") for item in header.split(b"\t")]
+        first_row = src.readline()
+        if not first_row:
+            raise ValueError("Empty matrix")
+        _, separator, first_payload = first_row.rstrip(b"\r\n").partition(b"\t")
+        if not separator:
+            raise ValueError("Matrix row 1 lacks expression fields")
+        header_fields = [item.decode("utf-8-sig") for item in header.split(b"\t")]
+        value_columns = first_payload.count(b"\t") + 1
+        if len(header_fields) == value_columns + 1:
+            cells = header_fields[1:]
+        elif len(header_fields) == value_columns:
+            cells = header_fields
+        else:
+            raise ValueError("Header and expression column counts differ")
         if not cells or any(not cell for cell in cells) or len(set(cells)) != len(cells):
             raise ValueError("Blank or duplicate matrix cell IDs")
         if len(cells) >= 2**31:
@@ -33,7 +47,7 @@ def convert(source: Path, output: Path) -> dict:
         n_genes = 0
         nnz = 0
         warnings.simplefilter("error", DeprecationWarning)
-        for line in src:
+        for line in itertools.chain((first_row,), src):
             line = line.rstrip(b"\r\n")
             gene_bytes, sep, payload = line.partition(b"\t")
             if not sep:

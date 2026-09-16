@@ -32,8 +32,14 @@ stopifnot(identical(as.matrix(result$counts),expected),
           inherits(result$counts,"dgCMatrix"),
           identical(result$reader,"Python NumPy streaming + Matrix::sparseMatrix"))
 con <- gzfile(path,"wt")
+writeLines(c("Index\tc1\tc2\tc3", "g1\t0\t2\t0", "g2\t4\t0\t6", "g3\t0\t0\t7"),con)
+close(con)
+labeled <- read_expression(row,fixture)
+stopifnot(identical(as.matrix(labeled$counts),expected),
+          identical(colnames(labeled$counts),c("c1","c2","c3")))
+con <- gzfile(path,"wt")
 writeLines(c("c1\tc2", "g1\t1\t-2"),con)
 close(con)
 error <- tryCatch({read_expression(row,fixture); ""},error=function(e) conditionMessage(e))
 stopifnot(grepl("Streaming text conversion failed",error,fixed=TRUE))
-cat("PASS: streaming text reader preserves sparse counts and rejects negative input.\n")
+cat("PASS: streaming text reader handles labeled and unlabeled gene columns, preserves sparse counts, and rejects negative input.\n")
