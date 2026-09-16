@@ -36,11 +36,25 @@ stopifnot(reader_calls==1L,cell_map_calls==1L,prepared$reader_calls==1L,prepared
 stopifnot(length(prepared$counts_list)==1L,identical(colnames(prepared$counts_list[[1]]),expected_cells))
 stopifnot(identical(unname(prepared$cell_sample_map[expected_cells]),rep(c("SampleA","SampleB","SampleC"),each=2)))
 
+# A separate author metadata table is a mapping input, not a new expression reader.
+separate_path <- file.path(workflow,"separate_metadata.csv")
+write.csv(data.frame(barcode=paste0("cell",1:6),author_sample=rep(c("SampleA","SampleB","SampleC"),each=2),author_cluster=letters[1:6]),separate_path,row.names=FALSE,quote=FALSE)
+separate <- manifest
+separate$cell_map_path <- "data/GSE999999999/.workflow/separate_metadata.csv"
+separate$cell_map_cell_column <- "barcode"
+separate$cell_map_sample_column <- "author_sample"
+reader_calls <- 0L; cell_map_calls <- 0L
+prepared_separate <- prepare_expression_inputs(separate,fixture_root,reader,map_reader)
+stopifnot(reader_calls==1L,cell_map_calls==1L,prepared_separate$reader_calls==1L,prepared_separate$cell_map_reads==1L)
+stopifnot(identical(unname(prepared_separate$cell_sample_map[expected_cells]),rep(c("SampleA","SampleB","SampleC"),each=2)))
+
 bad <- manifest; bad$cell_map_path <- ""
 expect_error("Shared input requires one consistent cell_map_path",prepare_expression_inputs(bad,fixture_root,reader,map_reader))
 bad <- manifest; bad$cell_map_path[3] <- "data/GSE999999999/.workflow/other_map.csv"
 expect_error("Shared input requires one consistent cell_map_path",prepare_expression_inputs(bad,fixture_root,reader,map_reader))
 bad <- manifest; bad$delimiter[3] <- "comma"
+expect_error("Shared input has inconsistent reader configuration",prepare_expression_inputs(bad,fixture_root,reader,map_reader))
+bad <- manifest; bad$layer <- ""; bad$layer[3] <- "counts"
 expect_error("Shared input has inconsistent reader configuration",prepare_expression_inputs(bad,fixture_root,reader,map_reader))
 
 check_map <- function(mapping,pattern) {
@@ -55,4 +69,4 @@ unknown <- valid_map; unknown$sample[6] <- "UnknownSample"
 check_map(unknown,"Cell map sample set must exactly match")
 missing <- valid_map; missing$sample[5:6] <- "SampleB"
 check_map(missing,"Cell map sample set must exactly match")
-cat("PASS: pooled input is read once, cell map is read once, cell IDs map without splitting, and all shared-input errors are rejected.\n")
+cat("PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.\n")

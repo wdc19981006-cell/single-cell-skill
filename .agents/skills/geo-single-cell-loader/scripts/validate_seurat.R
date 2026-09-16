@@ -8,5 +8,7 @@ m <- read_manifest(repo_path(root,argv[2],"data"),root)
 expected <- paste0("data/",m$database[1],"/seurat_raw.rds")
 if (!identical(argv[3],expected)) stop("Expected final data/<GSE>/seurat_raw.rds")
 object <- readRDS(repo_path(root,argv[3],paste0("data/",m$database[1])))
+# Shared validation enforces one sparse integer RNA counts layer, exact manifest metadata,
+# and absence of normalized/downstream assays, reductions, graphs, neighbors and extra metadata.
 validate_object(object,m)
-cat("Seurat metadata and cell alignment validated\n")
+cat("Standard raw Seurat counts, metadata, cell alignment and clean structure validated\n")

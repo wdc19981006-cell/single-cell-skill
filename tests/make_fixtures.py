@@ -39,10 +39,12 @@ def main():
         m.create_dataset('barcodes',data=np.array(cells,dtype='S'))
         features=m.create_group('features')
         for name,values in [('id',['ENSG'+str(i) for i in range(250)]),('name',genes),('feature_type',['Gene Expression']*250),('genome',['GRCh38']*250)]: features.create_dataset(name,data=np.array(values,dtype='S'))
-    obs=pd.DataFrame(index=cells); var=pd.DataFrame(index=genes)
+    obs=pd.DataFrame({'author_cluster':['c1','c1','c2','c2']},index=cells); var=pd.DataFrame(index=genes)
     adata=anndata.AnnData(X=np.log1p(counts.T.astype(float)),obs=obs,var=var)
     adata.layers['counts']=counts.T
     adata.raw=anndata.AnnData(X=counts.T,obs=obs.copy(),var=var.copy())
+    adata.obsm['X_pca']=np.arange(8,dtype=float).reshape(4,2)
+    adata.obsm['X_umap']=np.arange(8,dtype=float).reshape(4,2)/10
     adata.write_h5ad(base/'counts.h5ad')
     with (base/'counts.h5ad').open('rb') as src,gzip.open(base/'counts.h5ad.gz','wb') as dst: dst.write(src.read())
     with (base/'counts.csv').open('w',newline='') as f:
@@ -51,6 +53,12 @@ def main():
     with (base/'transposed.tsv').open('w',newline='') as f:
         w=csv.writer(f,delimiter='\t'); w.writerow(['cell']+genes)
         for cell,values in zip(cells,counts.T): w.writerow([cell]+list(values))
+    for filename,delimiter in [('counts.tsv','\t'),('counts.txt','\t')]:
+        with (base/filename).open('w',newline='') as f:
+            w=csv.writer(f,delimiter=delimiter); w.writerow(['gene']+cells)
+            for gene,values in zip(genes,counts): w.writerow([gene]+list(values))
+    with (base/'counts.txt').open('rb') as src,gzip.open(base/'counts.txt.gz','wb') as dst: dst.write(src.read())
+    with h5py.File(base/'not_10x.h5','w') as f: f.create_dataset('ordinary_matrix',data=counts)
     rows=[]
     for sample,kind,path,source in [('FixtureZ','10x_mtx','trio','counts'),('FixtureA','10x_h5','filtered_feature_bc_matrix.h5','counts'),('FixtureH','h5ad','counts.h5ad.gz','counts'),('FixtureT','text','counts.csv','counts')]:
         rows.append(dict(database=gse,sample=sample,tissue='Synthetic',disease='Synthetic',source_type='Tissue',local_path=f'data/{gse}/raw/{path}',file_type=kind,count_source=source,count_evidence='Generated integer fixture counts; H5AD X intentionally normalized',metadata_evidence='Synthetic test only',files_json='[]',delimiter='comma',feature_column='gene',drop_columns='description',orientation='genes_by_cells'))

@@ -63,6 +63,7 @@ withCallingHandlers({
   input_performance <- unlist(lapply(seq_along(prepared$metrics),function(i) {
     detail <- prepared$metrics[[i]]
     c(paste0("Input ",i,":"),paste("local_path:",detail$local_path),paste("file_type:",detail$file_type),paste("reader:",detail$reader),
+      paste("input_signature:",gsub("\034"," | ",detail$input_signature,fixed=TRUE)),paste("file_size_bytes:",detail$file_size_bytes),
       paste("shared_samples:",detail$shared_samples),paste("input_features:",detail$input_features),paste("input_cells:",detail$input_cells),
       paste("read_seconds:",fmt_seconds(detail$read_seconds)),paste("mapping_seconds:",fmt_seconds(detail$mapping_seconds)))
   }))
@@ -77,8 +78,10 @@ withCallingHandlers({
     paste("tissue:",paste(unique(m$tissue),collapse=", ")),paste("disease:",paste(unique(m$disease),collapse=", ")),paste("source_type:",paste(unique(m$source_type),collapse=", ")),
     paste("Optional metadata:",paste(optional,collapse=", ")),"Inputs and selected count matrices:",input_records,
     "Reader policy: text inputs use data.table::fread; other routes load only their own dependencies. Exact reader is recorded per physical input.",
-    "Performance:",paste("Manifest rows:",prepared$manifest_rows),paste("Unique physical expression inputs:",prepared$unique_inputs),
+    "Input routing:",paste("Manifest rows:",prepared$manifest_rows),paste("Unique input signatures:",prepared$unique_inputs),
+    paste("Unique physical expression inputs:",prepared$unique_inputs),
     paste("Expression matrices actually read:",prepared$reader_calls),paste("Cell maps actually read:",prepared$cell_map_reads),
+    "Performance:",
     paste("manifest_read_seconds:",fmt_seconds(manifest_read_seconds)),input_performance,
     paste("feature_alignment_seconds:",fmt_seconds(feature_alignment_seconds)),paste("matrix_combine_seconds:",fmt_seconds(matrix_combine_seconds)),
     paste("create_seurat_seconds:",fmt_seconds(create_seurat_seconds)),paste("metadata_mapping_seconds:",fmt_seconds(metadata_mapping_seconds)),

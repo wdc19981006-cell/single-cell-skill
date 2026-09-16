@@ -55,7 +55,7 @@ def main(rscript):
     for name in ('FixtureZ','FixtureA','FixtureH','FixtureT'): assert name in info
     assert 'patient:' not in info
     summary=(ROOT/f'data/{GSE}/.workflow/run_summary.txt').read_text(encoding='utf-8')
-    for value in ('Performance:','Manifest rows: 4','Unique physical expression inputs: 4','Expression matrices actually read: 4','Cell maps actually read: 0','reader: data.table::fread','total_build_seconds:'):
+    for value in ('Input routing:','Performance:','Manifest rows: 4','Unique input signatures: 4','Unique physical expression inputs: 4','Expression matrices actually read: 4','Cell maps actually read: 0','reader: data.table::fread','file_size_bytes:','total_build_seconds:'):
         assert value in summary, value
     final=ROOT/f'data/{GSE}/seurat_raw.rds'; before=sha256(final)
     assert 'Output exists' in build(ROOT,success=False)
@@ -78,7 +78,7 @@ def main(rscript):
         approve(root,rows); build(root); validate(root)
         assert 'Total cells:\n8' in (root/f'data/{GSE}/sample_info.txt').read_text(encoding='utf-8')
         pooled_summary=(root/f'data/{GSE}/.workflow/run_summary.txt').read_text(encoding='utf-8')
-        for value in ('Manifest rows: 2','Unique physical expression inputs: 1','Expression matrices actually read: 1','Cell maps actually read: 1'):
+        for value in ('Manifest rows: 2','Unique input signatures: 1','Unique physical expression inputs: 1','Expression matrices actually read: 1','Cell maps actually read: 1'):
             assert value in pooled_summary, value
         # Corrupt the subordinate mapping; independent manifest reader must reject it.
         mapping.write_text(mapping.read_text()+'\n',encoding='utf-8')

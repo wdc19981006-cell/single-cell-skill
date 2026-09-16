@@ -39,6 +39,11 @@ class LoaderTests(unittest.TestCase):
         r=row(); r.update(local_path='data/GSE999999999/raw/x.h5ad',file_type='10x_h5')
         with self.assertRaisesRegex(ValueError,'H5AD'): validate_manifest([r],self.root)
     def test_h5_routing(self): self.assertEqual(file_type('x_filtered_feature_bc_matrix.h5'),'10x_h5_candidate')
+    def test_fastq_sra_are_not_processed_expression(self):
+        for name in ('reads.fastq','reads.fastq.gz','reads.sra'):
+            self.assertEqual(file_type(name),'raw_reads')
+        r=row(); r['file_type']='raw_reads'; r['local_path']='data/GSE999999999/raw/reads.fastq.gz'
+        with self.assertRaisesRegex(ValueError,'Unsupported file_type'): validate_manifest([r],self.root)
     def test_filtered_precedence(self):
         raw='sample_raw_feature_bc_matrix.h5'; filtered='sample_filtered_feature_bc_matrix.h5'
         self.assertEqual(choose_filtered([raw,filtered]),filtered)

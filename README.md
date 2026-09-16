@@ -27,6 +27,24 @@ manifest 中多个 sample 可以共享一个 pooled expression matrix，但必�
 
 共享矩阵读取后，cell map 的 cell 集合必须与矩阵列精确一致，sample 集合必须与该输入对应的 manifest samples 精确一致。构建器按矩阵列顺序一次性生成 `sample_barcode`，保留一个完整 pooled sparse matrix；不会按 sample 重复读取、不会拆成多个完整矩阵再拼回。多个 pooled 或独立输入在 feature 严格对齐后才合并，最终仍只调用一次 `CreateSeuratObject(min.cells=3, min.features=200)`。
 
+## Input Router 与标准输出
+
+| Input format | Reader | Mapping strategy |
+|---|---|---|
+| 10x trio | `Seurat::Read10X()` | 每个 physical trio 读取一次；单样本加 GSM 前缀 |
+| 10x H5 | schema 检查后 `Seurat::Read10X_h5()` | 单样本前缀或显式 cell map |
+| H5AD / H5AD.gz | 优先 `zellkonverter::readH5AD(reader="R")`，否则仅使用显式配置的 Python anndata | 必须明确 `X`、`raw` 或 counts layer；多样本使用 cell map |
+| Seurat RDS | `readRDS()` 后只提取指定 RNA counts | 丢弃作者对象其余状态，重新建对象 |
+| CSV / TSV / TXT / TXT.GZ | `data.table::fread()` | manifest 明确 delimiter、orientation、feature/drop columns |
+| pooled/shared | 复用底层 reader | 整个矩阵读取一次、cell map 读取一次，不按样本拆矩阵 |
+| expression + separate metadata | expression 走自身 reader | metadata mapper 用明确 cell/sample key 映射 |
+| ZIP / TAR / TGZ | 只提取 manifest 指定 exact member | 提取结果返回真实格式 reader，不建立 archive reader |
+| FASTQ / SRA | V1 不支持定量 | 停止并报告需要 Cell Ranger/STARsolo/alevin |
+
+Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后形成 genes × cells 的 raw integer sparse counts。所有 input 完成 feature reconciliation 后，只调用一次 `CreateSeuratObject()`。
+
+**Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，最终均写为 `data/<GSE>/seurat_raw.rds`：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
+
 在样本资料确实支持这些类别时，用户可回复：
 
 ```text
