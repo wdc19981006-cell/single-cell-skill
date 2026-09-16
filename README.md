@@ -87,6 +87,10 @@ single-cell-skill/
 
 `.workflow/` 保存程序内部记录，包括 cell_map、确认回执、下载来源和详细 summary。Windows 不一定隐藏以点开头的目录；其用途仍是内部工作记录。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 默认只保存在本地。用户明确要求分享时，可将数据包上传到本仓库的 Releases，数据不进入 Git 历史。
 
+## 数据集运行示例
+
+GSE149614 的 pooled count 矩阵与 21 个 GSM 映射流程见 [运行示例](examples/gse149614/README.md)。示例脚本只使用用户确认的 group；运行数据保存在本地 `data/GSE149614/`，不进入 Git 历史。
+
 ## 已发布数据
 
 [GSE231993 v2：修正全局 gene filtering，UC 8 个样本、HC 4 个样本](https://github.com/wdc19981006-cell/single-cell-skill/releases/tag/gse231993-uc8-hc4-v2-20260914)（2026-09-14）：完整数据包包含 36 个 GEO 源表达文件、`seurat_raw.rds`、`sample_info.txt` 和本次运行的 `.workflow` 核心记录，保留 `data/GSE231993/` 布局，附有 SHA256 校验清单。
