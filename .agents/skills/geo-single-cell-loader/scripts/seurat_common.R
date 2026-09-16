@@ -158,6 +158,36 @@ read_expression <- function(row, root) {
       reader_used <- "Python anndata fallback"
     }
   } else if (type == "text") {
+    if (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1")) {
+      if (chosen != "counts" || value(row,"delimiter") != "tab" ||
+          value(row,"orientation") != "genes_by_cells" ||
+          value(row,"feature_column") != "__row_names__" ||
+          nzchar(value(row,"drop_columns"))) {
+        stop("Streaming text reader requires inspected tab-delimited genes_by_cells counts with __row_names__ and no dropped columns")
+      }
+      python <- Sys.getenv("GEO_SINGLE_CELL_PYTHON")
+      if (!nzchar(python) || !file.exists(python)) stop("Set GEO_SINGLE_CELL_PYTHON to a verified Python executable containing NumPy")
+      tmp <- tempfile("geo-text-sparse-")
+      on.exit(unlink(tmp,recursive=TRUE),add=TRUE)
+      helper <- file.path(geo_scripts_dir,"stream_text_to_sparse.py")
+      status <- suppressWarnings(system2(python,shQuote(c(helper,path,tmp)),stdout=TRUE,stderr=TRUE))
+      if (!is.null(attr(status,"status")) && attr(status,"status") != 0L) stop("Streaming text conversion failed: ",paste(status,collapse="\n"))
+      dimensions <- jsonlite::fromJSON(file.path(tmp,"dimensions.json"))
+      if (dimensions$nonzero <= 0 || dimensions$nonzero >= .Machine$integer.max) stop("Invalid sparse matrix nonzero count")
+      for (pair in list(c("i.bin",4),c("j.bin",4),c("x.bin",8))) {
+        expected <- as.numeric(dimensions$nonzero) * as.numeric(pair[2])
+        if (!identical(as.numeric(file.info(file.path(tmp,pair[1]))$size),expected)) stop("Incomplete sparse triplet file: ",pair[1])
+      }
+      genes <- readLines(file.path(tmp,"genes.tsv"),encoding="UTF-8",warn=FALSE)
+      cells <- readLines(file.path(tmp,"cells.tsv"),encoding="UTF-8",warn=FALSE)
+      if (length(genes) != dimensions$genes || length(cells) != dimensions$cells) stop("Sparse matrix dimensions do not match identifiers")
+      i <- readBin(file.path(tmp,"i.bin"),integer(),n=dimensions$nonzero,size=4,endian="little")
+      j <- readBin(file.path(tmp,"j.bin"),integer(),n=dimensions$nonzero,size=4,endian="little")
+      v <- readBin(file.path(tmp,"x.bin"),numeric(),n=dimensions$nonzero,size=8,endian="little")
+      x <- Matrix::sparseMatrix(i=i,j=j,x=v,dims=c(dimensions$genes,dimensions$cells),dimnames=list(genes,cells))
+      rm(i,j,v)
+      reader_used <- "Python NumPy streaming + Matrix::sparseMatrix"
+    } else {
     need("data.table")
     if (chosen != "counts") stop("Text count_source must be counts")
     sep <- switch(value(row,"delimiter"), comma=",", tab="\t", space=" ", stop("Explicit inspected delimiter required"))
@@ -192,6 +222,7 @@ read_expression <- function(row, root) {
     orientation <- value(row,"orientation")
     if (orientation == "cells_by_genes") x <- t(x) else if (orientation != "genes_by_cells") stop("Explicit inspected orientation required")
     x <- Matrix::Matrix(x, sparse=TRUE); reader_used <- "data.table::fread"
+    }
   } else if (type == "rds") {
     object <- readRDS(path)
     if (!inherits(object,"Seurat")) stop("Unsupported RDS class: ", paste(class(object),collapse=", "))

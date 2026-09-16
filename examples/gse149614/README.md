@@ -21,7 +21,7 @@ Sources: [GEO GSE149614](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1
 3. Show all 21 samples and ask the user to assign `group`. Save their literal reply and an exact GSM-to-group map in `data/GSE149614/.workflow/group_confirmation.json` with `confirmed_by: "user"`. Do not derive group from `site`, `patient`, diagnosis, or sample suffix. Every GSM needs one nonblank group.
 4. Run `prepare.py prepare`. It writes one exhaustive `cell_map.csv` and adds the shared count-file download plan to every report row. Then build and validate the canonical manifest.
 5. Run `download_processed.py` on the validated manifest. It downloads the count file once under `raw/` and records SHA256, size, URL, and UTC time in `.workflow/download.json`. Run `prepare.py verify-download` to compare all matrix-header cell IDs with the public metadata and check its full row layout and gzip integrity.
-6. Check R dependencies, then build and independently validate `seurat_raw.rds`. The Skill creates only a raw RNA counts layer with `min.cells=3` and `min.features=200`; no normalization or downstream analysis is part of this run.
+6. Check R dependencies, then build and independently validate `seurat_raw.rds`. For this large text matrix, set `GEO_SINGLE_CELL_STREAM_TEXT=1` and `GEO_SINGLE_CELL_PYTHON` to a verified Python with NumPy. The reader scans the gzip once, writes only nonzero triplets to a temporary directory, constructs a sparse matrix in R, then removes the temporary files. The Skill creates only a raw RNA counts layer with `min.cells=3` and `min.features=200`; no normalization or downstream analysis is part of this run.
 
 From the repository root on this Windows Git Bash setup, with the repository path adjusted if needed:
 
@@ -46,11 +46,18 @@ curl --fail --location \
 "$PY" "$ROOT/.agents/skills/geo-single-cell-loader/scripts/download_processed.py" \
   data/GSE149614/.workflow/sample_manifest.csv
 "$PY" "$ROOT/examples/gse149614/prepare.py" verify-download
-"$RS" .agents/skills/geo-single-cell-loader/scripts/check_dependencies.R
+LC_ALL= LC_CTYPE= "$RS" .agents/skills/geo-single-cell-loader/scripts/check_dependencies.R
+LC_ALL= LC_CTYPE= GEO_SINGLE_CELL_STREAM_TEXT=1 GEO_SINGLE_CELL_PYTHON=C:/Python312/python.exe \
 "$RS" .agents/skills/geo-single-cell-loader/scripts/build_seurat.R \
   . data/GSE149614/.workflow/sample_manifest.csv
-"$RS" .agents/skills/geo-single-cell-loader/scripts/validate_seurat.R \
+LC_ALL= LC_CTYPE= "$RS" .agents/skills/geo-single-cell-loader/scripts/validate_seurat.R \
   . data/GSE149614/.workflow/sample_manifest.csv data/GSE149614/seurat_raw.rds
 ```
 
-The pooled text matrix has roughly 1.85 billion numeric fields. The current text reader materializes a dense table before sparse conversion, so Seurat construction may need more memory than this machine provides. Verify memory before starting the R build; retain the verified downloaded counts and record `BUILD_FAILED` if the build cannot finish. Do not silently subsample cells or genes. Runtime data under `data/` are ignored by Git; only this run logic belongs in the repository history.
+The pooled text matrix has roughly 1.85 billion numeric fields. The streaming reader avoids materializing all zeros, but its temporary triplets and sparse conversion still need substantial disk and memory. It checks integer, finite, nonnegative counts, unique gene/cell IDs, and row widths before Seurat construction. No cells or genes are subsampled. Runtime data under `data/` are ignored by Git; only this run logic belongs in the repository history.
+
+## Verified local run (2026-09-16)
+
+The downloaded count gzip was 165,349,783 bytes, SHA256 `6010d634ad9a22f30b3331d2dfbbdd7934b52aae54e25182d93c69c451ab46bf`. Full decompression and layout checks found 25,712 source genes and 71,915 cells. The final `seurat_raw.rds` is 352,202,611 bytes; independent validation found one raw RNA counts layer, 25,479 genes retained by `min.cells=3`, all 71,915 cells retained by `min.features=200`, and exact cell-to-GSM metadata alignment. Group cell counts: primary tumor 34,414; adjacent non-tumor liver 28,687; PVTT 5,971; metastatic lymph node 2,843. Seurat replaced underscores in some feature names with dashes; the untouched source matrix remains under `raw/`.
+
+On this Windows Git Bash installation, `LC_ALL=C.UTF-8` and `LC_CTYPE=C.UTF-8` prevented R from reading the Chinese group labels in the CSV manifest. The run commands above clear those inherited variables for R only.

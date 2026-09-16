@@ -77,7 +77,7 @@ withCallingHandlers({
     "Cells per sample:",capture.output(table(seurat$sample)),"Cells per group:",capture.output(table(seurat$group)),
     paste("tissue:",paste(unique(m$tissue),collapse=", ")),paste("disease:",paste(unique(m$disease),collapse=", ")),paste("source_type:",paste(unique(m$source_type),collapse=", ")),
     paste("Optional metadata:",paste(optional,collapse=", ")),"Inputs and selected count matrices:",input_records,
-    "Reader policy: text inputs use data.table::fread; other routes load only their own dependencies. Exact reader is recorded per physical input.",
+    "Reader policy: text inputs use data.table::fread by default; GEO_SINGLE_CELL_STREAM_TEXT=1 uses NumPy streaming for the inspected tabular layout. Exact reader is recorded per physical input.",
     "Input routing:",paste("Manifest rows:",prepared$manifest_rows),paste("Unique input signatures:",prepared$unique_inputs),
     paste("Unique physical expression inputs:",prepared$unique_inputs),
     paste("Expression matrices actually read:",prepared$reader_calls),paste("Cell maps actually read:",prepared$cell_map_reads),
