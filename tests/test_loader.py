@@ -11,7 +11,7 @@ from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / '.agents/skills/geo-single-cell-loader/scripts'
 sys.path.insert(0, str(SCRIPTS))
-from common import detect_trio, file_type, choose_filtered, local, read_csv, validate_manifest, verify_confirmation, write_csv
+from common import detect_trio, file_type, choose_filtered, local, read_csv, validate_manifest, verify_confirmation, write_csv, rank_raw_count_candidates, select_verified_raw_counts
 from build_manifest import confirm
 from download_processed import extract_member, run, sha256
 from inspect_geo import inspect, parse_soft, propose_input
@@ -39,6 +39,25 @@ class LoaderTests(unittest.TestCase):
         r=row(); r.update(local_path='data/GSE999999999/raw/x.h5ad',file_type='10x_h5')
         with self.assertRaisesRegex(ValueError,'H5AD'): validate_manifest([r],self.root)
     def test_h5_routing(self): self.assertEqual(file_type('x_filtered_feature_bc_matrix.h5'),'10x_h5_candidate')
+    def test_binary_raw_count_priority_and_text_fallback(self):
+        txt={'url':'https://example.org/study_raw_UMI_matrix.txt.gz'}
+        rds={'url':'https://example.org/study_raw_UMI_matrix.rds.gz'}
+        normalized={'url':'https://example.org/study_normalized_log2TPM_matrix.rds.gz'}
+        self.assertEqual(file_type(rds['url']),'rds')
+        self.assertEqual(rank_raw_count_candidates([txt, normalized, rds]),[rds, txt])
+        calls=[]
+        def rejected_binary(item):
+            calls.append(item)
+            if item is rds: raise ValueError('Unsupported RDS class: data.frame')
+            return {'raw_counts': True, 'reason': 'integer TXT counts verified'}
+        selected, attempts=select_verified_raw_counts([txt, normalized, rds],rejected_binary)
+        self.assertIs(selected,txt)
+        self.assertEqual(calls,[rds,txt])
+        self.assertEqual([a['status'] for a in attempts],['rejected','selected'])
+        self.assertIn('data.frame',attempts[0]['reason'])
+        selected, attempts=select_verified_raw_counts([txt,rds],lambda item: {'raw_counts': True, 'sparse': True, 'reason': 'verified sparse matrix'})
+        self.assertIs(selected,rds)
+        self.assertEqual(len(attempts),1)
     def test_fastq_sra_are_not_processed_expression(self):
         for name in ('reads.fastq','reads.fastq.gz','reads.sra'):
             self.assertEqual(file_type(name),'raw_reads')

@@ -62,8 +62,10 @@ reader_configuration <- function(row) {
 read_signature <- function(row) paste(paste(reader_signature_fields,reader_configuration(row),sep="="),collapse="\034")
 assert_counts <- function(counts) {
   if (length(dim(counts)) != 2L || any(dim(counts) == 0L)) stop("Empty counts matrix")
-  vals <- if (inherits(counts, "sparseMatrix")) counts@x else as.vector(counts)
-  if (!is.numeric(vals) || any(!is.finite(vals)) || any(vals < 0) || any(abs(vals - round(vals)) > 1e-8)) stop("Counts must be finite, nonnegative integers; normalized data unsupported")
+  vals <- if (inherits(counts, "sparseMatrix")) {
+    if ("x" %in% methods::slotNames(counts)) counts@x else 1L
+  } else as.vector(counts)
+  if (!(is.numeric(vals) || is.logical(vals)) || any(!is.finite(vals)) || any(vals < 0) || any(abs(vals - round(vals)) > 1e-8)) stop("Counts must be finite, nonnegative integers; normalized data unsupported")
   if (is.null(rownames(counts)) || is.null(colnames(counts)) || any(blank(rownames(counts))) || any(blank(colnames(counts))) || anyDuplicated(rownames(counts)) || anyDuplicated(colnames(counts))) stop("Missing/duplicate gene or cell IDs")
   counts
 }
@@ -86,7 +88,7 @@ stream_text_candidate <- function(row, source_bytes) {
 route_input <- function(row, root) {
   type <- value(row,"file_type")
   if (type %in% c("fastq","sra","raw_reads")) stop("Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.")
-  routes <- c(`10x_mtx`="Seurat::Read10X",`10x_h5`="Seurat::Read10X_h5",h5ad="H5AD explicit counts source",text="data.table::fread",rds="readRDS/Seurat counts extraction")
+  routes <- c(`10x_mtx`="Seurat::Read10X",`10x_h5`="Seurat::Read10X_h5",h5ad="H5AD explicit counts source",text="data.table::fread",rds="readRDS/validated raw counts")
   if (!type %in% names(routes)) stop("Unsupported input format: ", type)
   path <- repo_path(root, row$local_path, paste0("data/", row$database,"/raw"))
   if (type == "text") {
@@ -108,10 +110,10 @@ source_size_bytes <- function(path) {
   sizes <- file.info(files)$size
   as.numeric(sum(sizes[is.finite(sizes)],na.rm=TRUE))
 }
-reader_contract <- function(counts, reader, route) {
+reader_contract <- function(counts, reader, route, read_timings=list()) {
   counts <- as_sparse_counts(counts)
   list(counts=counts,reader=reader,input_signature=route$input_signature,source_path=route$source_path,
-    source_size_bytes=source_size_bytes(route$source_path),input_cells=ncol(counts),input_features=nrow(counts),original_cell_ids=colnames(counts))
+    source_size_bytes=source_size_bytes(route$source_path),input_cells=ncol(counts),input_features=nrow(counts),original_cell_ids=colnames(counts),read_timings=read_timings)
 }
 read_expression <- function(row, root) {
   need(c("Seurat", "Matrix"))
@@ -119,6 +121,7 @@ read_expression <- function(row, root) {
   path <- route$source_path
   type <- route$file_type
   chosen <- row$count_source
+  read_timings <- list()
   if (type == "10x_mtx") {
     if (chosen != "counts") stop("10x count_source must be counts")
     hits <- function(names) unlist(lapply(names, function(n) c(file.path(path,n),file.path(path,paste0(n,".gz")))))
@@ -239,22 +242,41 @@ read_expression <- function(row, root) {
     x <- Matrix::Matrix(x, sparse=TRUE); reader_used <- "data.table::fread"
     }
   } else if (type == "rds") {
-    object <- readRDS(path)
-    if (!inherits(object,"Seurat")) stop("Unsupported RDS class: ", paste(class(object),collapse=", "))
-    assay <- value(row,"assay","RNA")
-    if (!assay %in% names(object@assays)) stop("Requested RDS assay missing")
-    if (inherits(object[[assay]],"Assay5")) {
-      layers <- SeuratObject::Layers(object[[assay]])
-      count_layers <- layers[startsWith(layers,"counts")]
-      if (length(count_layers) != 1L || !identical(count_layers,"counts") || chosen != "counts") stop("Select the single explicit counts layer; split RDS counts layers must first be resolved")
-      x <- SeuratObject::LayerData(object, assay=assay, layer=chosen)
-    } else {
-      if (chosen != "counts") stop("Legacy RDS requires counts")
-      x <- SeuratObject::GetAssayData(object, assay=assay, slot="counts")
+    if (chosen != "counts") stop("RDS count_source must be counts")
+    rds_path <- path
+    read_timings$gunzip_seconds <- 0
+    if (grepl("\\.rds\\.gz$",path,ignore.case=TRUE)) {
+      rds_path <- tempfile("geo-rds-",fileext=".rds")
+      on.exit(unlink(rds_path),add=TRUE)
+      started <- proc.time()[["elapsed"]]
+      input <- gzfile(path,"rb"); output <- file(rds_path,"wb")
+      tryCatch(repeat {block <- readBin(input,"raw",4L*1024L*1024L); if (!length(block)) break; writeBin(block,output)},
+               finally={close(input);close(output)})
+      read_timings$gunzip_seconds <- unname(proc.time()[["elapsed"]]-started)
     }
-    reader_used <- "readRDS/Seurat counts extraction"
+    started <- proc.time()[["elapsed"]]
+    object <- readRDS(rds_path)
+    read_timings$read_rds_seconds <- unname(proc.time()[["elapsed"]]-started)
+    if (inherits(object,"Seurat")) {
+      assay <- value(row,"assay","RNA")
+      if (!assay %in% names(object@assays)) stop("Requested RDS assay missing")
+      if (inherits(object[[assay]],"Assay5")) {
+        layers <- SeuratObject::Layers(object[[assay]])
+        count_layers <- layers[startsWith(layers,"counts")]
+        if (length(count_layers) != 1L || !identical(count_layers,"counts")) stop("Select the single explicit counts layer; split RDS counts layers must first be resolved")
+        x <- SeuratObject::LayerData(object, assay=assay, layer=chosen)
+      } else {
+        x <- SeuratObject::GetAssayData(object, assay=assay, slot="counts")
+      }
+      reader_used <- "readRDS/Seurat counts extraction"
+    } else if (inherits(object,"sparseMatrix")) {
+      x <- object
+      reader_used <- "readRDS/sparseMatrix raw counts"
+    } else {
+      stop("Unsupported RDS class: ", paste(class(object),collapse=", "))
+    }
   } else stop("Unsupported input format: ", type)
-  reader_contract(x,reader_used,route)
+  reader_contract(x,reader_used,route,read_timings)
 }
 # Backward-compatible matrix accessor for callers that only need one already-routed input.
 # The build path uses read_expression() once per unique input signature.
@@ -283,6 +305,7 @@ normalize_reader_result <- function(result,row,root) {
     if (!identical(result$input_cells,ncol(result$counts)) || !identical(result$input_features,nrow(result$counts))) stop("Reader contract dimensions are inconsistent")
     if (is.null(result$original_cell_ids)) result$original_cell_ids <- colnames(result$counts)
     if (is.null(result$source_size_bytes)) result$source_size_bytes <- source_size_bytes(result$source_path)
+    if (is.null(result$read_timings)) result$read_timings <- list()
     return(result)
   }
   if (!is.matrix(result) && !inherits(result,"Matrix")) stop("Expression reader must return the reader contract or a matrix")
@@ -374,7 +397,7 @@ prepare_expression_inputs <- function(manifest, root, reader=read_expression, ce
     cell_sample_map <- c(cell_sample_map,mapped$cell_sample_map)
     metrics[[input_index]] <- list(local_path=local_path,file_type=rows$file_type[1],reader=input$reader,input_signature=signature,file_size_bytes=input$source_size_bytes,
       shared_samples=paste(samples,collapse=","),input_features=input$input_features,input_cells=input$input_cells,
-      read_seconds=read_seconds,mapping_seconds=proc.time()[["elapsed"]]-mapping_started)
+      read_seconds=read_seconds,mapping_seconds=proc.time()[["elapsed"]]-mapping_started,read_timings=input$read_timings)
   }
   if (anyDuplicated(names(cell_sample_map))) stop("Cell IDs collide across expression inputs")
   list(counts_list=counts_list,cell_sample_map=cell_sample_map,metrics=metrics,

@@ -42,11 +42,48 @@ def file_type(name):
     if name.endswith(('.h5ad', '.h5ad.gz')): return 'h5ad'
     if name.endswith(('.h5', '.hdf5')): return '10x_h5_candidate'
     if name.endswith(('.mtx', '.mtx.gz')): return '10x_mtx_candidate'
-    if name.endswith('.rds'): return 'rds'
+    if name.endswith(('.rds', '.rds.gz')): return 'rds'
     if name.endswith(('.csv', '.tsv', '.txt', '.csv.gz', '.tsv.gz', '.txt.gz')): return 'text_candidate'
     if name.endswith(('.tar', '.tar.gz', '.tgz', '.zip')): return 'archive'
     if name.endswith(('.fastq', '.fastq.gz', '.sra')): return 'raw_reads'
     return 'unknown'
+
+
+def rank_raw_count_candidates(candidates):
+    """Rank evidenced representations of one raw-count matrix for validation.
+
+    The caller must first establish that candidates represent the same counts;
+    filenames only exclude clearly transformed data and determine format order.
+    """
+    binary = {'rds', '10x_h5_candidate', 'h5ad'}
+    text = {'text_candidate'}
+    ranked = []
+    for item in candidates:
+        url = item['url']
+        name = urlparse(url).path.rsplit('/', 1)[-1]
+        if re.search(r'(^|[_.-])(normalized|normalised|log2?tpm|log1p|log|sct|integrated|scaled|tpm)([_.-]|$)', name, re.I):
+            continue
+        kind = file_type(name)
+        if kind in binary | text:
+            ranked.append((0 if kind in binary else 1, item))
+    return [item for _, item in sorted(ranked, key=lambda pair: pair[0])]
+
+
+def select_verified_raw_counts(candidates, validate):
+    """Try binary formats first; accept only a verified sparse/raw result."""
+    attempts = []
+    for item in rank_raw_count_candidates(candidates):
+        kind = file_type(urlparse(item['url']).path)
+        try:
+            evidence = validate(item)
+            if not evidence.get('raw_counts') or (kind != 'text_candidate' and not evidence.get('sparse')):
+                raise ValueError('candidate is not verified sparse raw counts')
+        except Exception as error:
+            attempts.append({'url': item['url'], 'status': 'rejected', 'reason': str(error)})
+            continue
+        attempts.append({'url': item['url'], 'status': 'selected', 'reason': evidence.get('reason', 'validated raw counts')})
+        return item, attempts
+    raise ValueError('No verified raw-count input; attempts: ' + str(attempts))
 
 def choose_filtered(names):
     """Caller must first scope candidates to ONE evidenced sample."""

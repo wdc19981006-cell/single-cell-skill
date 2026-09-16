@@ -50,6 +50,9 @@ def run(gse, root=ROOT, rscript="Rscript"):
             profile = json.loads(build_profile.read_text(encoding="utf-8"))
             profile["independent_validation_seconds"] = independent_validation_seconds
             profile["pipeline_total_seconds"] = time.perf_counter() - run_started
+            probe = workflow / "candidate_probe.json"
+            if probe.exists():
+                profile["candidate_probe"] = json.loads(probe.read_text(encoding="utf-8"))
             build_profile.write_text(json.dumps(profile, indent=2), encoding="utf-8")
         (workflow / "validation.json").write_text(json.dumps({
             "status": "success", "validator": "validate_seurat.R",

@@ -45,6 +45,38 @@ expect_error(validate_object(author))
 localrds <- file.path(root,"data/GSE999999999/raw/input.rds"); saveRDS(author,localrds)
 row <- m[1,,drop=FALSE]; row$local_path <- "data/GSE999999999/raw/input.rds"; row$file_type <- "rds"
 stopifnot(ncol(read_counts(row,root))==4L)
+sparse <- counts[[1]]
+saveRDS(sparse,file.path(root,"data/GSE999999999/raw/sparse_counts.rds"))
+sparse_row <- row; sparse_row$local_path <- "data/GSE999999999/raw/sparse_counts.rds"
+sparse_result <- read_expression(sparse_row,root)
+stopifnot(identical(as.matrix(sparse_result$counts),as.matrix(sparse)),
+          identical(sparse_result$reader,"readRDS/sparseMatrix raw counts"),
+          identical(sparse_result$read_timings$gunzip_seconds,0),
+          is.numeric(sparse_result$read_timings$read_rds_seconds))
+logical_sparse <- sparse != 0
+saveRDS(logical_sparse,file.path(root,"data/GSE999999999/raw/sparse_counts.rds"))
+stopifnot(identical(as.matrix(read_counts(sparse_row,root)),1 * as.matrix(logical_sparse)))
+saveRDS(sparse,file.path(root,"data/GSE999999999/raw/sparse_counts.rds"))
+gz_path <- file.path(root,"data/GSE999999999/raw/sparse_counts.rds.gz")
+con <- gzfile(gz_path,"wb"); saveRDS(sparse,con); close(con)
+gz_row <- sparse_row; gz_row$local_path <- "data/GSE999999999/raw/sparse_counts.rds.gz"
+gz_result <- read_expression(gz_row,root)
+stopifnot(identical(as.matrix(gz_result$counts),as.matrix(sparse)),
+          is.numeric(gz_result$read_timings$gunzip_seconds),
+          is.numeric(gz_result$read_timings$read_rds_seconds))
+bad_sparse <- sparse; bad_sparse@x[1] <- -1
+saveRDS(bad_sparse,file.path(root,"data/GSE999999999/raw/bad_sparse.rds"))
+bad_row <- sparse_row; bad_row$local_path <- "data/GSE999999999/raw/bad_sparse.rds"
+expect_error(read_counts(bad_row,root))
+bad_sparse <- sparse; bad_sparse@x[1] <- 1.5
+saveRDS(bad_sparse,file.path(root,"data/GSE999999999/raw/bad_sparse.rds"))
+expect_error(read_counts(bad_row,root))
+bad_sparse <- sparse; rownames(bad_sparse)[2] <- rownames(bad_sparse)[1]
+saveRDS(bad_sparse,file.path(root,"data/GSE999999999/raw/bad_sparse.rds"))
+expect_error(read_counts(bad_row,root))
+bad_sparse <- sparse; colnames(bad_sparse)[2] <- colnames(bad_sparse)[1]
+saveRDS(bad_sparse,file.path(root,"data/GSE999999999/raw/bad_sparse.rds"))
+expect_error(read_counts(bad_row,root))
 prepared <- prepare_expression_inputs(row,root)
 clean <- combine_counts_and_create(prepared$counts_list,prepared$cell_sample_map,row$database)
 clean <- map_metadata(clean,row,unname(prepared$cell_sample_map[SeuratObject::Cells(clean)]))
@@ -55,4 +87,5 @@ split_author[["RNA"]] <- split(split_author[["RNA"]],f=c("A","A","B","B"))
 saveRDS(split_author,file.path(root,"data/GSE999999999/raw/split_input.rds"))
 split_row <- row; split_row$local_path <- "data/GSE999999999/raw/split_input.rds"; expect_error(read_counts(split_row,root))
 saveRDS(list(counts=counts[[1]]),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); row$local_path <- "data/GSE999999999/raw/not_seurat.rds"; expect_error(read_counts(row,root))
-cat("PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, clean RDS rebuild and split-layer rejection.\n")
+saveRDS(data.frame(gene=c(0L,1L)),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); expect_error(read_counts(row,root))
+cat("PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.\n")

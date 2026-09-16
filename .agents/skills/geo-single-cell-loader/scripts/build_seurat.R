@@ -66,7 +66,9 @@ withCallingHandlers({
     c(paste0("Input ",i,":"),paste("local_path:",detail$local_path),paste("file_type:",detail$file_type),paste("reader:",detail$reader),
       paste("input_signature:",gsub("\034"," | ",detail$input_signature,fixed=TRUE)),paste("file_size_bytes:",detail$file_size_bytes),
       paste("shared_samples:",detail$shared_samples),paste("input_features:",detail$input_features),paste("input_cells:",detail$input_cells),
-      paste("read_seconds:",fmt_seconds(detail$read_seconds)),paste("mapping_seconds:",fmt_seconds(detail$mapping_seconds)))
+      paste("read_seconds:",fmt_seconds(detail$read_seconds)),paste("mapping_seconds:",fmt_seconds(detail$mapping_seconds)),
+      if (length(detail$read_timings)) c(paste("gunzip_seconds:",fmt_seconds(detail$read_timings$gunzip_seconds)),
+                                        paste("read_rds_seconds:",fmt_seconds(detail$read_timings$read_rds_seconds))) else character())
   }))
   total_build_seconds <- seconds_since(total_started)
   summary <- c(paste("GSE:",gse),paste("Created UTC:",format(Sys.time(),tz="UTC",usetz=TRUE)),paste("R:",R.version.string),paste("Seurat:",packageVersion("Seurat")),paste("SeuratObject:",packageVersion("SeuratObject")),
@@ -103,6 +105,8 @@ withCallingHandlers({
   write.csv(routing,file.path(workflow,"input_routing.csv"),row.names=FALSE,na="")
   build_profile <- list(manifest_read_seconds=manifest_read_seconds,
     read_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"read_seconds")),
+    gunzip_seconds=sum(vapply(prepared$metrics,function(detail) if(length(detail$read_timings)) detail$read_timings$gunzip_seconds else 0,numeric(1))),
+    read_rds_seconds=sum(vapply(prepared$metrics,function(detail) if(length(detail$read_timings)) detail$read_timings$read_rds_seconds else 0,numeric(1))),
     mapping_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"mapping_seconds"))+metadata_mapping_seconds,
     feature_alignment_seconds=feature_alignment_seconds,combine_seconds=matrix_combine_seconds,
     create_seurat_object_seconds=create_seurat_seconds,validation_seconds=validation_seconds,
