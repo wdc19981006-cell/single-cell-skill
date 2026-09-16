@@ -85,7 +85,8 @@ def validate_manifest(rows, root):
         for field in OPTIONAL:
             if not missing(row.get(field)) and missing(row.get(field + '_evidence')): raise ValueError('Missing evidence for ' + field)
         if not missing(row.get('cell_map_path')):
-            cellmap = local(root, row['cell_map_path'], area + '/.workflow')
+            permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
+            cellmap = local(root, row['cell_map_path'], permitted)
             if missing(row.get('cell_map_md5')) or not cellmap.is_file() or digest(cellmap) != row['cell_map_md5']:
                 raise ValueError('Cell map missing or changed; review and reconfirm')
         files = json.loads(row.get('files_json') or '[]')

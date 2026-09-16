@@ -51,6 +51,7 @@ withCallingHandlers({
   partial <- file.path(workflow,"seurat_raw.pending.rds")
   serialization_started <- proc.time()[["elapsed"]]
   saveRDS(seurat,partial)
+  save_rds_seconds <- seconds_since(serialization_started)
   serialized <- readRDS(partial)
   serialization_seconds <- seconds_since(serialization_started)
   validation_started <- proc.time()[["elapsed"]]
@@ -92,6 +93,26 @@ withCallingHandlers({
   download_log <- file.path(workflow,"download.json")
   summary <- c(summary,if(file.exists(download_log)) readLines(download_log,warn=FALSE) else "Local inputs: download date unavailable; not downloaded by this run.","Warnings:",if(length(warnings_seen)) unique(warnings_seen) else "None",capture.output(sessionInfo()))
   writeLines(enc2utf8(summary),file.path(workflow,"run_summary.txt"),useBytes=TRUE)
+  routing <- do.call(rbind,lapply(prepared$metrics,function(detail) data.frame(
+    local_path=detail$local_path,file_type=detail$file_type,reader=detail$reader,
+    unique_inputs=prepared$unique_inputs,expression_reads=prepared$reader_calls,cell_map_reads=prepared$cell_map_reads,
+    features=detail$input_features,cells=detail$input_cells,read_seconds=detail$read_seconds,
+    mapping_seconds=detail$mapping_seconds,
+    dense_conversion=if (identical(detail$reader,"data.table::fread")) "yes" else if (grepl("H5AD|readRDS",detail$reader)) "unknown" else "no",
+    stringsAsFactors=FALSE)))
+  write.csv(routing,file.path(workflow,"input_routing.csv"),row.names=FALSE,na="")
+  build_profile <- list(manifest_read_seconds=manifest_read_seconds,
+    read_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"read_seconds")),
+    mapping_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"mapping_seconds"))+metadata_mapping_seconds,
+    feature_alignment_seconds=feature_alignment_seconds,combine_seconds=matrix_combine_seconds,
+    create_seurat_object_seconds=create_seurat_seconds,validation_seconds=validation_seconds,
+    save_rds_seconds=save_rds_seconds,serialized_read_seconds=serialization_seconds-save_rds_seconds,total_seconds=total_build_seconds,
+    seurat_object_bytes=as.numeric(object.size(seurat)),merged_sparse_matrix_bytes=as.numeric(object.size(merged_counts)),
+    gc_estimated_used_mb=as.numeric(sum(gc()[,"used"]*c(56,8))/1048576))
+  jsonlite::write_json(build_profile,file.path(workflow,"build_profile.json"),auto_unbox=TRUE,pretty=TRUE)
+  write.csv(data.frame(sample=names(retained),cells=as.integer(retained),
+    group=m$group[match(names(retained),m$sample)],stringsAsFactors=FALSE),
+    file.path(workflow,"sample_summary.csv"),row.names=FALSE)
   if (!file.rename(partial,final)) stop("Could not finalize validated RDS")
   update_sample_info(out,"COMPLETE",m,seurat,input_records,warnings_seen)
 },warning=function(w) {warnings_seen <<- c(warnings_seen,conditionMessage(w))})

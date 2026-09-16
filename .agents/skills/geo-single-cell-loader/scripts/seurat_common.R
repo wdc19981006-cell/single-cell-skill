@@ -45,7 +45,8 @@ read_manifest <- function(path, root) {
     rows <- m[!blank(m$cell_map_path) & m$cell_map_path == relative,,drop=FALSE]
     expected <- unique(vapply(seq_len(nrow(rows)),function(i) value(rows[i,,drop=FALSE],"cell_map_md5"),character(1)))
     if (length(expected) != 1L || !nzchar(expected)) stop("Shared cell map has inconsistent or missing confirmation hash")
-    cellmap <- repo_path(root,relative,paste0("data/",rows$database[1],"/.workflow"))
+    area <- paste0("data/",rows$database[1],if (startsWith(relative,paste0("data/",rows$database[1],"/cell_map/"))) "/cell_map" else "/.workflow")
+    cellmap <- repo_path(root,relative,area)
     if (!identical(unname(tools::md5sum(cellmap)),expected)) stop("Cell map changed; review and reconfirm")
   }
   m
@@ -73,12 +74,26 @@ select_rna <- function(x) {
   }
   x
 }
+stream_text_candidate <- function(row, source_bytes) {
+  value(row,"count_source") == "counts" &&
+    value(row,"delimiter") == "tab" &&
+    value(row,"orientation") == "genes_by_cells" &&
+    value(row,"feature_column") == "__row_names__" &&
+    !nzchar(value(row,"drop_columns")) &&
+    (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1") ||
+     (is.finite(source_bytes) && source_bytes >= 256 * 1024^2))
+}
 route_input <- function(row, root) {
   type <- value(row,"file_type")
   if (type %in% c("fastq","sra","raw_reads")) stop("Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.")
   routes <- c(`10x_mtx`="Seurat::Read10X",`10x_h5`="Seurat::Read10X_h5",h5ad="H5AD explicit counts source",text="data.table::fread",rds="readRDS/Seurat counts extraction")
   if (!type %in% names(routes)) stop("Unsupported input format: ", type)
   path <- repo_path(root, row$local_path, paste0("data/", row$database,"/raw"))
+  if (type == "text") {
+    size <- file.info(path)$size
+    if (stream_text_candidate(row,size))
+      routes[["text"]] <- "Python NumPy streaming + Matrix::sparseMatrix"
+  }
   list(file_type=type,reader=unname(routes[[type]]),source_path=path,input_signature=read_signature(row))
 }
 as_sparse_counts <- function(counts) {
@@ -158,7 +173,7 @@ read_expression <- function(row, root) {
       reader_used <- "Python anndata fallback"
     }
   } else if (type == "text") {
-    if (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1")) {
+    if (identical(route$reader,"Python NumPy streaming + Matrix::sparseMatrix")) {
       if (chosen != "counts" || value(row,"delimiter") != "tab" ||
           value(row,"orientation") != "genes_by_cells" ||
           value(row,"feature_column") != "__row_names__" ||
@@ -284,7 +299,9 @@ map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=defau
   if (any(nzchar(map_values)) && length(unique(map_values[nzchar(map_values)])) != 1L) stop("Shared input requires one consistent cell_map_path across manifest rows.")
   cell_map_reads <- 0L
   if (any(nzchar(map_values))) {
-    map_path <- repo_path(root,unique(map_values[nzchar(map_values)]),paste0("data/",rows$database[1],"/.workflow"))
+    relative <- unique(map_values[nzchar(map_values)])
+    area <- paste0("data/",rows$database[1],if (startsWith(relative,paste0("data/",rows$database[1],"/cell_map/"))) "/cell_map" else "/.workflow")
+    map_path <- repo_path(root,relative,area)
     if (exists(map_path,envir=cell_map_cache,inherits=FALSE)) {
       cellmap <- get(map_path,envir=cell_map_cache,inherits=FALSE)
     } else {

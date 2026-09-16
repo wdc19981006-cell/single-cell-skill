@@ -18,6 +18,13 @@ Sys.setenv(GEO_SINGLE_CELL_STREAM_TEXT="1",GEO_SINGLE_CELL_PYTHON=args[2])
 row <- data.frame(database="GSE999999999",sample="GSM1",local_path="data/GSE999999999/raw/counts.txt.gz",
   file_type="text",count_source="counts",delimiter="tab",orientation="genes_by_cells",
   feature_column="__row_names__",drop_columns="",stringsAsFactors=FALSE)
+Sys.unsetenv("GEO_SINGLE_CELL_STREAM_TEXT")
+stopifnot(stream_text_candidate(row,256 * 1024^2),
+          !stream_text_candidate(row,256 * 1024^2 - 1))
+other_shape <- row
+other_shape$orientation <- "cells_by_genes"
+stopifnot(!stream_text_candidate(other_shape,256 * 1024^2))
+Sys.setenv(GEO_SINGLE_CELL_STREAM_TEXT="1")
 result <- read_expression(row,fixture)
 expected <- matrix(c(0,4,0,2,0,0,0,6,7),nrow=3,
                    dimnames=list(c("g1","g2","g3"),c("c1","c2","c3")))

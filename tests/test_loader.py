@@ -212,6 +212,10 @@ class LoaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'provenance'): run(manifest,self.root)
         log=json.loads((self.workflow/'download.json').read_text())
         self.assertTrue(all(key in log[0] for key in ('url','sha256','bytes','downloaded_at','local_path')))
+        profile=read_csv(self.workflow/'download_profile.csv')
+        self.assertEqual([entry['status'] for entry in profile],['DOWNLOADED','REUSED'])
+        self.assertTrue(all(entry['sha_seconds'] for entry in profile))
+        self.assertEqual(profile[0]['retry'],'0')
         self.assertFalse(list((self.workflow.parent/'raw').rglob('*.json')))
         self.assertEqual((self.root/target).read_bytes(),b'changed')
 

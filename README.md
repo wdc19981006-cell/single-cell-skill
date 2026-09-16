@@ -64,28 +64,24 @@ single-cell-skill/
 │       ├── raw/
 │       ├── seurat_raw.rds
 │       ├── sample_info.txt
-│       └── .workflow/
-│           ├── inspection.json
-│           ├── sample_report.csv
-│           ├── group_confirmation.json
-│           ├── sample_manifest.csv
-│           ├── sample_manifest.confirmation.json
-│           ├── download.json
-│           └── run_summary.txt
+│       ├── group_confirmation.json
+│       └── cell_map/             # 仅在重建对象需要时
 ├── tests/
 ├── README.md
 └── .gitignore
 ```
 
-日常关注三个内容：
+运行完成后关注这些本地文件：
 
 | 内容 | 用途 |
 |---|---|
 | `raw/` | 从 GEO 下载且未经本 Skill 修改的源 expression 文件。这里的 raw 不一定表示测序 FASTQ raw reads；GEO 的 processed counts 也放在这里。10x 三联/H5 按样本存放，pooled H5AD 可以共用一个源文件。 |
 | `seurat_raw.rds` | 仅从明确的 counts 构建并验证的 Seurat 对象。已有文件不会静默覆盖。 |
 | `sample_info.txt` | UTF-8 纯文本说明，记录研究、样本、用户分组、运行状态及最终统计。 |
+| `group_confirmation.json` | 用户确认的精确分组映射。 |
+| `cell_map/` | 仅在 pooled 矩阵或独立映射文件重建对象时保留。 |
 
-`.workflow/` 保存程序内部记录，包括 cell_map、确认回执、下载来源和详细 summary。Windows 不一定隐藏以点开头的目录；其用途仍是内部工作记录。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 默认只保存在本地。用户明确要求分享时，可将数据包上传到本仓库的 Releases，数据不进入 Git 历史。
+`.workflow/` 只在运行期间暂存发现、确认回执、manifest、下载来源和审计文件。每次真实 GSE 运行结束会将 10 个审计文件推送到独立私有仓库 [single-cell-skill-audit](https://github.com/wdc19981006-cell/single-cell-skill-audit) 的 `<GSE>/<run-id>/`；上传成功后清理本地临时文件。失败或中断也上传；上传失败则保留临时文件以便重试。表达矩阵、RDS、H5/H5AD 不进入审计仓库。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 默认只保存在本地。用户明确要求分享时，可将数据包上传到本仓库的 Releases，数据不进入 Git 历史。
 
 ## 数据集运行示例
 
@@ -140,6 +136,7 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 # 将变量设置为本机已验证的 Python 与 Rscript 可执行文件绝对路径。
 $Scripts = '.agents/skills/geo-single-cell-loader/scripts'
 $Workflow = 'data/GSE231993/.workflow'
+& $PythonExe "$Scripts/audit_run.py" start GSE231993
 & $RscriptExe "$Scripts/check_dependencies.R"
 # 仅在真实 geo MCP 调用失败时使用，并记录实际原因：
 & $PythonExe "$Scripts/inspect_geo.py" GSE231993 --fallback-reason "geo/get_geo_info tool error: <actual error>"
@@ -148,9 +145,8 @@ $Workflow = 'data/GSE231993/.workflow'
 # 用户确认 group，并保存 group_confirmation.json 后：
 & $PythonExe "$Scripts/build_manifest.py" --report "$Workflow/sample_report.csv" --confirmation "$Workflow/group_confirmation.json" --output "$Workflow/sample_manifest.csv"
 & $PythonExe "$Scripts/build_manifest.py" --validate "$Workflow/sample_manifest.csv"
-& $PythonExe "$Scripts/download_processed.py" "$Workflow/sample_manifest.csv"
-& $RscriptExe "$Scripts/build_seurat.R" . "$Workflow/sample_manifest.csv"
-& $RscriptExe "$Scripts/validate_seurat.R" . "$Workflow/sample_manifest.csv" data/GSE231993/seurat_raw.rds
+$env:GEO_RSCRIPT = $RscriptExe
+& $PythonExe "$Scripts/run_confirmed.py" GSE231993
 ```
 
 测试：
