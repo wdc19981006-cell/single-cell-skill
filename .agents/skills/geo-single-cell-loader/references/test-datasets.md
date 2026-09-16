@@ -14,7 +14,7 @@ GEO Series `RAW.tar` may contain processed files, so do not classify it as FASTQ
 Run metadata-only discovery:
 
 ```text
-<python-executable> .agents/skills/geo-single-cell-loader/scripts/inspect_geo.py GSE231993
+<python-executable> .agents/skills/geo-single-cell-loader/scripts/inspect_geo.py GSE231993 --fallback-reason "geo MCP real call failed: <actual error>"
 ```
 
 Repeat for the other accessions when needed. A `--max-samples 2` development probe is incomplete and isolated under `data/<GSE>/.workflow/development/`; it cannot replace the full inventory or authorize a manifest. Complete discovery writes `.workflow/inspection.json`, `.workflow/sample_report.csv` and the visible `sample_info.txt`. The report has no group column; fill biological fields only from evidence and refresh the TXT before presenting the complete report to a user.

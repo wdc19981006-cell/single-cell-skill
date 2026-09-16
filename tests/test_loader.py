@@ -15,6 +15,7 @@ from common import detect_trio, file_type, choose_filtered, local, read_csv, val
 from build_manifest import confirm
 from download_processed import extract_member, run, sha256
 from inspect_geo import inspect, parse_soft, propose_input
+from stage_a_policy import discover_known_gse
 from sample_info import render
 
 def row(sample='GSM2'):
@@ -123,9 +124,12 @@ class LoaderTests(unittest.TestCase):
             if acc=='GSE999999999': return '^SERIES = '+acc+'\n!Series_title = Synthetic study\n!Series_sample_id = GSM2\n!Series_sample_id = GSM1', 'https://example.org/'+acc
             return '^SAMPLE = '+acc+'\n!Sample_title = '+acc+'\n!Sample_characteristics_ch1 = disease: synthetic\n!Sample_supplementary_file = https://example.org/'+acc+'_matrix.mtx.gz', 'https://example.org/'+acc
         with patch('inspect_geo.soft',side_effect=soft_mock) as soft, patch('inspect_geo.time.sleep'), patch('download_processed.urllib.request.urlopen',side_effect=AssertionError('No bulk download')):
-            result=inspect('GSE999999999',self.root)
+            result=inspect('GSE999999999',self.root,fallback_reason='geo/get_geo_info tool error: synthetic test')
         self.assertEqual(soft.call_count,3); self.assertTrue(result['complete']); self.assertEqual(result['inspected_samples'],2)
         self.assertTrue((self.workflow/'inspection.json').is_file()); self.assertTrue((self.workflow/'sample_report.csv').is_file())
+        saved=json.loads((self.workflow/'inspection.json').read_text(encoding='utf-8'))
+        self.assertEqual(saved['discovery_method'],'inspect_geo_fallback'); self.assertFalse(saved['mcp_complete'])
+        self.assertIn('tool error',saved['fallback_reason']); self.assertGreaterEqual(saved['discovery_seconds'],0)
         info=(self.workflow.parent/'sample_info.txt').read_text(encoding='utf-8')
         self.assertTrue(info.startswith('STATUS: WAITING_FOR_GROUP_CONFIRMATION'))
         self.assertIn('GSM1',info); self.assertIn('GSM2',info); self.assertNotIn('group:',info)
@@ -163,9 +167,32 @@ class LoaderTests(unittest.TestCase):
         def soft_mock(acc):
             return (f'^SERIES = {acc}\n!Series_sample_id = GSM2\n!Series_sample_id = GSM1' if acc.startswith('GSE') else f'^SAMPLE = {acc}\n!Sample_title = synthetic'), 'https://example.org/'+acc
         with patch('inspect_geo.soft',side_effect=soft_mock),patch('inspect_geo.time.sleep'):
-            result=inspect('GSE999999999',self.root,max_samples=1)
+            result=inspect('GSE999999999',self.root,max_samples=1,fallback_reason='MCP unavailable in current session: synthetic test')
         self.assertFalse(result['complete']); self.assertEqual(sentinel.read_text(),'complete report')
         self.assertTrue((self.workflow/'development/inspection.json').exists())
+
+    def test_stage_a_mcp_success_never_calls_fallback(self):
+        calls=[]
+        def info(gse):
+            calls.append(('get_geo_info',gse))
+            return dict(accession=gse,complete=True,sample_count=2,samples=[dict(accession='GSM1'),dict(accession='GSM2')],source_urls=['https://example.org/series'])
+        def files(gse):
+            calls.append(('list_geo_files',gse))
+            return dict(files=[dict(owner_accession=gse,source_level='GSE',candidate_format='txt',url='https://example.org/counts.tsv.gz')])
+        fallback_calls=[]
+        result=discover_known_gse('GSE181919',info,files,lambda *args: fallback_calls.append(args))
+        self.assertEqual(calls,[('get_geo_info','GSE181919'),('list_geo_files','GSE181919')])
+        self.assertEqual(fallback_calls,[])
+        self.assertEqual(result['discovery_method'],'geo_mcp'); self.assertTrue(result['mcp_complete'])
+        self.assertEqual(result['mcp_tools_used'],['get_geo_info','list_geo_files'])
+
+    def test_stage_a_mcp_failure_calls_fallback_once_with_reason(self):
+        fallback_calls=[]
+        def failed(_): raise RuntimeError('synthetic startup failure')
+        result=discover_known_gse('GSE181919',failed,lambda _: self.fail('list_geo_files must not run'),lambda *args: fallback_calls.append(args) or 'fallback')
+        self.assertEqual(len(fallback_calls),1)
+        self.assertIn('synthetic startup failure',fallback_calls[0][1])
+        self.assertEqual(result['discovery_method'],'inspect_geo_fallback'); self.assertFalse(result['mcp_complete'])
 
     def test_download_reuse_and_checksum_refusal(self):
         r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'

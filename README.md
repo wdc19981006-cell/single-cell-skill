@@ -15,11 +15,17 @@
 5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
 6. 全部结果保存在 `data/<GSE>/`。
 
-## 与全局 GEO MCP 联用
+## GEO MCP-first Stage A
 
-Stage A 优先调用用户级全局 MCP `geo`：关键词检索使用 `search_geo`；已知 GSE 使用 `get_geo_info` 获取完整 Series/GSM 清单，再用 `list_geo_files` 获取带 owner 的公开文件清单；只有 Series 结果缺少某个 GSM 的细节时才补充调用 `get_geo_sample`。只有 `complete=true` 且 `sample_count` 与返回的 GSM 清单一致时，才把 Series 清单视为完整。MCP 只提供公开 metadata 与文件 URL，分组、下载、manifest 和 Seurat 构建仍全部由本 Skill 负责。
+每一次新的 Stage A discovery 都必须首先实际尝试用户级全局 MCP `geo`。关键词检索依次使用 `search_geo`、候选 GSE 的 `get_geo_info`、`list_geo_files`；已知 GSE 直接使用 `get_geo_info` 和 `list_geo_files`。只有完整 Series 结果确实缺少个别 GSM 细节时才调用 `get_geo_sample`，不会对全部 GSM 逐个重复请求。只有 accession 正确、`complete=true`、`sample_count` 与 GSM inventory 一致、source URL 存在，且文件具有明确的 owner/source level/candidate format 时，才接受 MCP 结果。MCP 只提供公开 metadata 与文件 URL，分组、下载、manifest 和 Seurat 构建仍全部由本 Skill 负责。
 
-如果 `geo` MCP 不可用或实际工具调用失败，Skill 才调用 `scripts/inspect_geo.py`。该 fallback 保持独立，MCP 故障不会阻断后续工作流；不能仅因当前会话尚未尝试工具就声称 MCP 不可用。
+MCP 成功后，Stage A 直接用同一套 structured public facts 写入 `inspection.json`、`sample_report.csv` 和 `sample_info.txt`，不会再运行 `inspect_geo.py` 重复查询。只有真实工具不可用、启动/请求错误或 MCP 结果无法补全时才 fallback，并必须通过 `--fallback-reason` 记录实际失败原因。`inspection.json` 用 `discovery_method`、`mcp_tools_used`、`mcp_complete`、起止时间和秒数标识来源；MCP 为 `geo_mcp`，fallback 为 `inspect_geo_fallback`。不能仅因工具尚未调用或老会话未暴露工具就声称 MCP 不可用。
+
+## Pooled/shared matrix handling
+
+manifest 中多个 sample 可以共享一个 pooled expression matrix，但必须共享同一个经过确认的 `cell_map_path`。构建器用包含路径、格式、counts source、分隔符、方向、feature/drop columns 和 assay 的 read signature 检查读取语义；相同路径的配置不一致立即停止。每个唯一物理表达输入只调用一次 reader，每个 shared cell map 也只读取一次。
+
+共享矩阵读取后，cell map 的 cell 集合必须与矩阵列精确一致，sample 集合必须与该输入对应的 manifest samples 精确一致。构建器按矩阵列顺序一次性生成 `sample_barcode`，保留一个完整 pooled sparse matrix；不会按 sample 重复读取、不会拆成多个完整矩阵再拼回。多个 pooled 或独立输入在 feature 严格对齐后才合并，最终仍只调用一次 `CreateSeuratObject(min.cells=3, min.features=200)`。
 
 在样本资料确实支持这些类别时，用户可回复：
 
@@ -96,7 +102,7 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 
 确认回执绑定 manifest 内容 hash；修改后重新确认。下载记录保存 URL、SHA256、bytes、UTC timestamp；重复运行先验证后复用，checksum、来源或 archive member 不一致立即停止，绝不覆盖。归档成员也有独立 SHA256 校验。中断后可利用逐文件保存的 provenance 继续。`files_json=[]` 仅供明确审阅的本地输入，不能用来跳过下载校验。
 
-支持 10x 三联（gzip/plain/genes.tsv）、10x H5、H5AD/H5AD.gz、明确方向的 TXT/CSV/TSV counts、Seurat RDS counts，以及 manifest 精确指定的 tar/zip 成员。同一样本优先 filtered，多份 ambiguous filtered 则停止。H5AD 不会交给 Read10X_h5；normalized matrix 不能当 raw counts。pooled matrix 必须有精确 cell-to-sample mapping。路径必须是 repository-relative、没有 `..`、不越出所属 GSE；expression 在 `raw/`，映射文件在 `.workflow/`。
+支持 10x 三联（gzip/plain/genes.tsv）、10x H5、H5AD/H5AD.gz、明确方向的 TXT/CSV/TSV counts、Seurat RDS counts，以及 manifest 精确指定的 tar/zip 成员。text route 使用 `data.table::fread`，并继续强制 delimiter、orientation、feature_column、drop_columns 和整数 counts 校验；`data.table` 缺失不会影响非 text reader。同一样本优先 filtered，多份 ambiguous filtered 则停止。H5AD 不会交给 Read10X_h5；normalized matrix 不能当 raw counts。pooled matrix 必须有精确 cell-to-sample mapping。路径必须是 repository-relative、没有 `..`、不越出所属 GSE；expression 在 `raw/`，映射文件在 `.workflow/`。
 
 多个样本先验证 feature 集合、统一顺序，并在原始稀疏 counts 矩阵层面合并，再统一执行一次 `CreateSeuratObject(counts=counts, min.cells=3, min.features=200)`。因此 `min.cells` 针对整个 GSE 数据集，而不是在每个 GSM 内分别过滤。feature 集合真正不同时停止，不能静默取交集或补零取并集。`min.features` 过滤后按最终 cell key 映射 sample，保持 `orig.ident = sample`。
 
@@ -113,8 +119,8 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 $Scripts = '.agents/skills/geo-single-cell-loader/scripts'
 $Workflow = 'data/GSE231993/.workflow'
 & $RscriptExe "$Scripts/check_dependencies.R"
-# 仅在全局 geo MCP 不可用或实际调用失败时使用此 fallback：
-& $PythonExe "$Scripts/inspect_geo.py" GSE231993
+# 仅在真实 geo MCP 调用失败时使用，并记录实际原因：
+& $PythonExe "$Scripts/inspect_geo.py" GSE231993 --fallback-reason "geo/get_geo_info tool error: <actual error>"
 # Skill 审阅证据、完善 sample_report.csv 与 inspection.json 后：
 & $PythonExe "$Scripts/sample_info.py" GSE231993
 # 用户确认 group，并保存 group_confirmation.json 后：
@@ -133,6 +139,7 @@ $Workflow = 'data/GSE231993/.workflow'
 $env:GEO_SINGLE_CELL_PYTHON = $PythonExe
 & $RscriptExe tests/test_seurat.R .
 & $RscriptExe tests/test_global_min_cells.R .
+& $RscriptExe tests/test_pooled_inputs.R .
 & $PythonExe tests/run_end_to_end.py --rscript $RscriptExe
 ```
 

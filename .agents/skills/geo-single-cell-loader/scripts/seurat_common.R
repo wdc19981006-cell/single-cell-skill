@@ -39,16 +39,26 @@ read_manifest <- function(path, root) {
   repo_path(root, substring(normalizePath(path,winslash="/"), nchar(root)+2L), paste0("data/",m$database[1],"/.workflow"))
   for (i in seq_len(nrow(m))) {
     repo_path(root, m$local_path[i], paste0("data/", m$database[i],"/raw"))
-    if (nzchar(value(m[i,,drop=FALSE],"cell_map_path"))) {
-      cellmap <- repo_path(root,m$cell_map_path[i],paste0("data/",m$database[i],"/.workflow"))
-      if (!identical(unname(tools::md5sum(cellmap)),value(m[i,,drop=FALSE],"cell_map_md5"))) stop("Cell map changed; review and reconfirm")
-    }
+  }
+  cell_map_paths <- unique(m$cell_map_path[!blank(m$cell_map_path)])
+  for (relative in cell_map_paths) {
+    rows <- m[!blank(m$cell_map_path) & m$cell_map_path == relative,,drop=FALSE]
+    expected <- unique(vapply(seq_len(nrow(rows)),function(i) value(rows[i,,drop=FALSE],"cell_map_md5"),character(1)))
+    if (length(expected) != 1L || !nzchar(expected)) stop("Shared cell map has inconsistent or missing confirmation hash")
+    cellmap <- repo_path(root,relative,paste0("data/",rows$database[1],"/.workflow"))
+    if (!identical(unname(tools::md5sum(cellmap)),expected)) stop("Cell map changed; review and reconfirm")
   }
   m
 }
 value <- function(row, field, default = "") {
   if (!field %in% names(row) || blank(row[[field]][1])) default else row[[field]][1]
 }
+reader_signature_fields <- c("local_path", "file_type", "count_source", "delimiter", "orientation", "feature_column", "drop_columns", "assay")
+reader_configuration <- function(row) {
+  defaults <- c(local_path="",file_type="",count_source="",delimiter="",orientation="",feature_column="",drop_columns="",assay="RNA")
+  setNames(vapply(reader_signature_fields,function(field) value(row,field,defaults[[field]]),character(1)),reader_signature_fields)
+}
+read_signature <- function(row) paste(paste(reader_signature_fields,reader_configuration(row),sep="="),collapse="\034")
 assert_counts <- function(counts) {
   if (length(dim(counts)) != 2L || any(dim(counts) == 0L)) stop("Empty counts matrix")
   vals <- if (inherits(counts, "sparseMatrix")) counts@x else as.vector(counts)
@@ -122,21 +132,40 @@ read_counts <- function(row, root) {
       reader_used <- "Python anndata fallback"
     }
   } else if (type == "text") {
+    need("data.table")
     if (chosen != "counts") stop("Text count_source must be counts")
-    sep <- switch(value(row,"delimiter"), comma=",", tab="\t", space="", stop("Explicit inspected delimiter required"))
-    tab <- read.table(path, header=TRUE, sep=sep, check.names=FALSE, stringsAsFactors=FALSE, comment.char="", quote="\"", row.names=NULL)
+    sep <- switch(value(row,"delimiter"), comma=",", tab="\t", space=" ", stop("Explicit inspected delimiter required"))
     key <- value(row,"feature_column")
+    if (!nzchar(key)) stop("Explicit feature_column required")
+    source <- path
+    if (grepl("\\.gz$",path,ignore.case=TRUE) || identical(key,"__row_names__")) {
+      source <- tempfile("geo-text-",fileext=".txt")
+      input <- if (grepl("\\.gz$",path,ignore.case=TRUE)) gzfile(path,"rb") else file(path,"rb")
+      output <- file(source,"wb")
+      on.exit(unlink(source),add=TRUE)
+      tryCatch({
+        if (identical(key,"__row_names__")) writeBin(charToRaw(paste0("__feature_id__",sep)),output)
+        repeat {
+          block <- readBin(input,"raw",4L*1024L*1024L)
+          if (!length(block)) break
+          writeBin(block,output)
+        }
+      },finally={close(input);close(output)})
+      if (identical(key,"__row_names__")) key <- "__feature_id__"
+    }
+    tab <- data.table::fread(source,header=TRUE,sep=sep,data.table=TRUE,check.names=FALSE,showProgress=FALSE)
     if (!key %in% names(tab) || anyDuplicated(names(tab))) stop("Missing ID column or duplicate headers")
     ids <- tab[[key]]
     dropped <- strsplit(value(row,"drop_columns"),";",fixed=TRUE)[[1]]
     dropped <- dropped[nzchar(dropped)]
     if (!all(dropped %in% names(tab)) || key %in% dropped) stop("Invalid excluded columns")
-    numeric <- tab[setdiff(names(tab), c(key,dropped))]
-    if (!ncol(numeric) || !all(vapply(numeric,is.numeric,logical(1)))) stop("Nonexpression column found; inspect and specify drop_columns")
-    x <- as.matrix(numeric); rownames(x) <- ids
+    expression_columns <- setdiff(names(tab),c(key,dropped))
+    if (!length(expression_columns) || !all(vapply(tab[,expression_columns,with=FALSE],is.numeric,logical(1)))) stop("Nonexpression column found; inspect and specify drop_columns")
+    data.table::set(tab,j=c(key,dropped),value=NULL)
+    x <- as.matrix(tab); rownames(x) <- ids
     orientation <- value(row,"orientation")
     if (orientation == "cells_by_genes") x <- t(x) else if (orientation != "genes_by_cells") stop("Explicit inspected orientation required")
-    x <- Matrix::Matrix(x, sparse=TRUE); reader_used <- "base::read.table"
+    x <- Matrix::Matrix(x, sparse=TRUE); reader_used <- "data.table::fread"
   } else if (type == "rds") {
     object <- readRDS(path)
     if (!inherits(object,"Seurat")) stop("Unsupported RDS class: ", paste(class(object),collapse=", "))
@@ -163,9 +192,70 @@ map_metadata <- function(object, manifest, expected_samples) {
   if (!identical(unname(as.character(object$sample)), unname(expected_samples))) stop("Sample changed during mapping")
   object
 }
-combine_counts_and_create <- function(counts_list, cell_sample_map, gse) {
+default_cell_map_reader <- function(path) read.csv(path,stringsAsFactors=FALSE,check.names=FALSE,colClasses="character",fileEncoding="UTF-8-BOM")
+prepare_expression_inputs <- function(manifest, root, reader=read_counts, cell_map_reader=default_cell_map_reader) {
+  if (!nrow(manifest)) stop("Manifest has no rows")
+  paths <- unique(manifest$local_path)
+  counts_list <- list()
+  cell_sample_map <- character()
+  metrics <- vector("list",length(paths))
+  reader_calls <- 0L
+  cell_map_reads <- 0L
+  cell_map_cache <- new.env(parent=emptyenv())
+  for (input_index in seq_along(paths)) {
+    local_path <- paths[[input_index]]
+    rows <- manifest[manifest$local_path == local_path,,drop=FALSE]
+    signatures <- unique(vapply(seq_len(nrow(rows)),function(i) read_signature(rows[i,,drop=FALSE]),character(1)))
+    if (length(signatures) != 1L) stop("Shared input has inconsistent reader configuration across manifest rows.")
+    samples <- rows$sample
+    map_values <- vapply(seq_len(nrow(rows)),function(i) value(rows[i,,drop=FALSE],"cell_map_path"),character(1))
+    if (nrow(rows) > 1L && (any(!nzchar(map_values)) || length(unique(map_values)) != 1L)) stop("Shared input requires one consistent cell_map_path across manifest rows.")
+    if (any(nzchar(map_values)) && length(unique(map_values[nzchar(map_values)])) != 1L) stop("Shared input requires one consistent cell_map_path across manifest rows.")
+    read_started <- proc.time()[["elapsed"]]
+    counts <- reader(rows[1,,drop=FALSE],root)
+    reader_calls <- reader_calls + 1L
+    reader_used <- attr(counts,"geo_reader")
+    if (is.null(reader_used) || !nzchar(reader_used)) reader_used <- "injected reader"
+    counts <- assert_counts(counts)
+    read_seconds <- proc.time()[["elapsed"]] - read_started
+    mapping_started <- proc.time()[["elapsed"]]
+    if (any(nzchar(map_values))) {
+      map_path <- repo_path(root,unique(map_values[nzchar(map_values)]),paste0("data/",rows$database[1],"/.workflow"))
+      if (exists(map_path,envir=cell_map_cache,inherits=FALSE)) {
+        cellmap <- get(map_path,envir=cell_map_cache,inherits=FALSE)
+      } else {
+        cellmap <- cell_map_reader(map_path)
+        assign(map_path,cellmap,envir=cell_map_cache)
+        cell_map_reads <- cell_map_reads + 1L
+      }
+      if (!all(c("cell","sample") %in% names(cellmap)) || any(blank(cellmap$cell)) || any(blank(cellmap$sample)) || anyDuplicated(cellmap$cell)) stop("Invalid cell map: cell/sample must be nonblank and cell must be unique.")
+      missing_cells <- setdiff(colnames(counts),cellmap$cell)
+      extra_cells <- setdiff(cellmap$cell,colnames(counts))
+      if (length(missing_cells) || length(extra_cells)) stop("Cell map cell set must exactly match the expression matrix columns.")
+      unknown_samples <- setdiff(unique(cellmap$sample),samples)
+      missing_samples <- setdiff(samples,unique(cellmap$sample))
+      if (length(unknown_samples) || length(missing_samples)) stop("Cell map sample set must exactly match the manifest samples for this input.")
+      sample_for_cell <- cellmap$sample[match(colnames(counts),cellmap$cell)]
+    } else {
+      if (nrow(rows) != 1L) stop("Shared input requires one consistent cell_map_path across manifest rows.")
+      sample_for_cell <- rep(samples[[1]],ncol(counts))
+    }
+    new_cell_ids <- paste0(sample_for_cell,"_",colnames(counts))
+    if (anyDuplicated(new_cell_ids)) stop("Duplicate prefixed barcode")
+    colnames(counts) <- new_cell_ids
+    counts_list[[sprintf("input_%03d",input_index)]] <- counts
+    cell_sample_map <- c(cell_sample_map,setNames(sample_for_cell,new_cell_ids))
+    metrics[[input_index]] <- list(local_path=local_path,file_type=rows$file_type[1],reader=reader_used,
+      shared_samples=paste(samples,collapse=","),input_features=nrow(counts),input_cells=ncol(counts),
+      read_seconds=read_seconds,mapping_seconds=proc.time()[["elapsed"]]-mapping_started)
+  }
+  if (anyDuplicated(names(cell_sample_map))) stop("Cell IDs collide across expression inputs")
+  list(counts_list=counts_list,cell_sample_map=cell_sample_map,metrics=metrics,
+    manifest_rows=nrow(manifest),unique_inputs=length(paths),reader_calls=reader_calls,cell_map_reads=cell_map_reads)
+}
+align_count_inputs <- function(counts_list) {
   need(c("Seurat", "Matrix"))
-  if (!length(counts_list) || is.null(names(counts_list)) || any(blank(names(counts_list))) || anyDuplicated(names(counts_list))) stop("Counts list requires unique sample names")
+  if (!length(counts_list) || is.null(names(counts_list)) || any(blank(names(counts_list))) || anyDuplicated(names(counts_list))) stop("Counts list requires unique input names")
   reference_features <- rownames(counts_list[[1]])
   aligned <- vector("list", length(counts_list)); names(aligned) <- names(counts_list)
   for (i in seq_along(counts_list)) {
@@ -178,14 +268,21 @@ combine_counts_and_create <- function(counts_list, cell_sample_map, gse) {
     if (!inherits(counts,"sparseMatrix")) counts <- Matrix::Matrix(counts,sparse=TRUE)
     aligned[[i]] <- counts
   }
-  merged_counts <- do.call(cbind, unname(aligned))
+  aligned
+}
+combine_aligned_inputs <- function(aligned) {
+  merged_counts <- if (length(aligned) == 1L) aligned[[1]] else do.call(cbind,unname(aligned))
   if (!inherits(merged_counts,"sparseMatrix")) stop("Merged counts must remain sparse")
   assert_counts(merged_counts)
+}
+create_seurat_from_merged <- function(merged_counts, cell_sample_map, gse) {
+  need(c("Seurat","Matrix"))
+  merged_counts <- assert_counts(merged_counts)
   cells <- colnames(merged_counts)
   if (anyDuplicated(cells)) stop("Cell IDs collide across samples")
   if (is.null(names(cell_sample_map)) || anyDuplicated(names(cell_sample_map)) || !setequal(names(cell_sample_map),cells)) stop("Cell-to-sample map must exactly match merged count matrix cells")
   expected_samples <- unname(cell_sample_map[cells])
-  if (any(blank(expected_samples)) || any(!expected_samples %in% names(aligned))) stop("Cell-to-sample map contains an unknown sample")
+  if (any(blank(expected_samples))) stop("Cell-to-sample map contains an unknown sample")
   seurat <- Seurat::CreateSeuratObject(counts=merged_counts,min.cells=3,min.features=200,project=gse)
   if (!ncol(seurat) || !nrow(seurat)) stop("Merged dataset empty after requested construction thresholds")
   retained_samples <- unname(cell_sample_map[SeuratObject::Cells(seurat)])
@@ -193,6 +290,11 @@ combine_counts_and_create <- function(counts_list, cell_sample_map, gse) {
   seurat$sample <- retained_samples
   seurat$orig.ident <- retained_samples
   seurat
+}
+combine_counts_and_create <- function(counts_list, cell_sample_map, gse) {
+  aligned <- align_count_inputs(counts_list)
+  merged_counts <- combine_aligned_inputs(aligned)
+  create_seurat_from_merged(merged_counts,cell_sample_map,gse)
 }
 validate_object <- function(object, manifest=NULL) {
   need("Seurat")

@@ -1,5 +1,6 @@
 """Metadata-only GEO discovery fallback for when the global geo MCP is unavailable."""
 import argparse
+import datetime as dt
 import json
 import re
 import time
@@ -63,8 +64,11 @@ def parse_soft(text):
 def supplementary(fields):
     return [u.replace('ftp://ftp.ncbi.nlm.nih.gov/', 'https://ftp.ncbi.nlm.nih.gov/') for k, vals in fields.items() if 'supplementary_file' in k for u in vals if u.upper() != 'NONE']
 
-def inspect(gse, root, max_samples=None):
+def inspect(gse, root, max_samples=None, fallback_reason=None):
     if not re.fullmatch(r'GSE\d+', gse): raise ValueError('Expected GSE accession')
+    if not fallback_reason: raise ValueError('A concrete geo MCP fallback reason is required')
+    discovery_started = dt.datetime.now(dt.timezone.utc)
+    timer_started = time.perf_counter()
     paths = dataset_paths(root, gse)
     if paths['final'].exists() or (paths['workflow'] / 'sample_manifest.csv').exists():
         raise ValueError('Confirmed dataset exists; archive workflow explicitly before repeating discovery')
@@ -99,7 +103,12 @@ def inspect(gse, root, max_samples=None):
     if max_samples is not None:
         # Development probes never replace a complete report.
         folder = folder / 'development'; folder.mkdir(exist_ok=True)
-    result = dict(gse=gse, series_url=url, series=series, samples=records, files=files, input_plans=input_plans, papers=papers, total_samples=len(samples), inspected_samples=len(records), complete=len(records) == len(samples), note='group 尚未创建，请确认分组方式。Blank biological fields require evidence review, never infer group.')
+    discovery_finished = dt.datetime.now(dt.timezone.utc)
+    result = dict(gse=gse, series_url=url, series=series, samples=records, files=files, input_plans=input_plans, papers=papers, total_samples=len(samples), inspected_samples=len(records), complete=len(records) == len(samples),
+                  source='NCBI GEO fallback', discovery_method='inspect_geo_fallback', mcp_tools_used=[], mcp_complete=False,
+                  discovery_started_at=discovery_started.isoformat(), discovery_finished_at=discovery_finished.isoformat(),
+                  discovery_seconds=time.perf_counter()-timer_started, fallback_reason=fallback_reason,
+                  note='group 尚未创建，请确认分组方式。Blank biological fields require evidence review, never infer group.')
     (folder / 'inspection.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
     write_csv(folder / 'sample_report.csv', report, ['database','sample','author_sample','tissue','disease','source_type','sample_description','metadata_evidence'])
     if max_samples is None:
@@ -115,9 +124,11 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('gse', nargs='?'); p.add_argument('--search'); p.add_argument('--root', type=Path, default=ROOT)
     p.add_argument('--max-samples', type=int, help='Development discovery only; never treat this as a full sample report')
+    p.add_argument('--fallback-reason', help='Required concrete reason why the global geo MCP call could not complete Stage A')
     a = p.parse_args()
+    if (a.gse or a.search) and not a.fallback_reason: p.error('--fallback-reason is required because inspect_geo.py is only an MCP fallback')
     if a.search: print(search(a.search))
-    elif a.gse: inspect(a.gse.upper(), a.root.resolve(), a.max_samples)
+    elif a.gse: inspect(a.gse.upper(), a.root.resolve(), a.max_samples, a.fallback_reason)
     else: p.error('Provide GSE or --search')
 
 if __name__ == '__main__': main()
