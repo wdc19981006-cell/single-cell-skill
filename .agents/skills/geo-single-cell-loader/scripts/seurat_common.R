@@ -105,6 +105,25 @@ as_sparse_counts <- function(counts) {
   if (!inherits(counts,"dgCMatrix")) counts <- methods::as(counts,"dgCMatrix")
   assert_counts(counts)
 }
+total_physical_ram_bytes <- function() {
+  if (.Platform$OS.type == "windows") {
+    output <- suppressWarnings(tryCatch(system2("powershell.exe",c("-NoProfile","-Command","(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"),
+                                                stdout=TRUE,stderr=FALSE),error=function(e) character()))
+    value <- suppressWarnings(as.numeric(output[grepl("^[0-9]+$",trimws(output))][1]))
+  } else if (file.exists("/proc/meminfo")) {
+    line <- readLines("/proc/meminfo",n=1L,warn=FALSE)
+    value <- suppressWarnings(as.numeric(sub("^MemTotal:[[:space:]]*([0-9]+)[[:space:]]*kB.*$","\\1",line))*1024)
+  } else {
+    output <- suppressWarnings(tryCatch(system2("sysctl",c("-n","hw.memsize"),stdout=TRUE,stderr=FALSE),error=function(e) character()))
+    value <- suppressWarnings(as.numeric(output[1]))
+  }
+  if (length(value) != 1L || !is.finite(value) || value <= 0) NA_real_ else value
+}
+dense_rds_memory_safe <- function(estimated_bytes,total_ram_bytes,fraction=0.25) {
+  length(estimated_bytes)==1L && length(total_ram_bytes)==1L &&
+    is.finite(estimated_bytes) && is.finite(total_ram_bytes) &&
+    estimated_bytes > 0 && total_ram_bytes > 0 && estimated_bytes <= fraction * total_ram_bytes
+}
 source_size_bytes <- function(path) {
   files <- if (dir.exists(path)) list.files(path,recursive=TRUE,full.names=TRUE) else path
   sizes <- file.info(files)$size
@@ -257,6 +276,8 @@ read_expression <- function(row, root) {
     started <- proc.time()[["elapsed"]]
     object <- readRDS(rds_path)
     read_timings$read_rds_seconds <- unname(proc.time()[["elapsed"]]-started)
+    read_timings$object_class <- paste(class(object),collapse=",")
+    read_timings$estimated_memory_bytes <- as.numeric(object.size(object))
     if (inherits(object,"Seurat")) {
       assay <- value(row,"assay","RNA")
       if (!assay %in% names(object@assays)) stop("Requested RDS assay missing")
@@ -272,6 +293,15 @@ read_expression <- function(row, root) {
     } else if (inherits(object,"sparseMatrix")) {
       x <- object
       reader_used <- "readRDS/sparseMatrix raw counts"
+    } else if (is.data.frame(object) || is.matrix(object)) {
+      read_timings$total_ram_bytes <- total_physical_ram_bytes()
+      if (!dense_rds_memory_safe(read_timings$estimated_memory_bytes,read_timings$total_ram_bytes))
+        stop("Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=",read_timings$object_class,
+             "; object_bytes=",read_timings$estimated_memory_bytes,"; total_ram_bytes=",read_timings$total_ram_bytes)
+      if (is.data.frame(object) && !all(vapply(object,function(column) is.numeric(column) || is.logical(column),logical(1))))
+        stop("Dense RDS data.frame contains nonnumeric count columns")
+      x <- if (is.data.frame(object)) as.matrix(object) else object
+      reader_used <- "readRDS/dense raw counts"
     } else {
       stop("Unsupported RDS class: ", paste(class(object),collapse=", "))
     }

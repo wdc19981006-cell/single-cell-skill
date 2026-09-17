@@ -1,7 +1,10 @@
 """Repository-relative paths, strict manifests and processed-file routing."""
 import csv
+import ctypes
 import hashlib
 import json
+import math
+import os
 import re
 from pathlib import Path
 from urllib.parse import urlparse
@@ -49,40 +52,172 @@ def file_type(name):
     return 'unknown'
 
 
-def rank_raw_count_candidates(candidates):
-    """Rank evidenced representations of one raw-count matrix for validation.
+TRANSFORMED_EXPRESSION = re.compile(r'(^|[_.-])(normalized|normalised|log2?tpm|log1p|log|sct|integrated|scaled|tpm)([_.-]|$)', re.I)
+BINARY_COUNTS = {'rds', '10x_h5_candidate', '10x_mtx_candidate', 'h5ad'}
 
-    The caller must first establish that candidates represent the same counts;
-    filenames only exclude clearly transformed data and determine format order.
+
+def _candidate_format(item):
+    return file_type(urlparse(item['url']).path)
+
+
+def _transformed(item):
+    return bool(TRANSFORMED_EXPRESSION.search(urlparse(item['url']).path.rsplit('/', 1)[-1]))
+
+
+def _local_binary(item, root):
+    path = item.get('local_path')
+    if not path: return False
+    root = Path(root).resolve()
+    target = (root / path).resolve()
+    return target.is_relative_to(root) and target.is_file()
+
+
+def total_physical_memory_bytes():
+    """Physical RAM, not available RAM or an R/Python allocation limit."""
+    if os.name == 'nt':
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [('length', ctypes.c_ulong), ('load', ctypes.c_ulong)] + [
+                (name, ctypes.c_ulonglong) for name in ('total_phys', 'avail_phys', 'total_page',
+                                                        'avail_page', 'total_virtual', 'avail_virtual', 'extended')]
+        status = MemoryStatus()
+        status.length = ctypes.sizeof(status)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            raise OSError('Cannot determine total physical RAM')
+        return int(status.total_phys)
+    try:
+        return int(os.sysconf('SC_PHYS_PAGES') * os.sysconf('SC_PAGE_SIZE'))
+    except (AttributeError, OSError, ValueError):
+        raise OSError('Cannot determine total physical RAM') from None
+
+
+def dense_rds_memory_safe(estimated_bytes, total_ram_bytes, fraction=0.25):
+    """Require the actual loaded object to fit within the RAM fraction."""
+    return (isinstance(estimated_bytes, (int, float)) and math.isfinite(estimated_bytes)
+            and isinstance(total_ram_bytes, (int, float)) and math.isfinite(total_ram_bytes)
+            and estimated_bytes > 0 and total_ram_bytes > 0
+            and estimated_bytes <= total_ram_bytes * fraction)
+
+
+def rank_raw_count_candidates(candidates, root=ROOT):
+    """Probe only evidenced representations of the same raw counts."""
+    root = Path(root)
+    raw = [item for item in candidates if not _transformed(item) and _candidate_format(item) in BINARY_COUNTS | {'text_candidate'}]
+    if len(raw) > 1:
+        identities = {item.get('raw_counts_id') for item in raw}
+        if len(identities) != 1 or not next(iter(identities)) or any(not item.get('same_counts_evidence') for item in raw):
+            raise ValueError('Multiple candidates require one evidenced raw_counts_id before format selection')
+    def priority(item):
+        kind = _candidate_format(item)
+        if kind == 'text_candidate': return 3
+        if item.get('public_sparse_raw_evidence'): return 0
+        if _local_binary(item, root): return 1
+        return 2
+    return sorted(raw, key=priority)
+
+
+def select_verified_raw_counts(candidates, validate, *, root=ROOT, total_ram_bytes=None, audit_path=None):
+    """Select verified sparse binary, safe dense RDS, then streaming TXT.
+
+    `validate` inspects content and returns raw_counts, sparse, object_class and
+    estimated_memory_bytes. Unknown remote binary is not probed when usable raw
+    counts are already verified, unless public evidence explicitly says sparse.
     """
-    binary = {'rds', '10x_h5_candidate', 'h5ad'}
-    text = {'text_candidate'}
-    ranked = []
-    for item in candidates:
-        url = item['url']
-        name = urlparse(url).path.rsplit('/', 1)[-1]
-        if re.search(r'(^|[_.-])(normalized|normalised|log2?tpm|log1p|log|sct|integrated|scaled|tpm)([_.-]|$)', name, re.I):
-            continue
-        kind = file_type(name)
-        if kind in binary | text:
-            ranked.append((0 if kind in binary else 1, item))
-    return [item for _, item in sorted(ranked, key=lambda pair: pair[0])]
-
-
-def select_verified_raw_counts(candidates, validate):
-    """Try binary formats first; accept only a verified sparse/raw result."""
+    ranked = rank_raw_count_candidates(candidates, root)
+    if total_ram_bytes is None:
+        try: total_ram_bytes = total_physical_memory_bytes()
+        except OSError: total_ram_bytes = None
+    if total_ram_bytes is not None and (not isinstance(total_ram_bytes, (int, float))
+                                        or not math.isfinite(total_ram_bytes) or total_ram_bytes <= 0):
+        raise ValueError('Invalid total physical RAM')
     attempts = []
-    for item in rank_raw_count_candidates(candidates):
-        kind = file_type(urlparse(item['url']).path)
-        try:
-            evidence = validate(item)
-            if not evidence.get('raw_counts') or (kind != 'text_candidate' and not evidence.get('sparse')):
-                raise ValueError('candidate is not verified sparse raw counts')
-        except Exception as error:
-            attempts.append({'url': item['url'], 'status': 'rejected', 'reason': str(error)})
-            continue
-        attempts.append({'url': item['url'], 'status': 'selected', 'reason': evidence.get('reason', 'validated raw counts')})
+    limit = int(total_ram_bytes * 0.25) if total_ram_bytes is not None else None
+    for item in candidates:
+        if _transformed(item):
+            attempts.append(dict(url=item['url'], candidate_format=_candidate_format(item), object_class=None,
+                                 estimated_memory_bytes=None, total_ram_bytes=total_ram_bytes, selected_route=None,
+                                 status='excluded', reason='normalized/log/SCT/scaled expression is not raw counts',
+                                 fallback_reason='normalized/log/SCT/scaled expression is not raw counts'))
+    def record(item, status, reason, evidence=None, route=None):
+        evidence = evidence or {}
+        entry = dict(url=item['url'], candidate_format=_candidate_format(item),
+                     object_class=evidence.get('object_class'),
+                     estimated_memory_bytes=evidence.get('estimated_memory_bytes'),
+                     structure_evidence=item.get('structure_evidence'),
+                     total_ram_bytes=total_ram_bytes, selected_route=route, status=status,
+                     reason=reason, fallback_reason=reason if status in ('rejected', 'skipped') else None)
+        attempts.append(entry)
+        return entry
+    def finish(item, route, entry, reason):
+        entry.update(status='selected', selected_route=route, reason=reason, fallback_reason=None)
+        if audit_path is not None:
+            path = Path(audit_path)
+            path.write_text(json.dumps(dict(selected_url=item['url'], selected_route=route,
+                                            total_ram_bytes=total_ram_bytes, dense_limit_bytes=limit,
+                                            candidates=attempts), indent=2), encoding='utf-8')
         return item, attempts
+    binary = [item for item in ranked if _candidate_format(item) != 'text_candidate']
+    text = [item for item in ranked if _candidate_format(item) == 'text_candidate']
+    if any(item.get('verified_raw_counts') and not item.get('verification_evidence') for item in text):
+        raise ValueError('Previously verified TXT requires verification_evidence')
+    verified_txt = any(item.get('verified_raw_counts') for item in text)
+    dense_choice = None
+    for item in binary:
+        kind = _candidate_format(item)
+        usable_other = dense_choice is not None or verified_txt
+        if not (_local_binary(item, Path(root)) or item.get('public_sparse_raw_evidence') or not usable_other):
+            record(item, 'skipped', 'Unknown remote binary; a verified raw-count route already exists')
+            continue
+        try:
+            if item.get('validated_evidence') is not None:
+                if not item.get('structure_evidence'):
+                    raise ValueError('Cached structure requires structure_evidence')
+                evidence = item['validated_evidence']
+            else:
+                evidence = validate(item)
+            if not evidence.get('raw_counts'):
+                raise ValueError('Candidate is not verified raw counts')
+            size = evidence.get('estimated_memory_bytes')
+            if not isinstance(size, (int, float)) or not math.isfinite(size) or size <= 0:
+                raise ValueError('Binary candidate has no measured in-memory size')
+            if evidence.get('sparse'):
+                entry = record(item, 'eligible', evidence.get('reason', 'verified sparse raw counts'), evidence)
+                if dense_choice is not None:
+                    dense_choice[1].update(status='not_selected', reason='Verified sparse binary has higher priority')
+                route = {'rds':'sparse_rds','10x_h5_candidate':'sparse_h5',
+                         '10x_mtx_candidate':'sparse_mtx','h5ad':'sparse_h5ad'}[kind]
+                return finish(item, route, entry, evidence.get('reason', 'verified sparse raw counts'))
+            classes = evidence.get('object_class') or ''
+            classes = classes if isinstance(classes, (list, tuple)) else str(classes).split(',')
+            if kind == 'rds' and any(name in ('data.frame', 'matrix') for name in classes):
+                if not dense_rds_memory_safe(size, total_ram_bytes):
+                    reason = ('Total physical RAM is unknown; dense RDS rejected' if limit is None else
+                              f'Dense RDS uses {size:g} bytes; 25% RAM limit is {limit} bytes')
+                    record(item, 'rejected', reason, evidence)
+                    continue
+                entry = record(item, 'eligible', 'Dense RDS fits within 25% of total RAM', evidence)
+                if dense_choice is None: dense_choice = (item, entry)
+                continue
+            raise ValueError('Binary candidate is neither sparse counts nor a supported dense RDS')
+        except Exception as error:
+            record(item, 'rejected', str(error))
+    if dense_choice is not None:
+        return finish(dense_choice[0], 'dense_rds', dense_choice[1], 'Verified dense raw counts fit within 25% of total RAM')
+    for item in text:
+        try:
+            evidence = ({'raw_counts': True, 'object_class': 'streaming TXT',
+                         'reason': item.get('verification_reason', item.get('verification_evidence'))}
+                        if item.get('verified_raw_counts') else validate(item))
+            if not evidence.get('raw_counts'):
+                raise ValueError('TXT candidate is not verified raw counts')
+        except Exception as error:
+            record(item, 'rejected', str(error))
+            continue
+        entry = record(item, 'eligible', evidence.get('reason', 'Verified streaming TXT raw counts'), evidence)
+        return finish(item, 'streaming_txt', entry, evidence.get('reason', 'Verified streaming TXT raw counts'))
+    if audit_path is not None:
+        Path(audit_path).write_text(json.dumps(dict(selected_url=None, selected_route=None,
+                                                   total_ram_bytes=total_ram_bytes, dense_limit_bytes=limit,
+                                                   candidates=attempts), indent=2), encoding='utf-8')
     raise ValueError('No verified raw-count input; attempts: ' + str(attempts))
 
 def choose_filtered(names):

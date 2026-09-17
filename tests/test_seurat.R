@@ -53,6 +53,26 @@ stopifnot(identical(as.matrix(sparse_result$counts),as.matrix(sparse)),
           identical(sparse_result$reader,"readRDS/sparseMatrix raw counts"),
           identical(sparse_result$read_timings$gunzip_seconds,0),
           is.numeric(sparse_result$read_timings$read_rds_seconds))
+stopifnot(!dense_rds_memory_safe(24747485896,32000000000),
+          dense_rds_memory_safe(2000000000,32000000000))
+dense_frame <- as.data.frame(as.matrix(sparse))
+saveRDS(dense_frame,file.path(root,"data/GSE999999999/raw/dense_counts.rds"))
+dense_row <- sparse_row; dense_row$local_path <- "data/GSE999999999/raw/dense_counts.rds"
+dense_result <- read_expression(dense_row,root)
+stopifnot(identical(as.matrix(dense_result$counts),as.matrix(sparse)),
+          identical(dense_result$reader,"readRDS/dense raw counts"),
+          identical(dense_result$read_timings$object_class,"data.frame"),
+          dense_result$read_timings$estimated_memory_bytes > 0,
+          dense_result$read_timings$total_ram_bytes > 0)
+saveRDS(as.matrix(sparse),file.path(root,"data/GSE999999999/raw/dense_counts.rds"))
+stopifnot(identical(as.matrix(read_counts(dense_row,root)),as.matrix(sparse)))
+original_ram_reader <- total_physical_ram_bytes
+total_physical_ram_bytes <- function() 100
+expect_error(read_counts(dense_row,root))
+total_physical_ram_bytes <- original_ram_reader
+dense_frame[1,1] <- -1
+saveRDS(dense_frame,file.path(root,"data/GSE999999999/raw/dense_counts.rds"))
+expect_error(read_counts(dense_row,root))
 logical_sparse <- sparse != 0
 saveRDS(logical_sparse,file.path(root,"data/GSE999999999/raw/sparse_counts.rds"))
 stopifnot(identical(as.matrix(read_counts(sparse_row,root)),1 * as.matrix(logical_sparse)))
@@ -87,5 +107,5 @@ split_author[["RNA"]] <- split(split_author[["RNA"]],f=c("A","A","B","B"))
 saveRDS(split_author,file.path(root,"data/GSE999999999/raw/split_input.rds"))
 split_row <- row; split_row$local_path <- "data/GSE999999999/raw/split_input.rds"; expect_error(read_counts(split_row,root))
 saveRDS(list(counts=counts[[1]]),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); row$local_path <- "data/GSE999999999/raw/not_seurat.rds"; expect_error(read_counts(row,root))
-saveRDS(data.frame(gene=c(0L,1L)),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); expect_error(read_counts(row,root))
+saveRDS(data.frame(gene=c("a","b")),file.path(root,"data/GSE999999999/raw/not_seurat.rds")); expect_error(read_counts(row,root))
 cat("PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.\n")

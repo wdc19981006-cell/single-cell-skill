@@ -39,25 +39,90 @@ class LoaderTests(unittest.TestCase):
         r=row(); r.update(local_path='data/GSE999999999/raw/x.h5ad',file_type='10x_h5')
         with self.assertRaisesRegex(ValueError,'H5AD'): validate_manifest([r],self.root)
     def test_h5_routing(self): self.assertEqual(file_type('x_filtered_feature_bc_matrix.h5'),'10x_h5_candidate')
-    def test_binary_raw_count_priority_and_text_fallback(self):
-        txt={'url':'https://example.org/study_raw_UMI_matrix.txt.gz'}
-        rds={'url':'https://example.org/study_raw_UMI_matrix.rds.gz'}
-        normalized={'url':'https://example.org/study_normalized_log2TPM_matrix.rds.gz'}
-        self.assertEqual(file_type(rds['url']),'rds')
-        self.assertEqual(rank_raw_count_candidates([txt, normalized, rds]),[rds, txt])
-        calls=[]
-        def rejected_binary(item):
-            calls.append(item)
-            if item is rds: raise ValueError('Unsupported RDS class: data.frame')
-            return {'raw_counts': True, 'reason': 'integer TXT counts verified'}
-        selected, attempts=select_verified_raw_counts([txt, normalized, rds],rejected_binary)
+    def test_raw_count_equivalence_must_be_evidenced(self):
+        txt={'url':'https://example.org/raw.txt.gz','raw_counts_id':'study:UMI','same_counts_evidence':'GEO processing'}
+        rds={'url':'https://example.org/raw.rds.gz','raw_counts_id':'study:other','same_counts_evidence':'GEO processing'}
+        with self.assertRaisesRegex(ValueError,'raw_counts_id'):
+            select_verified_raw_counts([txt,rds],lambda _: self.fail('No candidate may be probed'),total_ram_bytes=32_000_000_000)
+        rds['raw_counts_id']='study:UMI'; rds.pop('same_counts_evidence')
+        with self.assertRaisesRegex(ValueError,'raw_counts_id'): rank_raw_count_candidates([txt,rds])
+
+    def test_gse131907_dense_rds_falls_back_without_using_gzip_size(self):
+        local_rds=self.root/'raw_UMI_matrix.rds.gz'; local_rds.write_bytes(b'synthetic placeholder')
+        shared={'raw_counts_id':'GSE131907:raw_UMI_matrix','same_counts_evidence':'GEO labels both raw UMI matrix'}
+        txt=dict(shared,url='https://example.org/raw_UMI_matrix.txt.gz',verified_raw_counts=True,
+                 verification_evidence='Prior audited TXT raw counts')
+        rds=dict(shared,url='https://example.org/raw_UMI_matrix.rds.gz',local_path=str(local_rds),compressed_bytes=633_500_069,
+                 structure_evidence='Prior inspection of the local GSE131907 raw-count RDS',
+                 validated_evidence={'raw_counts':True,'sparse':False,'object_class':'data.frame',
+                                     'estimated_memory_bytes':24_747_485_896})
+        normalized={'url':'https://example.org/normalized_log2TPM_matrix.rds.gz'}
+        self.assertEqual(rank_raw_count_candidates([txt,normalized,rds],self.root),[rds,txt])
+        audit=self.workflow/'candidate_probe.json'
+        selected,attempts=select_verified_raw_counts([txt,normalized,rds],lambda _: self.fail('Do not reread known RDS'),root=self.root,
+                                                      total_ram_bytes=32_000_000_000,audit_path=audit)
         self.assertIs(selected,txt)
-        self.assertEqual(calls,[rds,txt])
-        self.assertEqual([a['status'] for a in attempts],['rejected','selected'])
-        self.assertIn('data.frame',attempts[0]['reason'])
-        selected, attempts=select_verified_raw_counts([txt,rds],lambda item: {'raw_counts': True, 'sparse': True, 'reason': 'verified sparse matrix'})
+        self.assertEqual([a['status'] for a in attempts],['excluded','rejected','selected'])
+        self.assertIn('25% RAM limit',attempts[1]['fallback_reason'])
+        report=json.loads(audit.read_text())
+        self.assertEqual(report['selected_route'],'streaming_txt')
+        self.assertEqual(report['dense_limit_bytes'],8_000_000_000)
+        self.assertEqual(report['candidates'][1]['object_class'],'data.frame')
+        self.assertEqual(report['candidates'][1]['estimated_memory_bytes'],24_747_485_896)
+        self.assertEqual(report['candidates'][1]['total_ram_bytes'],32_000_000_000)
+        self.assertEqual(report['candidates'][1]['structure_evidence'],rds['structure_evidence'])
+
+    def test_sparse_then_safe_dense_then_streaming_txt_priority(self):
+        local_rds=self.root/'counts.rds'; local_rds.write_bytes(b'synthetic placeholder')
+        shared={'raw_counts_id':'study:counts','same_counts_evidence':'GEO raw-count equivalence'}
+        txt=dict(shared,url='https://example.org/counts.txt.gz',verified_raw_counts=True,
+                 verification_evidence='Prior audited TXT raw counts')
+        dense=dict(shared,url='https://example.org/counts.rds',local_path=str(local_rds))
+        h5=dict(shared,url='https://example.org/counts.h5',public_sparse_raw_evidence='GEO: 10x sparse counts')
+        def inspect(item):
+            if item is h5:
+                return {'raw_counts':True,'sparse':True,'object_class':'dgCMatrix','estimated_memory_bytes':3_000_000_000}
+            return {'raw_counts':True,'sparse':False,'object_class':'matrix,array','estimated_memory_bytes':2_000_000_000}
+        selected,attempts=select_verified_raw_counts([txt,dense,h5],inspect,root=self.root,total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,h5)
+        self.assertEqual(attempts[-1]['selected_route'],'sparse_h5')
+        local_h5=self.root/'counts.h5'; local_h5.write_bytes(b'synthetic placeholder')
+        h5.pop('public_sparse_raw_evidence'); h5['local_path']=str(local_h5)
+        selected,attempts=select_verified_raw_counts([txt,dense,h5],inspect,root=self.root,total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,h5)
+        self.assertEqual([a['status'] for a in attempts],['not_selected','selected'])
+        selected,_=select_verified_raw_counts([txt,dense],inspect,root=self.root,total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,dense)
+        selected,_=select_verified_raw_counts([txt],inspect,root=self.root,total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,txt)
+
+    def test_verified_txt_prevents_unknown_remote_binary_probe(self):
+        shared={'raw_counts_id':'study:counts','same_counts_evidence':'GEO raw-count equivalence'}
+        txt=dict(shared,url='https://example.org/counts.txt.gz',verified_raw_counts=True,
+                 verification_evidence='Prior audited TXT raw counts')
+        rds=dict(shared,url='https://example.org/counts.rds.gz')
+        h5=dict(shared,url='https://example.org/counts.h5')
+        selected,attempts=select_verified_raw_counts([rds,h5,txt],lambda _: self.fail('No download/probe allowed'),
+                                                      total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,txt)
+        self.assertEqual([a['status'] for a in attempts],['skipped','skipped','selected'])
+        self.assertIn('Unknown remote binary',attempts[0]['fallback_reason'])
+        selected,_=select_verified_raw_counts([rds],lambda _: {'raw_counts':True,'sparse':True,
+                                    'object_class':'dgCMatrix','estimated_memory_bytes':1000},total_ram_bytes=32_000_000_000)
         self.assertIs(selected,rds)
-        self.assertEqual(len(attempts),1)
+        self.assertEqual(file_type('counts.mtx.gz'),'10x_mtx_candidate')
+
+    def test_invalid_local_rds_falls_back_to_verified_txt(self):
+        local_rds=self.root/'counts.rds'; local_rds.write_bytes(b'synthetic placeholder')
+        shared={'raw_counts_id':'study:counts','same_counts_evidence':'GEO raw-count equivalence'}
+        rds=dict(shared,url='https://example.org/counts.rds',local_path=str(local_rds))
+        txt=dict(shared,url='https://example.org/counts.txt.gz',verified_raw_counts=True,
+                 verification_evidence='Prior audited TXT raw counts')
+        selected,attempts=select_verified_raw_counts([rds,txt],lambda _: (_ for _ in ()).throw(ValueError('invalid RDS counts')),
+                                                      root=self.root,total_ram_bytes=32_000_000_000)
+        self.assertIs(selected,txt)
+        self.assertEqual([a['status'] for a in attempts],['rejected','selected'])
+        self.assertEqual(attempts[0]['fallback_reason'],'invalid RDS counts')
     def test_fastq_sra_are_not_processed_expression(self):
         for name in ('reads.fastq','reads.fastq.gz','reads.sra'):
             self.assertEqual(file_type(name),'raw_reads')
