@@ -289,6 +289,12 @@ def verify_confirmation(path):
     rows = read_csv(path)
     if value.get('groups') != {r['sample']: r['group'] for r in rows}:
         raise ValueError('Confirmed groups differ from manifest')
+    selected = value.get('selected_samples')
+    if selected is not None and (not isinstance(selected, list) or
+                                 any(not isinstance(sample, str) for sample in selected) or
+                                 len(selected) != len(set(selected)) or
+                                 set(selected) != {r['sample'] for r in rows}):
+        raise ValueError('Confirmed selected samples differ from manifest')
     return value
 
 def dataset_paths(root, gse):

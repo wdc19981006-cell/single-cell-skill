@@ -30,6 +30,16 @@ def confirm(report, confirmation, output, root):
     approval = json.loads(confirmation.read_text(encoding='utf-8-sig'))
     if approval.get('confirmed_by') != 'user' or not approval.get('user_statement', '').strip():
         raise ValueError('Explicit user statement and confirmed_by=user required')
+    selected = approval.get('selected_samples')
+    if selected is not None:
+        report_samples = {row['sample'] for row in rows}
+        if (not isinstance(selected, list) or not selected or
+                any(not isinstance(sample, str) for sample in selected)):
+            raise ValueError('Selected samples must be a nonempty unique subset of the complete report')
+        selected_set = set(selected)
+        if len(selected) != len(selected_set) or not selected_set <= report_samples:
+            raise ValueError('Selected samples must be a nonempty unique subset of the complete report')
+        rows = [row for row in rows if row['sample'] in selected_set]
     groups = approval.get('groups', {})
     if set(groups) != {r['sample'] for r in rows}: raise ValueError('Grouping keys must exactly match report samples')
     for row in rows:

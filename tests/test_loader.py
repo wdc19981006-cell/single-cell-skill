@@ -169,6 +169,38 @@ class LoaderTests(unittest.TestCase):
         report=self.workflow/'sample_report.csv'; approval=self.workflow/'group_confirmation.json'
         write_csv(report,[row()]); approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED',groups={})))
         with self.assertRaisesRegex(ValueError,'exactly'): confirm(report,approval,self.workflow/'sample_manifest.csv',self.root)
+    def test_explicit_subset_preserves_complete_discovery(self):
+        samples=['GSM1','GSM2','GSM3']
+        (self.workflow/'inspection.json').write_text(json.dumps(dict(
+            complete=True,total_samples=3,inspected_samples=3,
+            samples=[dict(accession=sample) for sample in samples])),encoding='utf-8')
+        report=self.workflow/'sample_report.csv'; approval=self.workflow/'group_confirmation.json'
+        output=self.workflow/'sample_manifest.csv'
+        write_csv(report,[row(sample) for sample in samples])
+        confirmation=dict(confirmed_by='user',user_statement='SIMULATED TEST: first two samples only',
+                          selected_samples=samples[:2],groups={'GSM1':'NC','GSM2':'tumor'})
+        approval.write_text(json.dumps(confirmation),encoding='utf-8')
+        result=confirm(report,approval,output,self.root)
+        self.assertEqual([(r['sample'],r['group']) for r in result],[('GSM1','NC'),('GSM2','tumor')])
+        self.assertEqual(len(read_csv(report)),3)
+        self.assertEqual(verify_confirmation(output)['selected_samples'],samples[:2])
+        info=(self.workflow.parent/'sample_info.txt').read_text(encoding='utf-8')
+        self.assertIn('Inspected samples:\n3',info)
+        self.assertIn('Selected samples:\n2',info)
+        self.assertNotIn('GSM3',info)
+        receipt=output.with_suffix('.confirmation.json')
+        altered=json.loads(receipt.read_text(encoding='utf-8'))
+        altered['selected_samples']=['GSM1','GSM3']
+        receipt.write_text(json.dumps(altered),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'selected samples differ'):
+            verify_confirmation(output)
+    def test_explicit_subset_rejects_unreported_sample(self):
+        report=self.workflow/'sample_report.csv'; approval=self.workflow/'group_confirmation.json'
+        write_csv(report,[row('GSM1'),row('GSM2')])
+        approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED TEST',
+            selected_samples=['GSM1','GSM3'],groups={'GSM1':'NC','GSM3':'tumor'})),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'nonempty unique subset'):
+            confirm(report,approval,self.workflow/'sample_manifest.csv',self.root)
     def test_safe_selective_archive(self):
         path=self.root/'fixture.tar'
         with tarfile.open(path,'w') as t:
