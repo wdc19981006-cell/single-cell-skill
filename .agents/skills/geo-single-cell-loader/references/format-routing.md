@@ -1,6 +1,6 @@
 # Stage B input routing and raw-count contract
 
-Stage A format labels are candidates. Stage B verifies the physical input, groups manifest rows by the complete `input_signature`, reads each signature once, and requires every expression reader to return the same contract: `counts`, `reader`, `input_signature`, `source_path`, `input_cells`, `input_features`, and (when useful) `original_cell_ids`. `counts` is validated by `assert_counts()` and converted to a genes × cells `dgCMatrix` before cell/sample mapping.
+Stage A format labels are candidates. After download and before R build, a small text probe confirms technical schema and a missing pooled map triggers the ordered evidence check in [prebuild-probes.md](prebuild-probes.md). Stage B then groups manifest rows by the complete `input_signature`, reads each signature once, and requires every expression reader to return the same contract: `counts`, `reader`, `input_signature`, `source_path`, `input_cells`, `input_features`, and (when useful) `original_cell_ids`. `counts` is validated by `assert_counts()` and converted to a genes × cells `dgCMatrix` before cell/sample mapping.
 
 | Format | Detection | Reader | Raw-count rule | Sample mapping | Performance rule | Failure conditions |
 |---|---|---|---|---|---|---|

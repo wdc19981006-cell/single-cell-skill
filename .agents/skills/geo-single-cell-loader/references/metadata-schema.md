@@ -37,7 +37,7 @@ bytes. Keep the original fragments in `raw/` for reconstruction.
 
 ## Pooled matrices and separate metadata
 
-When multiple samples share an input, every related manifest row must identify the same `cell_map_path`. This is a CSV with columns `cell,sample`; cell IDs exactly match the input matrix, without prefixes. Duplicate cells, extra cells, missing cells, missing samples or foreign samples stop loading. The manifest references this mapping as an explicit subordinate artifact; expression/clinical columns are never joined using position or filename guessing. Record the cell map source in `metadata_evidence`.
+When multiple samples share an input, every related manifest row must identify the same `cell_map_path` before R build. An initially missing map triggers the [pre-build evidence check](prebuild-probes.md) after download. This is a CSV with columns `cell,sample`; cell IDs exactly match the input matrix, without prefixes. Duplicate cells, extra cells, missing cells, missing samples or foreign samples stop loading. The manifest references this mapping as an explicit subordinate artifact; expression/clinical columns are never joined using position or filename guessing. Record the cell map source in `metadata_evidence`.
 
 ## Multi-sample construction
 
@@ -51,7 +51,7 @@ Save the user's reply in `data/<GSE>/.workflow/group_confirmation.json`:
 {"confirmed_by":"user","user_statement":"Literal user grouping instruction","groups":{"GSM123":"UserChosenLabel"}}
 ```
 
-`build_manifest.py` requires exact sample key coverage and nonempty groups and writes `.workflow/sample_manifest.confirmation.json`. The receipt carries the actual statement, group map, UTC time and manifest MD5 (change detection only, not a security signature). A CSV edit invalidates it. Archive the previous manifest and rebuild from an explicitly reconfirmed report. Never claim the receipt proves identity or independent verification of public evidence.
+`build_manifest.py` requires exact sample key coverage and nonempty groups and writes `.workflow/sample_manifest.confirmation.json`. The receipt carries the actual statement, group map, UTC time and manifest MD5 (change detection only, not a security signature). A manual CSV edit invalidates it. After download, `prebuild_probe.py` may fill only verified blank technical text/mapping fields and refresh the receipt while preserving all confirmed samples and groups. Other changes require a reconfirmed report. Never claim the receipt proves identity or independent verification of public evidence.
 
 For an explicitly requested subset, retain the complete Stage A `inspection.json` and `sample_report.csv`, and add `selected_samples` as a nonempty array of exact report sample IDs in the confirmation JSON. The group map must cover exactly that array; the manifest and final RDS contain only those samples. The final `sample_info.txt` reports both the full inspected sample count and the selected count. Omit `selected_samples` for full-study runs.
 

@@ -42,4 +42,16 @@ writeLines(c("c1\tc2", "g1\t1\t-2"),con)
 close(con)
 error <- tryCatch({read_expression(row,fixture); ""},error=function(e) conditionMessage(e))
 stopifnot(grepl("Streaming text conversion failed",error,fixed=TRUE))
-cat("PASS: streaming text reader handles labeled and unlabeled gene columns, preserves sparse counts, and rejects negative input.\n")
+Sys.unsetenv("GEO_SINGLE_CELL_STREAM_TEXT")
+csv_path <- file.path(fixture,"data/GSE999999999/raw/blank-id.csv")
+writeLines(c('"",c1,c2', 'g1,0,2', 'g2,4,0'),csv_path)
+csv_row <- row
+csv_row$local_path <- "data/GSE999999999/raw/blank-id.csv"
+csv_row$delimiter <- "comma"
+csv_row$text_header_missing_id <- "false"
+csv_result <- read_expression(csv_row,fixture)
+stopifnot(identical(rownames(csv_result$counts),c("g1","g2")),
+          identical(colnames(csv_result$counts),c("c1","c2")),
+          identical(as.matrix(csv_result$counts),matrix(c(0,4,2,0),nrow=2,
+                    dimnames=list(c("g1","g2"),c("c1","c2")))))
+cat("PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.\n")

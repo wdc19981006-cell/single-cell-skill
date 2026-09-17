@@ -54,9 +54,9 @@ read_manifest <- function(path, root) {
 value <- function(row, field, default = "") {
   if (!field %in% names(row) || blank(row[[field]][1])) default else row[[field]][1]
 }
-reader_signature_fields <- c("local_path", "file_type", "count_source", "delimiter", "orientation", "feature_column", "drop_columns", "assay", "layer")
+reader_signature_fields <- c("local_path", "file_type", "count_source", "delimiter", "orientation", "feature_column", "text_header_missing_id", "drop_columns", "assay", "layer")
 reader_configuration <- function(row) {
-  defaults <- c(local_path="",file_type="",count_source="",delimiter="",orientation="",feature_column="",drop_columns="",assay="RNA",layer="")
+  defaults <- c(local_path="",file_type="",count_source="",delimiter="",orientation="",feature_column="",text_header_missing_id="",drop_columns="",assay="RNA",layer="")
   setNames(vapply(reader_signature_fields,function(field) value(row,field,defaults[[field]]),character(1)),reader_signature_fields)
 }
 read_signature <- function(row) paste(paste(reader_signature_fields,reader_configuration(row),sep="="),collapse="\034")
@@ -239,16 +239,22 @@ read_expression <- function(row, root) {
       output <- file(source,"wb")
       on.exit(unlink(source),add=TRUE)
       tryCatch({
-        if (identical(key,"__row_names__")) writeBin(charToRaw(paste0("__feature_id__",sep)),output)
+        if (identical(key,"__row_names__") && value(row,"text_header_missing_id","true") != "false")
+          writeBin(charToRaw(paste0("__feature_id__",sep)),output)
         repeat {
           block <- readBin(input,"raw",4L*1024L*1024L)
           if (!length(block)) break
           writeBin(block,output)
         }
       },finally={close(input);close(output)})
-      if (identical(key,"__row_names__")) key <- "__feature_id__"
+      if (identical(key,"__row_names__") && value(row,"text_header_missing_id","true") != "false")
+        key <- "__feature_id__"
     }
     tab <- data.table::fread(source,header=TRUE,sep=sep,data.table=TRUE,check.names=FALSE,showProgress=FALSE)
+    if (identical(key,"__row_names__") && value(row,"text_header_missing_id") == "false") {
+      data.table::setnames(tab,1L,"__feature_id__")
+      key <- "__feature_id__"
+    }
     if (!key %in% names(tab) || anyDuplicated(names(tab))) stop("Missing ID column or duplicate headers")
     ids <- tab[[key]]
     dropped <- strsplit(value(row,"drop_columns"),";",fixed=TRUE)[[1]]

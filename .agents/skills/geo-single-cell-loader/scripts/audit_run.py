@@ -132,6 +132,11 @@ def write_decisions(workflow, output, inspection, selection, status, reason):
                          f"reason=verified input structure and manifest reader fields; "
                          f"dimensions={row.get('features', '')}x{row.get('cells', '')}; "
                          f"dense_conversion={row.get('dense_conversion', '')}")
+    for name, title in (("text_schema_probe.json", "Text schema probe"),
+                        ("pooled_mapping_probe.json", "Pooled mapping evidence check")):
+        source = workflow / name
+        if source.exists():
+            lines += ["", f"## {title}", source.read_text(encoding="utf-8")]
     notes = workflow / "decision_notes.md"
     if notes.exists():
         lines += ["", "## Additional observed evidence", notes.read_text(encoding="utf-8")]

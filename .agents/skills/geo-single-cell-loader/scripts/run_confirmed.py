@@ -42,6 +42,7 @@ def run(gse, root=ROOT, rscript="Rscript"):
             log.write(f"Run started UTC: {datetime.now(timezone.utc).isoformat()}\n")
             restore_provenance(gse, root)
             execute("download", [sys.executable, str(SCRIPTS / "download_processed.py"), manifest, "--root", str(root)], log, root)
+            execute("prebuild_probe", [sys.executable, str(SCRIPTS / "prebuild_probe.py"), manifest, "--root", str(root)], log, root)
             execute("dependencies", [rscript, str(SCRIPTS / "check_dependencies.R")], log, root)
             execute("build", [rscript, str(SCRIPTS / "build_seurat.R"), str(root), manifest], log, root)
             independent_validation_seconds = execute("validation", [rscript, str(SCRIPTS / "validate_seurat.R"), str(root), manifest, f"data/{gse}/seurat_raw.rds"], log, root)

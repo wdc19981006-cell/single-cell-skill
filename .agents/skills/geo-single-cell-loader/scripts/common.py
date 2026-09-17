@@ -236,7 +236,7 @@ def detect_trio(directory):
         found.append(hits[0])
     return found
 
-def validate_manifest(rows, root):
+def validate_manifest(rows, root, allow_pending_probes=False):
     if not rows: raise ValueError('Empty manifest')
     seen, databases, destinations, assemblies = set(), set(), {}, {}
     for row in rows:
@@ -253,7 +253,9 @@ def validate_manifest(rows, root):
         if row['file_type'] not in ('10x_mtx', '10x_h5', 'h5ad', 'text', 'rds'): raise ValueError('Unsupported file_type')
         if row['file_type'] == 'h5ad' and not row['local_path'].lower().endswith(('.h5ad', '.h5ad.gz')): raise ValueError('H5AD extension mismatch')
         if row['file_type'] == '10x_h5' and row['local_path'].lower().endswith(('.h5ad', '.h5ad.gz')): raise ValueError('H5AD is not 10x H5')
-        if row['file_type'] == 'text' and row.get('orientation') not in ('genes_by_cells', 'cells_by_genes'): raise ValueError('Text orientation must be inspected')
+        if row['file_type'] == 'text' and row.get('orientation') not in ('genes_by_cells', 'cells_by_genes'):
+            if not (allow_pending_probes and missing(row.get('orientation'))):
+                raise ValueError('Text orientation must be inspected')
         for field in OPTIONAL:
             if not missing(row.get(field)) and missing(row.get(field + '_evidence')): raise ValueError('Missing evidence for ' + field)
         if not missing(row.get('cell_map_path')):
@@ -289,7 +291,8 @@ def validate_manifest(rows, root):
     for row in rows: by_path.setdefault(row['local_path'], []).append(row)
     for shared in by_path.values():
         if len(shared) > 1 and (any(missing(r.get('cell_map_path')) for r in shared) or len({r['cell_map_path'] for r in shared}) != 1):
-            raise ValueError('Shared matrix requires one explicit cell-to-sample mapping')
+            if not (allow_pending_probes and all(missing(r.get('cell_map_path')) for r in shared)):
+                raise ValueError('Shared matrix requires one explicit cell-to-sample mapping')
         if len(shared) > 1 and len({r.get('assembly_parts_json') or '[]' for r in shared}) != 1:
             raise ValueError('Shared input has inconsistent assembly parts')
     return rows

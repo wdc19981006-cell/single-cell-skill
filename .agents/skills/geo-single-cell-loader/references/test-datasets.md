@@ -8,6 +8,7 @@ Development policy: inspect metadata and format links, use tiny synthetic fixtur
 | [GSE202051](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE202051) | 74 GSM; pancreatic cancer molecular taxonomy; three Series H5AD.gz files including adata_010nuc_10x and organoid-related data | snRNA-seq H5AD routing; inspect study heterogeneity and counts layers before selecting input; never Read10X_h5 |
 | [GSE211644](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211644) | 50 GSM; pancreatic tumor lymphocyte study; fresh/grown matrices, genes, barcodes and separate metadata.csv.gz | Complex pooled cell/sample and clinical mappings; distinguish fresh tissue from cultured TIL; never infer patient IDs from names |
 | [GSE229413](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229413) | 32 GSM; pancreatic donor/neoplastic-lesion study; GSM7162998 and GSM7162999 each publish raw and filtered feature_bc_matrix.h5 | Filtered preference within a known GSM; verify schema before H5 reading |
+| GSE264203 local regression | The downloaded pooled 10x H5 has seven barcode suffix groups while the confirmed Series has six GSM; no exhaustive source-backed cell map is available in the local run | Correct STOP before Seurat construction; never pair suffixes with GSM by order |
 
 GEO Series `RAW.tar` may contain processed files, so do not classify it as FASTQ-only by its filename. H5AD filenames establish routing candidates, not raw-count availability. GSE202051 is not uniformly one specimen/source type; inspect actual GSM and cell metadata.
 

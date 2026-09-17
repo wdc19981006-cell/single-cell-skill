@@ -5,13 +5,39 @@ import json
 import shutil
 import tarfile
 import urllib.request
+import urllib.error
 import zipfile
 import csv
 import time
 import os
+import errno
+import http.client
+import socket
 from datetime import datetime, timezone
 from pathlib import Path
 from common import ROOT, dataset_paths, local, read_csv, validate_manifest, verify_confirmation, workflow_path
+
+RETRY_DELAYS = (2, 5, 10)
+TRANSIENT_HTTP = {408, 425, 429, 500, 502, 503, 504}
+TRANSIENT_ERRNO = {errno.ETIMEDOUT, errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE}
+TRANSIENT_WINERROR = {10053, 10054, 10060, 10065}
+
+def transient_download_error(error):
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code in TRANSIENT_HTTP
+    if isinstance(error, urllib.error.URLError):
+        return transient_download_error(error.reason)
+    if isinstance(error, str):
+        return any(token in error.lower() for token in ('timed out', 'connection reset', 'connection aborted'))
+    if isinstance(error, (TimeoutError, socket.timeout, ConnectionResetError,
+                          ConnectionAbortedError, BrokenPipeError, http.client.RemoteDisconnected,
+                          http.client.IncompleteRead)):
+        return True
+    return (isinstance(error, OSError) and
+            (error.errno in TRANSIENT_ERRNO or getattr(error, 'winerror', None) in TRANSIENT_WINERROR))
+
+class IncompleteDownloadError(OSError):
+    pass
 
 def sha256(path):
     h = hashlib.sha256()
@@ -43,16 +69,32 @@ def download(url, target, expected=None, previous=None, expected_bytes=None):
     part = target.with_name(target.name + '.part')
     if part.exists(): raise ValueError('Unverified partial download exists: ' + str(part))
     request = urllib.request.Request(url, headers={'User-Agent': 'geo-single-cell-loader/1.0'})
-    started = time.perf_counter()
-    with urllib.request.urlopen(request, timeout=120) as response, part.open('wb') as out:
-        shutil.copyfileobj(response, out, length=1024 * 1024)
-        declared = getattr(response, 'headers', {}).get('Content-Length')
-    download_seconds = time.perf_counter() - started
-    actual_bytes = part.stat().st_size
-    if declared is not None and actual_bytes != int(declared):
-        raise ValueError(f'Incomplete HTTP response: received {actual_bytes} of {declared} bytes')
-    if expected_bytes is not None and actual_bytes != int(expected_bytes):
-        raise ValueError(f'Download size differs from verified source listing: received {actual_bytes} of {expected_bytes} bytes')
+    download_seconds = 0.0
+    retry = 0
+    for attempt in range(len(RETRY_DELAYS) + 1):
+        started = time.perf_counter()
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response, part.open('wb') as out:
+                shutil.copyfileobj(response, out, length=1024 * 1024)
+                declared = getattr(response, 'headers', {}).get('Content-Length')
+            actual_bytes = part.stat().st_size
+            if declared is not None and actual_bytes != int(declared):
+                raise IncompleteDownloadError(f'Incomplete HTTP response: received {actual_bytes} of {declared} bytes')
+            if expected_bytes is not None and actual_bytes != int(expected_bytes):
+                raise IncompleteDownloadError(f'Download size differs from verified source listing: received {actual_bytes} of {expected_bytes} bytes')
+            download_seconds += time.perf_counter() - started
+            break
+        except Exception as error:
+            download_seconds += time.perf_counter() - started
+            retryable = isinstance(error, IncompleteDownloadError) or transient_download_error(error)
+            if retryable:
+                part.unlink(missing_ok=True)
+            if not retryable or attempt == len(RETRY_DELAYS):
+                error.retry_count = retry
+                error.download_seconds = download_seconds
+                raise
+            retry += 1
+            time.sleep(RETRY_DELAYS[attempt])
     sha_started = time.perf_counter()
     actual = sha256(part)
     sha_seconds = time.perf_counter() - sha_started
@@ -61,7 +103,7 @@ def download(url, target, expected=None, previous=None, expected_bytes=None):
     size = target.stat().st_size
     record = dict(url=url, sha256=actual, downloaded_at=datetime.now(timezone.utc).isoformat(), bytes=size,
                   status='DOWNLOADED',download_seconds=download_seconds,mb_per_second=size/1000000/download_seconds if download_seconds else 0,
-                  retry=0,sha_seconds=sha_seconds,extract_seconds=0)
+                  retry=retry,sha_seconds=sha_seconds,extract_seconds=0)
     return record
 
 def extract_member(archive, member, destination):
@@ -120,7 +162,7 @@ def assemble_parts(root, gse, destination, parts, by_path):
                 sha_seconds=sha_seconds, extract_seconds=assembled_seconds)
 
 def run(manifest, root):
-    rows = validate_manifest(read_csv(manifest), root); verify_confirmation(manifest)
+    rows = validate_manifest(read_csv(manifest), root, allow_pending_probes=True); verify_confirmation(manifest)
     gse = rows[0]['database']
     workflow_path(root, manifest, gse)
     paths = dataset_paths(root, gse)
@@ -135,6 +177,10 @@ def run(manifest, root):
         pending = log.with_suffix('.pending.json')
         pending.write_text(json.dumps(list(by_path.values()), indent=2), encoding='utf-8')
         pending.replace(log)
+    def failed(item, error):
+        profile(log, local_path=item['local_path'], url=item['url'], member=item.get('member', ''),
+                status='FAILED', retry=getattr(error, 'retry_count', 0),
+                download_seconds=getattr(error, 'download_seconds', 0))
     plans = {}
     for row in rows:
         for item in json.loads(row.get('files_json') or '[]'): plans[item['local_path']] = item
@@ -153,7 +199,11 @@ def run(manifest, root):
                 continue
             cache_rel = f'data/{gse}/raw/_archives/' + hashlib.sha256(item['url'].encode()).hexdigest() + '.archive'
             cache = local(root, cache_rel, f'data/{gse}/raw')
-            archive_record = download(item['url'], cache, item.get('sha256'), by_path.get(cache_rel), item.get('size'))
+            try:
+                archive_record = download(item['url'], cache, item.get('sha256'), by_path.get(cache_rel), item.get('size'))
+            except Exception as error:
+                failed(dict(item, local_path=cache_rel), error)
+                raise
             record(dict(archive_record, local_path=cache_rel))
             extract_started = time.perf_counter()
             extract_member(cache, item['member'], target)
@@ -164,7 +214,12 @@ def run(manifest, root):
                         status='DOWNLOADED',extract_seconds=extract_seconds,sha_seconds=archive_record['sha_seconds']+time.perf_counter()-sha_started))
         else:
             if old and old.get('member'): raise ValueError('Download mapping differs from existing provenance')
-            record(dict(download(item['url'], target, item.get('sha256'), old, item.get('size')), local_path=item['local_path']))
+            try:
+                obtained = download(item['url'], target, item.get('sha256'), old, item.get('size'))
+            except Exception as error:
+                failed(item, error)
+                raise
+            record(dict(obtained, local_path=item['local_path']))
     assemblies = {}
     for row in rows:
         parts = json.loads(row.get('assembly_parts_json') or '[]')

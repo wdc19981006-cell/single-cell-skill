@@ -48,7 +48,7 @@ def confirm(report, confirmation, output, root):
             area = 'data/' + row['database']
             permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
             row['cell_map_md5'] = digest(local(root,row['cell_map_path'],permitted))
-    validate_manifest(rows, root)
+    validate_manifest(rows, root, allow_pending_probes=True)
     if output.exists(): raise ValueError('Manifest already exists; choose a new path or explicitly archive it first')
     write_csv(output, rows)
     approval.update(manifest_md5=digest(output), confirmed_at=datetime.now(timezone.utc).isoformat())
@@ -65,8 +65,8 @@ def main():
     p.add_argument('--validate', type=Path)
     a = p.parse_args()
     if a.validate:
-        validate_manifest(read_csv(a.validate), a.root.resolve()); verify_confirmation(a.validate)
-        print('Manifest and confirmation valid')
+        validate_manifest(read_csv(a.validate), a.root.resolve(), allow_pending_probes=True); verify_confirmation(a.validate)
+        print('Manifest and confirmation valid; pending text/pooled probes must finish before build')
     elif a.report and a.confirmation and a.output:
         confirm(a.report, a.confirmation, a.output, a.root.resolve()); print(a.output)
     else: p.error('Provide --validate, or --report --confirmation --output')

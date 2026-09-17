@@ -81,11 +81,14 @@ class SplitRawCountsTests(unittest.TestCase):
         class Response(io.BytesIO):
             headers = {"Content-Length": "10"}
         target = self.raw / "counts.csv.gz01"
-        with patch("download_processed.urllib.request.urlopen", return_value=Response(b"short")):
-            with self.assertRaisesRegex(ValueError, "Incomplete HTTP response"):
+        with patch("download_processed.urllib.request.urlopen", side_effect=lambda *_args, **_kwargs: Response(b"short")) as get, \
+                patch("download_processed.time.sleep") as sleep:
+            with self.assertRaisesRegex(OSError, "Incomplete HTTP response"):
                 download("https://example.org/part01", target, expected_bytes=10)
+        self.assertEqual(get.call_count, 4)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [2, 5, 10])
         self.assertFalse(target.exists())
-        self.assertTrue((self.raw / "counts.csv.gz01.part").exists())
+        self.assertFalse((self.raw / "counts.csv.gz01.part").exists())
 
     def test_confirmation_accepts_persistent_cell_map(self):
         workflow = self.root / "data/GSE123/.workflow"

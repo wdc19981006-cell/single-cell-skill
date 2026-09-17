@@ -329,11 +329,44 @@ class LoaderTests(unittest.TestCase):
         log=json.loads((self.workflow/'download.json').read_text())
         self.assertTrue(all(key in log[0] for key in ('url','sha256','bytes','downloaded_at','local_path')))
         profile=read_csv(self.workflow/'download_profile.csv')
-        self.assertEqual([entry['status'] for entry in profile],['DOWNLOADED','REUSED'])
-        self.assertTrue(all(entry['sha_seconds'] for entry in profile))
+        self.assertEqual([entry['status'] for entry in profile],['DOWNLOADED','REUSED','FAILED'])
+        self.assertTrue(all(entry['sha_seconds'] for entry in profile[:2]))
         self.assertEqual(profile[0]['retry'],'0')
         self.assertFalse(list((self.workflow.parent/'raw').rglob('*.json')))
         self.assertEqual((self.root/target).read_bytes(),b'changed')
+
+    def test_timeout_retry_succeeds_and_audit_records_actual_count(self):
+        r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'
+        r['files_json']=json.dumps([dict(url='https://example.org/matrix.mtx.gz',local_path=target)])
+        manifest=self.confirmed([r])
+        with patch('download_processed.urllib.request.urlopen',
+                   side_effect=[TimeoutError('timed out'), io.BytesIO(b'fixture')]) as request, \
+             patch('download_processed.time.sleep') as sleep:
+            run(manifest,self.root)
+        self.assertEqual(request.call_count,2)
+        sleep.assert_called_once_with(2)
+        self.assertEqual(read_csv(self.workflow/'download_profile.csv')[0]['retry'],'1')
+        self.assertEqual((self.root/target).read_bytes(),b'fixture')
+        self.assertFalse((self.root/(target+'.part')).exists())
+        with patch('download_processed.urllib.request.urlopen',
+                   side_effect=AssertionError('Verified file must be reused')):
+            run(manifest,self.root)
+        self.assertEqual(read_csv(self.workflow/'download_profile.csv')[-1]['status'],'REUSED')
+
+    def test_temporary_http_error_stops_after_three_retries(self):
+        from urllib.error import HTTPError
+        from download_processed import download
+        target=self.workflow.parent/'raw/part.csv'
+        response=HTTPError('https://example.org/part.csv',503,'temporary',{},None)
+        with patch('download_processed.urllib.request.urlopen',side_effect=response) as request, \
+             patch('download_processed.time.sleep') as sleep:
+            with self.assertRaises(HTTPError) as raised:
+                download('https://example.org/part.csv',target)
+        self.assertEqual(request.call_count,4)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list],[2,5,10])
+        self.assertEqual(raised.exception.retry_count,3)
+        self.assertFalse(target.exists())
+        self.assertFalse(target.with_name(target.name+'.part').exists())
 
     def test_unverified_preexisting_file_is_not_overwritten(self):
         r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'
