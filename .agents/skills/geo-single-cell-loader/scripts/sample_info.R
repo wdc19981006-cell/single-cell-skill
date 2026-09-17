@@ -1,7 +1,7 @@
 # Preserve the user report and append results from the validated Seurat object.
 update_sample_info <- function(out,status,m=NULL,object=NULL,inputs=character(),warnings=character(),failure=NULL) {
   path <- file.path(out,"sample_info.txt")
-  lines <- if(file.exists(path)) readLines(path,encoding="UTF-8",warn=FALSE) else c(basename(out),"raw/ contains unchanged GEO source expression files, not necessarily sequencing FASTQ raw reads.")
+  lines <- if(file.exists(path)) readLines(path,encoding="UTF-8",warn=FALSE) else c(basename(out),"raw/ contains verified source expression files and exact byte reconstructions, not necessarily sequencing FASTQ raw reads.")
   # Remove prior status/failure/result footer on retries, leaving sample facts intact.
   headings <- which(lines %in% c("PROCESSING SUMMARY","Failure:"))
   if(length(headings)) {

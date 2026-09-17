@@ -1,8 +1,8 @@
-"""Convert a large GEO genes-by-cells tabular gzip into sparse triplets.
+"""Convert a large genes-by-cells tabular gzip into sparse triplets.
 
 The source is read once. Only nonzero entries are written to temporary binary
-files; the input remains untouched. The header has cell IDs from column one,
-while each following row starts with a gene ID.
+files; the input remains untouched. The header lists cell IDs after the
+leading gene-column label, while each following row starts with a gene ID.
 """
 
 import gzip
@@ -15,7 +15,11 @@ from pathlib import Path
 import numpy as np
 
 
-def convert(source: Path, output: Path) -> dict:
+def convert(source: Path, output: Path, delimiter: str = "tab") -> dict:
+    separators = {"tab": b"\t", "comma": b","}
+    if delimiter not in separators:
+        raise ValueError("Streaming delimiter must be tab or comma")
+    separator_byte = separators[delimiter]
     output.mkdir(parents=True, exist_ok=False)
     opener = gzip.open if source.name.lower().endswith(".gz") else open
     with opener(source, "rb") as src, (output / "i.bin").open("wb") as rows, \
@@ -26,11 +30,11 @@ def convert(source: Path, output: Path) -> dict:
         first_row = src.readline()
         if not first_row:
             raise ValueError("Empty matrix")
-        _, separator, first_payload = first_row.rstrip(b"\r\n").partition(b"\t")
+        _, separator, first_payload = first_row.rstrip(b"\r\n").partition(separator_byte)
         if not separator:
             raise ValueError("Matrix row 1 lacks expression fields")
-        header_fields = [item.decode("utf-8-sig") for item in header.split(b"\t")]
-        value_columns = first_payload.count(b"\t") + 1
+        header_fields = [item.decode("utf-8-sig") for item in header.split(separator_byte)]
+        value_columns = first_payload.count(separator_byte) + 1
         if len(header_fields) == value_columns + 1:
             cells = header_fields[1:]
         elif len(header_fields) == value_columns:
@@ -49,7 +53,7 @@ def convert(source: Path, output: Path) -> dict:
         warnings.simplefilter("error", DeprecationWarning)
         for line in itertools.chain((first_row,), src):
             line = line.rstrip(b"\r\n")
-            gene_bytes, sep, payload = line.partition(b"\t")
+            gene_bytes, sep, payload = line.partition(separator_byte)
             if not sep:
                 raise ValueError(f"Matrix row {n_genes + 1} lacks expression fields")
             gene = gene_bytes.decode("utf-8")
@@ -57,7 +61,7 @@ def convert(source: Path, output: Path) -> dict:
                 raise ValueError(f"Blank or duplicate gene ID at row {n_genes + 1}")
             seen_genes.add(gene)
             try:
-                values = np.fromstring(payload, dtype=np.float64, sep="\t")
+                values = np.fromstring(payload, dtype=np.float64, sep=separator_byte.decode("ascii"))
             except (ValueError, DeprecationWarning) as exc:
                 raise ValueError(f"Malformed count at row {n_genes + 1}: {exc}") from exc
             if values.size != n_cells:
@@ -77,13 +81,13 @@ def convert(source: Path, output: Path) -> dict:
     if not n_genes or not nnz:
         raise ValueError("Empty matrix")
     result = {"genes": n_genes, "cells": n_cells, "nonzero": nnz,
-              "reader": "NumPy streaming tabular counts"}
+              "reader": f"NumPy streaming {delimiter}-delimited counts"}
     (output / "dimensions.json").write_text(json.dumps(result), encoding="utf-8")
     print(json.dumps(result), flush=True)
     return result
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise SystemExit("Usage: stream_text_to_sparse.py INPUT.txt[.gz] OUTPUT_DIRECTORY")
-    convert(Path(sys.argv[1]), Path(sys.argv[2]))
+    if len(sys.argv) not in (3, 4):
+        raise SystemExit("Usage: stream_text_to_sparse.py INPUT.txt[.gz] OUTPUT_DIRECTORY [tab|comma]")
+    convert(Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3] if len(sys.argv) == 4 else "tab")

@@ -26,7 +26,7 @@ def render(root, gse, rows, inspection=None, confirmed=False):
              'Inspected samples:', str(inspection.get('inspected_samples', len(rows))), '',
              'Selected samples:', str(len(rows)) if confirmed else 'Not yet selected', '', 'Group:',
              'User-confirmed; see each sample and GROUP SUMMARY.' if confirmed else 'Not assigned. Waiting for user confirmation.', '',
-             'Source data directory:', 'raw/ contains source expression files downloaded from GEO, unchanged by this Skill.',
+             'Source data directory:', 'raw/ contains verified source files and exact byte reconstructions used for expression input.',
              'raw/ does not necessarily mean sequencing FASTQ raw reads.', '',
              'Evidence review:', 'Unresolved metadata must be reviewed against GEO, publications and public sample metadata.', '',
              LINE, 'SAMPLE INFORMATION', LINE, '']

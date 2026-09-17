@@ -77,13 +77,15 @@ select_rna <- function(x) {
   x
 }
 stream_text_candidate <- function(row, source_bytes) {
+  delimiter <- value(row,"delimiter")
+  streaming_threshold <- if (delimiter == "comma") 128 * 1024^2 else 256 * 1024^2
   value(row,"count_source") == "counts" &&
-    value(row,"delimiter") == "tab" &&
+    delimiter %in% c("tab","comma") &&
     value(row,"orientation") == "genes_by_cells" &&
     value(row,"feature_column") == "__row_names__" &&
     !nzchar(value(row,"drop_columns")) &&
     (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1") ||
-     (is.finite(source_bytes) && source_bytes >= 256 * 1024^2))
+     (is.finite(source_bytes) && source_bytes >= streaming_threshold))
 }
 route_input <- function(row, root) {
   type <- value(row,"file_type")
@@ -196,18 +198,18 @@ read_expression <- function(row, root) {
     }
   } else if (type == "text") {
     if (identical(route$reader,"Python NumPy streaming + Matrix::sparseMatrix")) {
-      if (chosen != "counts" || value(row,"delimiter") != "tab" ||
+      if (chosen != "counts" || !value(row,"delimiter") %in% c("tab","comma") ||
           value(row,"orientation") != "genes_by_cells" ||
           value(row,"feature_column") != "__row_names__" ||
           nzchar(value(row,"drop_columns"))) {
-        stop("Streaming text reader requires inspected tab-delimited genes_by_cells counts with __row_names__ and no dropped columns")
+        stop("Streaming text reader requires inspected tab/comma-delimited genes_by_cells counts with __row_names__ and no dropped columns")
       }
       python <- Sys.getenv("GEO_SINGLE_CELL_PYTHON")
       if (!nzchar(python) || !file.exists(python)) stop("Set GEO_SINGLE_CELL_PYTHON to a verified Python executable containing NumPy")
       tmp <- tempfile("geo-text-sparse-")
       on.exit(unlink(tmp,recursive=TRUE),add=TRUE)
       helper <- file.path(geo_scripts_dir,"stream_text_to_sparse.py")
-      status <- suppressWarnings(system2(python,shQuote(c(helper,path,tmp)),stdout=TRUE,stderr=TRUE))
+      status <- suppressWarnings(system2(python,shQuote(c(helper,path,tmp,value(row,"delimiter"))),stdout=TRUE,stderr=TRUE))
       if (!is.null(attr(status,"status")) && attr(status,"status") != 0L) stop("Streaming text conversion failed: ",paste(status,collapse="\n"))
       dimensions <- jsonlite::fromJSON(file.path(tmp,"dimensions.json"))
       if (dimensions$nonzero <= 0 || dimensions$nonzero >= .Machine$integer.max) stop("Invalid sparse matrix nonzero count")

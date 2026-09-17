@@ -45,7 +45,9 @@ def confirm(report, confirmation, output, root):
     for row in rows:
         row['group'] = groups[row['sample']]
         if not missing(row.get('cell_map_path')):
-            row['cell_map_md5'] = digest(local(root,row['cell_map_path'],'data/' + row['database'] + '/.workflow'))
+            area = 'data/' + row['database']
+            permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
+            row['cell_map_md5'] = digest(local(root,row['cell_map_path'],permitted))
     validate_manifest(rows, root)
     if output.exists(): raise ValueError('Manifest already exists; choose a new path or explicitly archive it first')
     write_csv(output, rows)

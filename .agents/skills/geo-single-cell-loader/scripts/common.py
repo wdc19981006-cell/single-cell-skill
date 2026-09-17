@@ -238,7 +238,7 @@ def detect_trio(directory):
 
 def validate_manifest(rows, root):
     if not rows: raise ValueError('Empty manifest')
-    seen, databases, destinations = set(), set(), {}
+    seen, databases, destinations, assemblies = set(), set(), {}, {}
     for row in rows:
         for key in REQUIRED + ('local_path', 'file_type', 'count_source', 'count_evidence', 'metadata_evidence'):
             if missing(row.get(key)): raise ValueError('Missing ' + key)
@@ -268,14 +268,30 @@ def validate_manifest(rows, root):
             u = urlparse(item['url'])
             if u.scheme != 'https' or not u.hostname or u.username or u.password: raise ValueError('HTTPS public URL required')
             if u.query and re.search(r'token|signature|credential|key=', u.query, re.I): raise ValueError('Do not store credentials in URLs')
+            if 'size' in item and (not isinstance(item['size'], int) or isinstance(item['size'], bool) or item['size'] <= 0):
+                raise ValueError('Declared source size must be a positive integer')
             previous = destinations.setdefault(item['local_path'], item)
             if previous != item: raise ValueError('Conflicting download destination')
+        parts = json.loads(row.get('assembly_parts_json') or '[]')
+        if parts:
+            if (not isinstance(parts, list) or len(parts) < 2 or
+                    any(not isinstance(part, str) for part in parts) or len(parts) != len(set(parts))):
+                raise ValueError('Assembly requires at least two unique ordered parts')
+            if row['local_path'] in parts or any(part not in {item['local_path'] for item in files} for part in parts):
+                raise ValueError('Assembly parts must be declared download destinations')
+            for part in parts: local(root, part, area + '/raw')
+            previous = assemblies.setdefault(row['local_path'], parts)
+            if previous != parts: raise ValueError('Shared input has inconsistent assembly parts')
     if len(databases) != 1: raise ValueError('One GSE per manifest')
+    if any(path in destinations for path in assemblies):
+        raise ValueError('Assembled input collides with a download destination')
     by_path = {}
     for row in rows: by_path.setdefault(row['local_path'], []).append(row)
     for shared in by_path.values():
         if len(shared) > 1 and (any(missing(r.get('cell_map_path')) for r in shared) or len({r['cell_map_path'] for r in shared}) != 1):
             raise ValueError('Shared matrix requires one explicit cell-to-sample mapping')
+        if len(shared) > 1 and len({r.get('assembly_parts_json') or '[]' for r in shared}) != 1:
+            raise ValueError('Shared input has inconsistent assembly parts')
     return rows
 
 def digest(path):

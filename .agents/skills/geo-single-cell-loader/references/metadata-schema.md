@@ -27,6 +27,14 @@ The report, approval and manifest use canonical `.workflow/sample_report.csv`, `
 
 For a trio, put three entries in the same array, with canonical matrix/features/barcodes destinations. For an archive member add `member` with the exact archive member name. Optional `sha256` means the downloaded file/archive SHA256, not extracted-member SHA256. One archive URL is downloaded once. `files_json=[]` permits existing local inputs, which are identified as such in the summary. URLs cannot contain credentials. Downloaded hashes are local integrity/provenance records, not author-signed checksums.
 
+For author-hosted byte fragments of one source file, list every fragment in order in
+`assembly_parts_json` as repository-relative paths already declared in `files_json`.
+Set `local_path` to the reconstructed file inside `raw/`; the downloader verifies
+each fragment's provenance, concatenates the bytes atomically, and records the
+assembled file's checksum. Each source item may include `size` from a verified
+public listing; both that size and any HTTP Content-Length must match the received
+bytes. Keep the original fragments in `raw/` for reconstruction.
+
 ## Pooled matrices and separate metadata
 
 When multiple samples share an input, every related manifest row must identify the same `cell_map_path`. This is a CSV with columns `cell,sample`; cell IDs exactly match the input matrix, without prefixes. Duplicate cells, extra cells, missing cells, missing samples or foreign samples stop loading. The manifest references this mapping as an explicit subordinate artifact; expression/clinical columns are never joined using position or filename guessing. Record the cell map source in `metadata_evidence`.

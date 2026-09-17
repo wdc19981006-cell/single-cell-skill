@@ -28,7 +28,7 @@ def profile(log, **fields):
         if not exists: writer.writeheader()
         writer.writerow({key: fields.get(key, '') for key in columns})
 
-def download(url, target, expected=None, previous=None):
+def download(url, target, expected=None, previous=None, expected_bytes=None):
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
         if not previous: raise ValueError('Unverified preexisting file: ' + str(target))
@@ -38,13 +38,21 @@ def download(url, target, expected=None, previous=None):
         sha_seconds = time.perf_counter() - sha_started
         if old['url'] != url or old['sha256'] != actual or int(old['bytes']) != target.stat().st_size: raise ValueError('Existing download does not match provenance')
         if expected and old['sha256'] != expected: raise ValueError('Checksum mismatch')
+        if expected_bytes is not None and target.stat().st_size != int(expected_bytes): raise ValueError('Existing download has wrong declared source size')
         return dict(old, status='REUSED', download_seconds=0, mb_per_second=0, retry=0, sha_seconds=sha_seconds, extract_seconds=0)
     part = target.with_name(target.name + '.part')
+    if part.exists(): raise ValueError('Unverified partial download exists: ' + str(part))
     request = urllib.request.Request(url, headers={'User-Agent': 'geo-single-cell-loader/1.0'})
     started = time.perf_counter()
     with urllib.request.urlopen(request, timeout=120) as response, part.open('wb') as out:
         shutil.copyfileobj(response, out, length=1024 * 1024)
+        declared = getattr(response, 'headers', {}).get('Content-Length')
     download_seconds = time.perf_counter() - started
+    actual_bytes = part.stat().st_size
+    if declared is not None and actual_bytes != int(declared):
+        raise ValueError(f'Incomplete HTTP response: received {actual_bytes} of {declared} bytes')
+    if expected_bytes is not None and actual_bytes != int(expected_bytes):
+        raise ValueError(f'Download size differs from verified source listing: received {actual_bytes} of {expected_bytes} bytes')
     sha_started = time.perf_counter()
     actual = sha256(part)
     sha_seconds = time.perf_counter() - sha_started
@@ -73,6 +81,43 @@ def extract_member(archive, member, destination):
             if len(matches) != 1 or not matches[0].isfile(): raise ValueError('Ambiguous/nonregular archive member')
             with t.extractfile(matches[0]) as src, part.open('wb') as dst: shutil.copyfileobj(src, dst)
     part.replace(destination)
+
+
+def assemble_parts(root, gse, destination, parts, by_path):
+    """Concatenate verified ordered byte fragments without altering the sources."""
+    target = local(root, destination, f'data/{gse}/raw')
+    sources = [local(root, part, f'data/{gse}/raw') for part in parts]
+    for part, source in zip(parts, sources):
+        previous = by_path.get(part)
+        if not previous or not source.is_file() or sha256(source) != previous.get('sha256'):
+            raise ValueError('Assembly part lacks verified download provenance: ' + part)
+    previous = by_path.get(destination)
+    if target.exists():
+        if (not previous or previous.get('url') != 'assembly:concat' or
+                previous.get('sha256') != sha256(target) or
+                int(previous.get('bytes') or -1) != target.stat().st_size):
+            raise ValueError('Existing assembled input does not match provenance')
+        return dict(previous, status='REUSED', download_seconds=0, mb_per_second=0,
+                    retry=0, sha_seconds=0, extract_seconds=0)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    pending = target.with_name(target.name + '.part')
+    if pending.exists():
+        raise ValueError('Unverified partial assembly exists: ' + str(pending))
+    started = time.perf_counter()
+    with pending.open('wb') as output:
+        for source in sources:
+            with source.open('rb') as input_file:
+                shutil.copyfileobj(input_file, output, length=1024 * 1024)
+    assembled_seconds = time.perf_counter() - started
+    sha_started = time.perf_counter()
+    digest = sha256(pending)
+    sha_seconds = time.perf_counter() - sha_started
+    pending.replace(target)
+    return dict(local_path=destination, url='assembly:concat', member='',
+                bytes=target.stat().st_size, sha256=digest,
+                downloaded_at=datetime.now(timezone.utc).isoformat(), status='ASSEMBLED',
+                download_seconds=0, mb_per_second=0, retry=0,
+                sha_seconds=sha_seconds, extract_seconds=assembled_seconds)
 
 def run(manifest, root):
     rows = validate_manifest(read_csv(manifest), root); verify_confirmation(manifest)
@@ -108,7 +153,7 @@ def run(manifest, root):
                 continue
             cache_rel = f'data/{gse}/raw/_archives/' + hashlib.sha256(item['url'].encode()).hexdigest() + '.archive'
             cache = local(root, cache_rel, f'data/{gse}/raw')
-            archive_record = download(item['url'], cache, item.get('sha256'), by_path.get(cache_rel))
+            archive_record = download(item['url'], cache, item.get('sha256'), by_path.get(cache_rel), item.get('size'))
             record(dict(archive_record, local_path=cache_rel))
             extract_started = time.perf_counter()
             extract_member(cache, item['member'], target)
@@ -119,7 +164,13 @@ def run(manifest, root):
                         status='DOWNLOADED',extract_seconds=extract_seconds,sha_seconds=archive_record['sha_seconds']+time.perf_counter()-sha_started))
         else:
             if old and old.get('member'): raise ValueError('Download mapping differs from existing provenance')
-            record(dict(download(item['url'], target, item.get('sha256'), old), local_path=item['local_path']))
+            record(dict(download(item['url'], target, item.get('sha256'), old, item.get('size')), local_path=item['local_path']))
+    assemblies = {}
+    for row in rows:
+        parts = json.loads(row.get('assembly_parts_json') or '[]')
+        if parts: assemblies[row['local_path']] = parts
+    for destination, parts in assemblies.items():
+        record(assemble_parts(root, gse, destination, parts, by_path))
     if not log.exists():
         log.parent.mkdir(parents=True, exist_ok=True)
         log.write_text('[]\n', encoding='utf-8')
