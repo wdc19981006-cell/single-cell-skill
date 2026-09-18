@@ -76,6 +76,26 @@ select_rna <- function(x) {
   }
   x
 }
+repair_10x_missing_feature_names <- function(counts, features_path) {
+  missing_names <- which(blank(rownames(counts)))
+  if (!length(missing_names)) return(counts)
+  features <- utils::read.delim(features_path, header=FALSE, sep="\t", quote="",
+                                comment.char="", na.strings=character(), stringsAsFactors=FALSE)
+  if (nrow(features) != nrow(counts)) {
+    if (ncol(features) < 3L) stop("10x feature count does not match the selected RNA matrix")
+    features <- features[features[[3L]] == "Gene Expression", , drop=FALSE]
+  }
+  if (nrow(features) != nrow(counts)) stop("10x feature count does not match the selected RNA matrix")
+  names <- rownames(counts)
+  replacement <- as.character(features[[1L]][missing_names])
+  if (any(is.na(replacement) | !nzchar(replacement))) stop("10x feature ID is missing in both columns")
+  placeholder <- blank(replacement)
+  replacement[placeholder] <- paste0("unannotated_feature_", missing_names[placeholder])
+  names[missing_names] <- replacement
+  if (anyDuplicated(names)) stop("10x feature ID fallback creates duplicate gene names")
+  rownames(counts) <- names
+  counts
+}
 stream_text_candidate <- function(row, source_bytes) {
   delimiter <- value(row,"delimiter")
   streaming_threshold <- if (delimiter == "comma") 128 * 1024^2 else 256 * 1024^2
@@ -158,7 +178,9 @@ read_expression <- function(row, root) {
       output <- gzfile(file.path(tmp, paste0(pair[2], ".gz")), "wb")
       tryCatch(repeat { block <- readBin(input, "raw", 1048576); if (!length(block)) break; writeBin(block, output) }, finally={close(input); close(output)})
     }
-    x <- select_rna(Seurat::Read10X(tmp)); reader_used <- "Seurat::Read10X"
+    x <- select_rna(Seurat::Read10X(tmp))
+    x <- repair_10x_missing_feature_names(x, file.path(tmp, "features.tsv.gz"))
+    reader_used <- "Seurat::Read10X"
   } else if (type == "10x_h5") {
     need("hdf5r")
     if (grepl("\\.h5ad(\\.gz)?$", path, ignore.case=TRUE)) stop("H5AD is not 10x H5")
