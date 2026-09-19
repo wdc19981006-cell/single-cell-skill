@@ -12,6 +12,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / '.agents/skills/geo-single-cell-
 sys.path.insert(0, str(SCRIPTS))
 from common import digest, read_csv, verify_confirmation, write_csv
 from prebuild_probe import run
+from text_schema_probe import select_text_reader
 
 
 def row(gse, sample, path, kind='text'):
@@ -53,6 +54,11 @@ class PrebuildProbeTests(unittest.TestCase):
         completed = read_csv(manifest)[0]
         self.assertEqual((completed['delimiter'], completed['orientation'], completed['feature_column']),
                          ('comma', 'genes_by_cells', 'gene_id'))
+        self.assertEqual(completed['text_reader'], 'fread')
+        self.assertEqual((int(completed['matrix_rows']), int(completed['matrix_columns'])), (2, 2))
+        self.assertEqual(int(completed['estimated_dense_bytes']), 32)
+        self.assertGreater(int(completed['physical_ram_bytes']), 0)
+        self.assertIn('below 25%', completed['reader_selection_reason'])
         verify_confirmation(manifest)
         self.assertEqual(json.loads((workflow / 'text_schema_probe.json').read_text())[0]['status'],
                          'VERIFIED_SAMPLE')
@@ -120,6 +126,46 @@ class PrebuildProbeTests(unittest.TestCase):
         completed = read_csv(manifest)[0]
         self.assertEqual(completed['feature_column'], '__row_names__')
         self.assertEqual(completed['text_header_missing_id'], 'false')
+
+    def test_gse166504_dimensions_stream_despite_small_compressed_size(self):
+        reader, estimated, reason = select_text_reader(
+            25127, 82168, 120 * 1024**2, 32 * 1024**3, 'comma', 'genes_by_cells', [])
+        self.assertEqual(reader, 'streaming')
+        self.assertEqual(estimated, 25127 * 82168 * 8)
+        self.assertIn('25% of physical RAM', reason)
+
+    def _tenx(self, gse, features, matrix_dimensions=(2, 2, 2)):
+        trio = self.root / 'data' / gse / 'raw' / 'trio'
+        trio.mkdir(parents=True)
+        rows, columns, nonzero = matrix_dimensions
+        (trio / 'matrix.mtx').write_text(
+            f'%%MatrixMarket matrix coordinate integer general\n% fixture\n{rows} {columns} {nonzero}\n1 1 1\n2 2 1\n',
+            encoding='utf-8')
+        (trio / 'features.tsv').write_text('\n'.join(features) + '\n', encoding='utf-8')
+        (trio / 'barcodes.tsv').write_text('AAACCTGAGGCTACGA-1\nAAACCTGAGGTTCCTA-1\n', encoding='utf-8')
+
+    def test_10x_missing_gene_name_records_feature_id_fallback(self):
+        gse = 'GSE999999999'
+        self._tenx(gse, ['ENSG000001\tNA\tGene Expression',
+                         'ENSG000002\tA2M\tGene Expression'])
+        workflow, manifest = self.setup_manifest(gse, [row(gse, 'GSM1', 'trio', '10x_mtx')])
+        run(manifest, self.root)
+        completed = read_csv(manifest)[0]
+        self.assertEqual(completed['feature_name_fallback'], 'feature_id_for_missing_gene_name')
+        report = json.loads((workflow / 'tenx_structure_probe.json').read_text())[0]
+        self.assertEqual(report['status'], 'VERIFIED')
+        self.assertEqual(report['missing_gene_names'], 1)
+        self.assertEqual(report['gene_expression_features'], 2)
+
+    def test_10x_dimension_mismatch_stops_before_build(self):
+        gse = 'GSE999999999'
+        self._tenx(gse, ['ENSG000001\tA1BG\tGene Expression',
+                         'ENSG000002\tA2M\tGene Expression'], matrix_dimensions=(3, 2, 2))
+        workflow, manifest = self.setup_manifest(gse, [row(gse, 'GSM1', 'trio', '10x_mtx')])
+        with self.assertRaisesRegex(ValueError, 'dimensions mismatch'):
+            run(manifest, self.root)
+        report = json.loads((workflow / 'tenx_structure_probe.json').read_text())[0]
+        self.assertEqual(report['status'], 'STOP')
 
     def _h5(self, gse, suffixes):
         raw = self.root / 'data' / gse / 'raw'

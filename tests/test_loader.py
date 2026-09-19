@@ -15,7 +15,8 @@ from common import detect_trio, file_type, choose_filtered, local, read_csv, val
 from build_manifest import confirm
 from download_processed import extract_member, run, sha256
 from inspect_geo import inspect, parse_soft, propose_input
-from stage_a_policy import discover_known_gse
+from stage_a_policy import assess_single_cell_modality, discover_known_gse, enforce_single_cell_modality
+import run_confirmed as confirmed_runner
 from sample_info import render
 
 def row(sample='GSM2'):
@@ -296,7 +297,7 @@ class LoaderTests(unittest.TestCase):
         calls=[]
         def info(gse):
             calls.append(('get_geo_info',gse))
-            return dict(accession=gse,complete=True,sample_count=2,samples=[dict(accession='GSM1'),dict(accession='GSM2')],source_urls=['https://example.org/series'])
+            return dict(accession=gse,complete=True,sample_count=2,title='Single-cell RNA-seq fixture',samples=[dict(accession='GSM1'),dict(accession='GSM2')],source_urls=['https://example.org/series'])
         def files(gse):
             calls.append(('list_geo_files',gse))
             return dict(files=[dict(owner_accession=gse,source_level='GSE',candidate_format='txt',url='https://example.org/counts.tsv.gz')])
@@ -306,6 +307,7 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual(fallback_calls,[])
         self.assertEqual(result['discovery_method'],'geo_mcp'); self.assertTrue(result['mcp_complete'])
         self.assertEqual(result['mcp_tools_used'],['get_geo_info','list_geo_files'])
+        self.assertEqual(result['modality_gate']['status'],'single_cell')
 
     def test_stage_a_mcp_failure_calls_fallback_once_with_reason(self):
         fallback_calls=[]
@@ -314,6 +316,28 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual(len(fallback_calls),1)
         self.assertIn('synthetic startup failure',fallback_calls[0][1])
         self.assertEqual(result['discovery_method'],'inspect_geo_fallback'); self.assertFalse(result['mcp_complete'])
+
+    def test_gse116504_microarray_stops_before_expression_download(self):
+        inspection = dict(gse='GSE116504', study_type='Expression profiling by array',
+                          title='Microarray analysis of tissue')
+        gate = assess_single_cell_modality(inspection)
+        self.assertEqual(gate['status'], 'non_single_cell')
+        self.assertFalse(gate['seurat_build_allowed'])
+        with self.assertRaisesRegex(ValueError, 'STOP before processed expression download'):
+            enforce_single_cell_modality(inspection)
+        allowed = enforce_single_cell_modality(inspection, allow_non_single_cell_download=True)
+        self.assertTrue(allowed['ordinary_download_allowed'])
+        self.assertFalse(allowed['seurat_build_allowed'])
+
+        (self.workflow / 'inspection.json').write_text(json.dumps(inspection), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(
+            json.dumps({'run_id': '20260918T000000Z-12345678'}), encoding='utf-8')
+        with patch.object(confirmed_runner, 'execute') as execute, \
+             patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit'):
+            with self.assertRaisesRegex(RuntimeError, 'non-single-cell|microarray'):
+                confirmed_runner.run('GSE999999999', self.root)
+        execute.assert_not_called()
+        self.assertFalse((self.workflow.parent / 'raw').exists())
 
     def test_download_reuse_and_checksum_refusal(self):
         r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'

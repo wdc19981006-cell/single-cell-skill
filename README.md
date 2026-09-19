@@ -21,6 +21,8 @@
 
 MCP 成功后，Stage A 直接用同一套 structured public facts 写入 `inspection.json`、`sample_report.csv` 和 `sample_info.txt`，不会再运行 `inspect_geo.py` 重复查询。只有真实工具不可用、启动/请求错误或 MCP 结果无法补全时才 fallback，并必须通过 `--fallback-reason` 记录实际失败原因。`inspection.json` 用 `discovery_method`、`mcp_tools_used`、`mcp_complete`、起止时间和秒数标识来源；MCP 为 `geo_mcp`，fallback 为 `inspect_geo_fallback`。不能仅因工具尚未调用或老会话未暴露工具就声称 MCP 不可用。
 
+Stage A 还会执行 single-cell modality gate：明确的 microarray 或 bulk RNA-seq 会在表达矩阵下载和 Seurat 构建前停止；只有用户明确要求“即使不是单细胞也下载文件”时，才允许普通文件下载，且不会进入 Seurat 构建。
+
 ## Pooled/shared matrix handling
 
 manifest 中多个 sample 可以共享一个 pooled expression matrix，但必须共享同一个经过确认的 `cell_map_path`。构建器用包含路径、格式、counts source、分隔符、方向、feature/drop columns 和 assay 的 read signature 检查读取语义；相同路径的配置不一致立即停止。每个唯一物理表达输入只调用一次 reader，每个 shared cell map 也只读取一次。
@@ -31,11 +33,11 @@ manifest 中多个 sample 可以共享一个 pooled expression matrix，但必�
 
 | Input format | Reader | Mapping strategy |
 |---|---|---|
-| 10x trio | `Seurat::Read10X()` | 每个 physical trio 读取一次；单样本加 GSM 前缀 |
+| 10x trio | prebuild 结构检查后 `Seurat::Read10X()` | 每个 physical trio 检查/读取一次；缺 gene name 时可用唯一 feature ID 修复 |
 | 10x H5 | schema 检查后 `Seurat::Read10X_h5()` | 单样本前缀或显式 cell map |
 | H5AD / H5AD.gz | 优先 `zellkonverter::readH5AD(reader="R")`，否则仅使用显式配置的 Python anndata | 必须明确 `X`、`raw` 或 counts layer；多样本使用 cell map |
 | Seurat RDS | `readRDS()` 后只提取指定 RNA counts | 丢弃作者对象其余状态，重新建对象 |
-| CSV / TSV / TXT / TXT.GZ | `data.table::fread()` | manifest 明确 delimiter、orientation、feature/drop columns |
+| CSV / TSV / TXT / TXT.GZ | 小矩阵 `data.table::fread()`；dense 估算达到物理 RAM 25% 时 Python streaming | prebuild 记录 genes/cells、dense bytes、RAM 和 reader 选择原因 |
 | pooled/shared | 复用底层 reader | 整个矩阵读取一次、cell map 读取一次，不按样本拆矩阵 |
 | expression + separate metadata | expression 走自身 reader | metadata mapper 用明确 cell/sample key 映射 |
 | ZIP / TAR / TGZ | 只提取 manifest 指定 exact member | 提取结果返回真实格式 reader，不建立 archive reader |

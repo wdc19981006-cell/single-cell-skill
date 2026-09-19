@@ -1,17 +1,33 @@
-# Pre-build probes for text and pooled inputs
+# Pre-build probes for text, 10x and pooled inputs
 
 The confirmed manifest may leave `delimiter`, `orientation`, and
 `feature_column` blank for a text input. After verified download and before
-R, `run_confirmed.py` calls `prebuild_probe.py`. It reads only the header and
-first eight expression rows of each unique CSV/TSV/TXT input. Explicit
+R, `run_confirmed.py` calls `prebuild_probe.py`. It samples the header and
+first eight expression rows of each unique CSV/TSV/TXT input, then streams
+through line boundaries to count full dimensions without materializing a
+dense table. Explicit
 configuration wins: a reliable contradictory observation stops the run.
 The probe fills only blank technical fields, including whether the header
 already contains an ID column. A named first gene column may retain an
 explicit `__row_names__` streaming route; the R text reader uses the probe's
 `text_header_missing_id` field to avoid inserting a second ID column. The
-probe checks unique cell headers and
-sampled nonnegative integer values, and records `text_schema_probe.json`.
-The full R reader still validates all counts.
+probe checks unique cell headers and sampled nonnegative integer values. It
+computes `estimated_dense_bytes = genes * cells * 8`, reads total physical
+RAM, and selects Python streaming when the estimate is at least 25% of RAM.
+The compressed-file size threshold remains only an auxiliary trigger. The
+manifest and `text_schema_probe.json` record matrix rows/columns, dense
+estimate, physical RAM, selected reader, and the selection reason. Small text
+matrices continue through `data.table::fread()`. The full R reader still
+validates all counts.
+
+Each unique 10x Matrix Market directory is also probed once before R. The
+probe requires exactly one matrix/features/barcodes member, checks Matrix
+Market dimensions against feature and barcode row counts, requires unique
+nonblank barcodes and feature IDs, inspects missing/duplicate gene names, and
+requires `Gene Expression` when a feature-type column exists. A missing gene
+name with a valid unique feature ID records `feature_id_for_missing_gene_name`
+and keeps the stable build-time fallback. Results are written to
+`tenx_structure_probe.json`; structural mismatches stop before `Read10X()`.
 
 For a pooled input with no `cell_map_path`, inspect in this order:
 

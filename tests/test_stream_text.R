@@ -24,7 +24,8 @@ stopifnot(stream_text_candidate(row,256 * 1024^2),
 other_shape <- row
 other_shape$orientation <- "cells_by_genes"
 stopifnot(!stream_text_candidate(other_shape,256 * 1024^2))
-Sys.setenv(GEO_SINGLE_CELL_STREAM_TEXT="1")
+row$text_reader <- "streaming"
+stopifnot(stream_text_candidate(row,file.info(path)$size))
 result <- read_expression(row,fixture)
 expected <- matrix(c(0,4,0,2,0,0,0,6,7),nrow=3,
                    dimnames=list(c("g1","g2","g3"),c("c1","c2","c3")))
@@ -49,9 +50,11 @@ csv_row <- row
 csv_row$local_path <- "data/GSE999999999/raw/blank-id.csv"
 csv_row$delimiter <- "comma"
 csv_row$text_header_missing_id <- "false"
+csv_row$text_reader <- "fread"
 csv_result <- read_expression(csv_row,fixture)
 stopifnot(identical(rownames(csv_result$counts),c("g1","g2")),
           identical(colnames(csv_result$counts),c("c1","c2")),
+          identical(csv_result$reader,"data.table::fread"),
           identical(as.matrix(csv_result$counts),matrix(c(0,4,2,0),nrow=2,
                     dimnames=list(c("g1","g2"),c("c1","c2")))))
 cat("PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.\n")

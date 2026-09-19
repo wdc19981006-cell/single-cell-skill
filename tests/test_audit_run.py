@@ -35,6 +35,11 @@ class AuditRunTests(unittest.TestCase):
         write_csv(self.workflow / "file_selection_reasons.csv", [{
             "url": "https://example.org/normalized.csv", "reason": "normalized values, not raw counts"
         }])
+        write_csv(self.workflow / "input_routing.csv", [{
+            "local_path": "data/GSE123/raw/counts.csv", "file_type": "text", "reader": "data.table::fread",
+            "matrix_rows": "2", "matrix_columns": "3", "estimated_dense_bytes": "48",
+            "physical_ram_bytes": "32000000000", "reader_selection_reason": "dense estimate below 25% RAM",
+        }])
         (self.workflow / "group_confirmation.json").write_text('{"confirmed_by":"user"}', encoding="utf-8")
 
     def tearDown(self):
@@ -47,6 +52,8 @@ class AuditRunTests(unittest.TestCase):
         trace = (target / "decision_trace.md").read_text(encoding="utf-8")
         self.assertIn("normalized values, not raw counts", trace)
         self.assertIn("get_geo_info", trace)
+        self.assertIn("dense estimate below 25% RAM", trace)
+        self.assertIn("estimated_dense_bytes=48", trace)
         self.assertNotIn("chain-of-thought", trace)
 
     def test_new_run_refuses_unmigrated_historical_workflow(self):

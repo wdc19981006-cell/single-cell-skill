@@ -54,9 +54,9 @@ read_manifest <- function(path, root) {
 value <- function(row, field, default = "") {
   if (!field %in% names(row) || blank(row[[field]][1])) default else row[[field]][1]
 }
-reader_signature_fields <- c("local_path", "file_type", "count_source", "delimiter", "orientation", "feature_column", "text_header_missing_id", "drop_columns", "assay", "layer")
+reader_signature_fields <- c("local_path", "file_type", "count_source", "delimiter", "orientation", "feature_column", "text_header_missing_id", "drop_columns", "assay", "layer", "text_reader", "feature_name_fallback")
 reader_configuration <- function(row) {
-  defaults <- c(local_path="",file_type="",count_source="",delimiter="",orientation="",feature_column="",text_header_missing_id="",drop_columns="",assay="RNA",layer="")
+  defaults <- c(local_path="",file_type="",count_source="",delimiter="",orientation="",feature_column="",text_header_missing_id="",drop_columns="",assay="RNA",layer="",text_reader="",feature_name_fallback="")
   setNames(vapply(reader_signature_fields,function(field) value(row,field,defaults[[field]]),character(1)),reader_signature_fields)
 }
 read_signature <- function(row) paste(paste(reader_signature_fields,reader_configuration(row),sep="="),collapse="\034")
@@ -99,13 +99,19 @@ repair_10x_missing_feature_names <- function(counts, features_path) {
 stream_text_candidate <- function(row, source_bytes) {
   delimiter <- value(row,"delimiter")
   streaming_threshold <- if (delimiter == "comma") 128 * 1024^2 else 256 * 1024^2
-  value(row,"count_source") == "counts" &&
+  eligible <- value(row,"count_source") == "counts" &&
     delimiter %in% c("tab","comma") &&
     value(row,"orientation") == "genes_by_cells" &&
-    value(row,"feature_column") == "__row_names__" &&
-    !nzchar(value(row,"drop_columns")) &&
-    (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1") ||
-     (is.finite(source_bytes) && source_bytes >= streaming_threshold))
+    nzchar(value(row,"feature_column")) &&
+    !nzchar(value(row,"drop_columns"))
+  inspected <- value(row,"text_reader")
+  if (nzchar(inspected)) {
+    if (!inspected %in% c("streaming","fread")) stop("Unsupported inspected text_reader: ",inspected)
+    if (inspected == "streaming" && !eligible) stop("Inspected streaming text route is incompatible with the manifest layout")
+    return(inspected == "streaming")
+  }
+  eligible && (identical(Sys.getenv("GEO_SINGLE_CELL_STREAM_TEXT"), "1") ||
+               (is.finite(source_bytes) && source_bytes >= streaming_threshold))
 }
 route_input <- function(row, root) {
   type <- value(row,"file_type")
@@ -118,7 +124,15 @@ route_input <- function(row, root) {
     if (stream_text_candidate(row,size))
       routes[["text"]] <- "Python NumPy streaming + Matrix::sparseMatrix"
   }
-  list(file_type=type,reader=unname(routes[[type]]),source_path=path,input_signature=read_signature(row))
+  number <- function(field) {
+    answer <- suppressWarnings(as.numeric(value(row,field,NA_character_)))
+    if (length(answer) != 1L || !is.finite(answer)) NA_real_ else answer
+  }
+  reason <- value(row,"reader_selection_reason",paste("verified",type,"structure and manifest reader fields"))
+  list(file_type=type,reader=unname(routes[[type]]),source_path=path,input_signature=read_signature(row),
+       routing_evidence=list(matrix_rows=number("matrix_rows"),matrix_columns=number("matrix_columns"),
+         estimated_dense_bytes=number("estimated_dense_bytes"),physical_ram_bytes=number("physical_ram_bytes"),
+         reader_selection_reason=reason))
 }
 as_sparse_counts <- function(counts) {
   counts <- assert_counts(counts)
@@ -129,7 +143,9 @@ as_sparse_counts <- function(counts) {
 }
 total_physical_ram_bytes <- function() {
   if (.Platform$OS.type == "windows") {
-    output <- suppressWarnings(tryCatch(system2("powershell.exe",c("-NoProfile","-Command","(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"),
+    powershell <- file.path(Sys.getenv("SystemRoot","C:/Windows"),"System32","WindowsPowerShell","v1.0","powershell.exe")
+    command <- "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.Devices.ComputerInfo]::new().TotalPhysicalMemory"
+    output <- suppressWarnings(tryCatch(system2(powershell,c("-NoProfile","-Command",shQuote(command)),
                                                 stdout=TRUE,stderr=FALSE),error=function(e) character()))
     value <- suppressWarnings(as.numeric(output[grepl("^[0-9]+$",trimws(output))][1]))
   } else if (file.exists("/proc/meminfo")) {
@@ -153,6 +169,7 @@ source_size_bytes <- function(path) {
 }
 reader_contract <- function(counts, reader, route, read_timings=list()) {
   counts <- as_sparse_counts(counts)
+  read_timings <- utils::modifyList(route$routing_evidence,read_timings)
   list(counts=counts,reader=reader,input_signature=route$input_signature,source_path=route$source_path,
     source_size_bytes=source_size_bytes(route$source_path),input_cells=ncol(counts),input_features=nrow(counts),original_cell_ids=colnames(counts),read_timings=read_timings)
 }
@@ -222,9 +239,9 @@ read_expression <- function(row, root) {
     if (identical(route$reader,"Python NumPy streaming + Matrix::sparseMatrix")) {
       if (chosen != "counts" || !value(row,"delimiter") %in% c("tab","comma") ||
           value(row,"orientation") != "genes_by_cells" ||
-          value(row,"feature_column") != "__row_names__" ||
+          !nzchar(value(row,"feature_column")) ||
           nzchar(value(row,"drop_columns"))) {
-        stop("Streaming text reader requires inspected tab/comma-delimited genes_by_cells counts with __row_names__ and no dropped columns")
+        stop("Streaming text reader requires inspected tab/comma-delimited genes_by_cells counts with a first-column feature ID and no dropped columns")
       }
       python <- Sys.getenv("GEO_SINGLE_CELL_PYTHON")
       if (!nzchar(python) || !file.exists(python)) stop("Set GEO_SINGLE_CELL_PYTHON to a verified Python executable containing NumPy")

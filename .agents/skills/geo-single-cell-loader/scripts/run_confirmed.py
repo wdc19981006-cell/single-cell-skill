@@ -11,6 +11,7 @@ from pathlib import Path
 
 from audit_run import finalize, restore_provenance, run_id
 from common import ROOT, dataset_paths
+from stage_a_policy import UnsupportedModality, assess_single_cell_modality
 
 SCRIPTS = Path(__file__).resolve().parent
 
@@ -40,6 +41,13 @@ def run(gse, root=ROOT, rscript="Rscript"):
     try:
         with (workflow / "execution.log").open("a", encoding="utf-8") as log:
             log.write(f"Run started UTC: {datetime.now(timezone.utc).isoformat()}\n")
+            inspection_path = workflow / "inspection.json"
+            if not inspection_path.exists():
+                raise UnsupportedModality("Stage A inspection is missing; single-cell modality is not established")
+            modality = assess_single_cell_modality(json.loads(inspection_path.read_text(encoding="utf-8")))
+            (workflow / "modality_gate.json").write_text(json.dumps(modality, ensure_ascii=False, indent=2), encoding="utf-8")
+            if modality["status"] != "single_cell":
+                raise UnsupportedModality(modality["reason"] + "; STOP before processed expression download and Seurat construction")
             restore_provenance(gse, root)
             execute("download", [sys.executable, str(SCRIPTS / "download_processed.py"), manifest, "--root", str(root)], log, root)
             execute("prebuild_probe", [sys.executable, str(SCRIPTS / "prebuild_probe.py"), manifest, "--root", str(root)], log, root)

@@ -17,12 +17,21 @@ counts_list <- setNames(lapply(c("Sample_A","Sample_B","Sample_C"),make_counts),
 # Exercise safe reordering when sets match but order differs.
 counts_list[["Sample_B"]] <- counts_list[["Sample_B"]][rev(seq_len(nrow(counts_list[["Sample_B"]]))),,drop=FALSE]
 cell_sample_map <- unlist(lapply(names(counts_list),function(sample) setNames(rep(sample,ncol(counts_list[[sample]])),colnames(counts_list[[sample]]))),use.names=TRUE)
+reference_merged <- combine_aligned_inputs(align_count_inputs(counts_list))
 object <- combine_counts_and_create(counts_list,cell_sample_map,"GSE999999999")
 stopifnot(ncol(object)==9L,nrow(object)==201L)
 stopifnot("gene-shared-low" %in% rownames(object),!"gene-two-cells" %in% rownames(object))
 stopifnot(identical(unname(as.character(object$sample)),unname(as.character(object$orig.ident))))
 stopifnot(all(table(object$sample)==3L),anyDuplicated(colnames(object))==0L)
 stopifnot(length(SeuratObject::Layers(object[["RNA"]]))==1L)
+reference_kept <- reference_merged[Matrix::rowSums(reference_merged != 0) >= 3,
+                                   Matrix::colSums(reference_merged != 0) >= 200,drop=FALSE]
+rownames(reference_kept) <- gsub("_","-",rownames(reference_kept),fixed=TRUE)
+observed <- SeuratObject::LayerData(object,assay="RNA",layer="counts")
+stopifnot(identical(dim(observed),dim(reference_kept)),
+          identical(rownames(observed),rownames(reference_kept)),
+          identical(colnames(observed),colnames(reference_kept)),
+          identical(as.matrix(observed),as.matrix(reference_kept)))
 
 # The previous per-sample filtering loses the feature because it is expressed in only one cell per sample.
 old_objects <- lapply(counts_list,function(x) Seurat::CreateSeuratObject(x,min.cells=3,min.features=200))

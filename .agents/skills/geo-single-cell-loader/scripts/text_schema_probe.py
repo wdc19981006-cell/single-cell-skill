@@ -1,6 +1,8 @@
 """Small pre-build sample of a text count matrix; never loads the full matrix."""
 import csv
+import ctypes
 import gzip
+import os
 import re
 from decimal import Decimal, InvalidOperation
 
@@ -13,6 +15,60 @@ CELL_COLUMNS = {'cell', 'cell_id', 'barcode', 'barcodes'}
 BARCODE = re.compile(r'^[ACGTN]{12,}(?:[-_]\d+)?$', re.I)
 GENE_ID = re.compile(r'^(?:ENSG|ENSMUSG|ENSMUST)\d+', re.I)
 DELIMITERS = {'comma': ',', 'tab': '\t', 'space': ' '}
+
+
+def physical_ram_bytes():
+    """Return installed physical RAM without adding a psutil dependency."""
+    if os.name == 'nt':
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [('length', ctypes.c_ulong), ('memory_load', ctypes.c_ulong),
+                        ('total_physical', ctypes.c_ulonglong), ('available_physical', ctypes.c_ulonglong),
+                        ('total_page_file', ctypes.c_ulonglong), ('available_page_file', ctypes.c_ulonglong),
+                        ('total_virtual', ctypes.c_ulonglong), ('available_virtual', ctypes.c_ulonglong),
+                        ('available_extended_virtual', ctypes.c_ulonglong)]
+        status = MemoryStatus()
+        status.length = ctypes.sizeof(status)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            return int(status.total_physical)
+    if hasattr(os, 'sysconf'):
+        try:
+            return int(os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES'))
+        except (ValueError, OSError, TypeError):
+            pass
+    raise ValueError('Cannot determine total physical RAM for safe text reader selection')
+
+
+def _count_data_rows(path):
+    opener = gzip.open if path.name.lower().endswith('.gz') else open
+    with opener(path, 'rb') as handle:
+        nonempty = sum(bool(line.strip()) for line in handle)
+    if nonempty < 2:
+        raise ValueError('Text schema probe needs a header and an expression row')
+    return nonempty - 1
+
+
+def select_text_reader(matrix_rows, matrix_columns, source_bytes, total_ram_bytes,
+                       delimiter, orientation, dropped):
+    if int(matrix_rows) <= 0 or int(matrix_columns) <= 0 or int(total_ram_bytes) <= 0:
+        raise ValueError('Text matrix dimensions and total physical RAM must be positive')
+    estimated = int(matrix_rows) * int(matrix_columns) * 8
+    memory_limit = int(total_ram_bytes * 0.25)
+    streaming_threshold = 128 * 1024**2 if delimiter == 'comma' else 256 * 1024**2
+    memory_trigger = estimated >= memory_limit
+    size_trigger = source_bytes >= streaming_threshold
+    streaming_compatible = delimiter in ('comma', 'tab') and orientation == 'genes_by_cells' and not dropped
+    reasons = []
+    if memory_trigger:
+        reasons.append(f'estimated dense matrix {estimated} bytes is at least 25% of physical RAM ({memory_limit} bytes)')
+    if size_trigger:
+        reasons.append(f'source file {source_bytes} bytes meets the auxiliary size threshold ({streaming_threshold} bytes)')
+    if memory_trigger or size_trigger:
+        if not streaming_compatible:
+            raise ValueError('Text matrix requires streaming but its inspected layout is not supported by the streaming reader')
+        return 'streaming', estimated, '; '.join(reasons)
+    return ('fread', estimated,
+            f'estimated dense matrix {estimated} bytes is below 25% of physical RAM ({memory_limit} bytes) '
+            f'and source file {source_bytes} bytes is below the auxiliary size threshold ({streaming_threshold} bytes)')
 
 
 def _read_lines(path, count=9):
@@ -87,7 +143,7 @@ def _orientation(header, rows, header_missing_id):
     return None
 
 
-def probe_text(row, root):
+def probe_text(row, root, total_ram_bytes=None):
     """Return only reliable technical fields and observed evidence."""
     area = f"data/{row['database']}/raw"
     path = local(root, row['local_path'], area)
@@ -134,10 +190,15 @@ def probe_text(row, root):
             if not number.is_finite() or number < 0 or number != number.to_integral_value():
                 raise ValueError('Normalized/processed or invalid text values; sampled expression is not nonnegative integer counts')
     source_bytes = path.stat().st_size
-    streaming_threshold = 128 * 1024**2 if delimiter == 'comma' else 256 * 1024**2
-    inferred_id = ('__row_names__' if (orientation == 'genes_by_cells' and
-                    not dropped and delimiter in ('comma', 'tab') and
-                    source_bytes >= streaming_threshold) else observed_id)
+    data_rows = _count_data_rows(path)
+    if orientation == 'genes_by_cells':
+        matrix_rows, matrix_columns = data_rows, len(expression_indexes)
+    else:
+        matrix_rows, matrix_columns = len(expression_indexes), data_rows
+    total_ram_bytes = physical_ram_bytes() if total_ram_bytes is None else int(total_ram_bytes)
+    reader_selection, estimated_dense_bytes, reader_selection_reason = select_text_reader(
+        matrix_rows, matrix_columns, source_bytes, total_ram_bytes, delimiter, orientation, dropped)
+    inferred_id = observed_id
     return {
         'local_path': row['local_path'], 'delimiter': delimiter, 'orientation': orientation,
         'feature_column': configured_id if not missing(configured_id) else inferred_id,
@@ -146,4 +207,9 @@ def probe_text(row, root):
         'sampled_rows': len(values), 'sampled_columns': len(expression_indexes),
         'sampled_nonnegative_integer_counts': True,
         'full_matrix_validation_required': True, 'source_bytes': source_bytes,
+        'matrix_rows': matrix_rows, 'matrix_columns': matrix_columns,
+        'estimated_dense_bytes': estimated_dense_bytes,
+        'physical_ram_bytes': total_ram_bytes,
+        'text_reader': reader_selection,
+        'reader_selection_reason': reader_selection_reason,
     }

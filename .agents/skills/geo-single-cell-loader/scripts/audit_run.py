@@ -26,7 +26,8 @@ DOWNLOAD_COLUMNS = (
 ROUTING_COLUMNS = (
     "local_path", "file_type", "reader", "unique_inputs", "expression_reads",
     "cell_map_reads", "features", "cells", "read_seconds", "mapping_seconds",
-    "dense_conversion",
+    "matrix_rows", "matrix_columns", "estimated_dense_bytes", "physical_ram_bytes",
+    "reader_selection_reason", "dense_conversion",
 )
 
 
@@ -129,11 +130,15 @@ def write_decisions(workflow, output, inspection, selection, status, reason):
         lines += ["", "## Observed reader routing"]
         for row in read_csv(routing):
             lines.append(f"- {row.get('local_path', '')}: format={row.get('file_type', '')}; reader={row.get('reader', '')}; "
-                         f"reason=verified input structure and manifest reader fields; "
+                         f"reason={row.get('reader_selection_reason') or 'verified input structure and manifest reader fields'}; "
                          f"dimensions={row.get('features', '')}x{row.get('cells', '')}; "
+                         f"matrix_rows={row.get('matrix_rows', '')}; matrix_columns={row.get('matrix_columns', '')}; "
+                         f"estimated_dense_bytes={row.get('estimated_dense_bytes', '')}; physical_ram_bytes={row.get('physical_ram_bytes', '')}; "
                          f"dense_conversion={row.get('dense_conversion', '')}")
     for name, title in (("text_schema_probe.json", "Text schema probe"),
-                        ("pooled_mapping_probe.json", "Pooled mapping evidence check")):
+                        ("tenx_structure_probe.json", "10x Matrix Market structure probe"),
+                        ("pooled_mapping_probe.json", "Pooled mapping evidence check"),
+                        ("modality_gate.json", "Single-cell modality gate")):
         source = workflow / name
         if source.exists():
             lines += ["", f"## {title}", source.read_text(encoding="utf-8")]

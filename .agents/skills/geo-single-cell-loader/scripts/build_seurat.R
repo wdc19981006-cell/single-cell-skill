@@ -32,9 +32,15 @@ withCallingHandlers({
   combine_started <- proc.time()[["elapsed"]]
   merged_counts <- combine_aligned_inputs(aligned)
   matrix_combine_seconds <- seconds_since(combine_started)
+  merged_sparse_matrix_bytes <- as.numeric(object.size(merged_counts))
+  prepared$counts_list <- NULL
+  rm(aligned)
+  gc_after_merge <- gc()
   create_started <- proc.time()[["elapsed"]]
   seurat <- create_seurat_from_merged(merged_counts,prepared$cell_sample_map,gse)
   create_seurat_seconds <- seconds_since(create_started)
+  rm(merged_counts)
+  gc_after_create <- gc()
   metadata_started <- proc.time()[["elapsed"]]
   if (!setequal(unique(seurat$sample),m$sample)) stop("One or more samples are empty after requested construction thresholds")
   seurat <- map_metadata(seurat,m,unname(prepared$cell_sample_map[SeuratObject::Cells(seurat)]))
@@ -61,14 +67,23 @@ withCallingHandlers({
   optional <- optional[vapply(m[optional],function(x) any(!blank(x)),logical(1))]
   partial_optional <- optional[vapply(m[optional],function(x) any(blank(x)),logical(1))]
   if (length(partial_optional)) warnings_seen <- c(warnings_seen,paste("Partial optional metadata (NA retained):",paste(partial_optional,collapse=", ")))
+  timing_value <- function(detail,name,default=NA_real_) {
+    answer <- detail$read_timings[[name]]
+    if (is.null(answer) || length(answer) != 1L) default else answer
+  }
   input_performance <- unlist(lapply(seq_along(prepared$metrics),function(i) {
     detail <- prepared$metrics[[i]]
     c(paste0("Input ",i,":"),paste("local_path:",detail$local_path),paste("file_type:",detail$file_type),paste("reader:",detail$reader),
       paste("input_signature:",gsub("\034"," | ",detail$input_signature,fixed=TRUE)),paste("file_size_bytes:",detail$file_size_bytes),
       paste("shared_samples:",detail$shared_samples),paste("input_features:",detail$input_features),paste("input_cells:",detail$input_cells),
+      paste("matrix_rows:",timing_value(detail,"matrix_rows",detail$input_features)),
+      paste("matrix_columns:",timing_value(detail,"matrix_columns",detail$input_cells)),
+      paste("estimated_dense_bytes:",timing_value(detail,"estimated_dense_bytes","")),
+      paste("physical_ram_bytes:",timing_value(detail,"physical_ram_bytes","")),
+      paste("reader_selection_reason:",timing_value(detail,"reader_selection_reason","")),
       paste("read_seconds:",fmt_seconds(detail$read_seconds)),paste("mapping_seconds:",fmt_seconds(detail$mapping_seconds)),
-      if (length(detail$read_timings)) c(paste("gunzip_seconds:",fmt_seconds(detail$read_timings$gunzip_seconds)),
-                                        paste("read_rds_seconds:",fmt_seconds(detail$read_timings$read_rds_seconds))) else character())
+      if (!is.na(timing_value(detail,"gunzip_seconds"))) paste("gunzip_seconds:",fmt_seconds(timing_value(detail,"gunzip_seconds"))) else character(),
+      if (!is.na(timing_value(detail,"read_rds_seconds"))) paste("read_rds_seconds:",fmt_seconds(timing_value(detail,"read_rds_seconds"))) else character())
   }))
   total_build_seconds <- seconds_since(total_started)
   summary <- c(paste("GSE:",gse),paste("Created UTC:",format(Sys.time(),tz="UTC",usetz=TRUE)),paste("R:",R.version.string),paste("Seurat:",packageVersion("Seurat")),paste("SeuratObject:",packageVersion("SeuratObject")),
@@ -80,7 +95,7 @@ withCallingHandlers({
     "Cells per sample:",capture.output(table(seurat$sample)),"Cells per group:",capture.output(table(seurat$group)),
     paste("tissue:",paste(unique(m$tissue),collapse=", ")),paste("disease:",paste(unique(m$disease),collapse=", ")),paste("source_type:",paste(unique(m$source_type),collapse=", ")),
     paste("Optional metadata:",paste(optional,collapse=", ")),"Inputs and selected count matrices:",input_records,
-    "Reader policy: inspected large comma/tab genes-by-cells counts use NumPy streaming; GEO_SINGLE_CELL_STREAM_TEXT=1 forces this route for smaller matching layouts. Exact reader is recorded per physical input.",
+    "Reader policy: the prebuild probe selects NumPy streaming when genes x cells x 8 reaches 25% of physical RAM; source size remains an auxiliary trigger. Exact reader and reason are recorded per physical input.",
     "Input routing:",paste("Manifest rows:",prepared$manifest_rows),paste("Unique input signatures:",prepared$unique_inputs),
     paste("Unique physical expression inputs:",prepared$unique_inputs),
     paste("Expression matrices actually read:",prepared$reader_calls),paste("Cell maps actually read:",prepared$cell_map_reads),
@@ -100,18 +115,25 @@ withCallingHandlers({
     unique_inputs=prepared$unique_inputs,expression_reads=prepared$reader_calls,cell_map_reads=prepared$cell_map_reads,
     features=detail$input_features,cells=detail$input_cells,read_seconds=detail$read_seconds,
     mapping_seconds=detail$mapping_seconds,
+    matrix_rows=timing_value(detail,"matrix_rows",detail$input_features),
+    matrix_columns=timing_value(detail,"matrix_columns",detail$input_cells),
+    estimated_dense_bytes=timing_value(detail,"estimated_dense_bytes",""),
+    physical_ram_bytes=timing_value(detail,"physical_ram_bytes",""),
+    reader_selection_reason=timing_value(detail,"reader_selection_reason",""),
     dense_conversion=if (identical(detail$reader,"data.table::fread")) "yes" else if (grepl("H5AD|readRDS",detail$reader)) "unknown" else "no",
     stringsAsFactors=FALSE)))
   write.csv(routing,file.path(workflow,"input_routing.csv"),row.names=FALSE,na="")
   build_profile <- list(manifest_read_seconds=manifest_read_seconds,
     read_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"read_seconds")),
-    gunzip_seconds=sum(vapply(prepared$metrics,function(detail) if(length(detail$read_timings)) detail$read_timings$gunzip_seconds else 0,numeric(1))),
-    read_rds_seconds=sum(vapply(prepared$metrics,function(detail) if(length(detail$read_timings)) detail$read_timings$read_rds_seconds else 0,numeric(1))),
+    gunzip_seconds=sum(vapply(prepared$metrics,function(detail) timing_value(detail,"gunzip_seconds",0),numeric(1))),
+    read_rds_seconds=sum(vapply(prepared$metrics,function(detail) timing_value(detail,"read_rds_seconds",0),numeric(1))),
     mapping_seconds=sum(vapply(prepared$metrics,`[[`,numeric(1),"mapping_seconds"))+metadata_mapping_seconds,
     feature_alignment_seconds=feature_alignment_seconds,combine_seconds=matrix_combine_seconds,
     create_seurat_object_seconds=create_seurat_seconds,validation_seconds=validation_seconds,
     save_rds_seconds=save_rds_seconds,serialized_read_seconds=serialization_seconds-save_rds_seconds,total_seconds=total_build_seconds,
-    seurat_object_bytes=as.numeric(object.size(seurat)),merged_sparse_matrix_bytes=as.numeric(object.size(merged_counts)),
+    seurat_object_bytes=as.numeric(object.size(seurat)),merged_sparse_matrix_bytes=merged_sparse_matrix_bytes,
+    gc_after_merge_used_mb=as.numeric(sum(gc_after_merge[,"used"]*c(56,8))/1048576),
+    gc_after_create_used_mb=as.numeric(sum(gc_after_create[,"used"]*c(56,8))/1048576),
     gc_estimated_used_mb=as.numeric(sum(gc()[,"used"]*c(56,8))/1048576))
   jsonlite::write_json(build_profile,file.path(workflow,"build_profile.json"),auto_unbox=TRUE,pretty=TRUE)
   write.csv(data.frame(sample=names(retained),cells=as.integer(retained),

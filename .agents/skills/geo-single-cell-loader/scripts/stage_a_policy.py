@@ -11,6 +11,58 @@ class IncompleteMCPResult(ValueError):
     """Raised when an MCP response is successful at transport level but incomplete."""
 
 
+class UnsupportedModality(ValueError):
+    """Raised before download when Stage A establishes a non-single-cell study."""
+
+
+def _evidence_text(value: Any) -> str:
+    if isinstance(value, dict):
+        return "\n".join(_evidence_text(child) for key, child in value.items() if key != 'modality_gate')
+    if isinstance(value, (list, tuple)):
+        return "\n".join(_evidence_text(child) for child in value)
+    return value if isinstance(value, str) else ""
+
+
+def assess_single_cell_modality(record: dict[str, Any]) -> dict[str, Any]:
+    """Classify from public Stage A facts, never from a GSE-specific allowlist."""
+    text = _evidence_text(record)
+    single_patterns = (
+        r"\bsingle[- ]cell\b", r"\bsingle[- ]nucle(?:us|i)\b",
+        r"\bsc[- ]?rna(?:[- ]?seq)?\b", r"\bsn[- ]?rna(?:[- ]?seq)?\b",
+    )
+    non_single_patterns = (
+        r"expression profiling by array", r"\bmicroarray\b", r"\barray[- ]based\b",
+        r"\bbulk[- ]rna(?:[- ]?seq)?\b", r"\bbulk rna sequencing\b",
+    )
+    single = [pattern for pattern in single_patterns if re.search(pattern, text, re.I)]
+    non_single = [pattern for pattern in non_single_patterns if re.search(pattern, text, re.I)]
+    if single and non_single:
+        status = "unresolved"
+        reason = "Stage A public metadata contains conflicting single-cell and non-single-cell modality evidence"
+    elif single:
+        status = "single_cell"
+        reason = "Stage A public metadata explicitly identifies scRNA-seq/snRNA-seq"
+    elif non_single:
+        status = "non_single_cell"
+        reason = "Stage A public metadata identifies microarray or bulk RNA-seq"
+    else:
+        status = "unresolved"
+        reason = "Stage A public metadata does not explicitly establish scRNA-seq/snRNA-seq"
+    return {'status': status, 'reason': reason,
+            'single_cell_evidence_patterns': single, 'non_single_cell_evidence_patterns': non_single,
+            'seurat_build_allowed': status == 'single_cell'}
+
+
+def enforce_single_cell_modality(record: dict[str, Any], allow_non_single_cell_download: bool = False) -> dict[str, Any]:
+    result = assess_single_cell_modality(record)
+    result['ordinary_download_allowed'] = bool(allow_non_single_cell_download and result['status'] == 'non_single_cell')
+    if result['status'] == 'single_cell':
+        return result
+    if result['ordinary_download_allowed']:
+        return result
+    raise UnsupportedModality(result['reason'] + '; STOP before processed expression download and Seurat construction')
+
+
 def _urls(value: Any) -> list[str]:
     if isinstance(value, dict):
         return [url for child in value.values() for url in _urls(child)]
@@ -81,7 +133,7 @@ def discover_known_gse(
             "discovery_seconds": time.perf_counter() - timer_started,
         }
     finished_at = datetime.now(timezone.utc)
-    return {
+    result = {
         "gse": gse,
         "series": series,
         "samples": series["samples"],
@@ -99,6 +151,8 @@ def discover_known_gse(
         "discovery_finished_at": finished_at.isoformat(),
         "discovery_seconds": time.perf_counter() - timer_started,
     }
+    result["modality_gate"] = assess_single_cell_modality(result)
+    return result
 
 
 def discover_keyword(

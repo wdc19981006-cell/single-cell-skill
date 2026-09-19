@@ -1,6 +1,6 @@
 # Stage B input-routing validation report
 
-Validation date: 2026-09-16. Runtime: Windows 11, R 4.5.3, Seurat 5.5.1, SeuratObject 5.4.0, Python 3.12. Tests used generated fixtures or existing/released GEO source files; runtime data remains under git-ignored `data/`.
+Validation date: 2026-09-19 (original real-data metrics retained from 2026-09-16). Runtime: Windows 11, R 4.5.3, Seurat 5.5.1, SeuratObject 5.4.0, Python 3.12. Tests used generated fixtures or previously recorded real-run evidence; the 2026-09-19 change did not redownload or rebuild GSE166504, GSE189175, or GSE289173. Runtime data remains under git-ignored `data/`.
 
 ## Reader coverage
 
@@ -22,6 +22,12 @@ Validation date: 2026-09-16. Runtime: Windows 11, R 4.5.3, Seurat 5.5.1, SeuratO
 | FASTQ/SRA | unsupported V1 route | FASTQ, FASTQ.GZ and SRA candidates | PASS: stopped before quantification |
 | global `min.cells` | one merged `CreateSeuratObject()` | gene in one cell of each of three samples retained; two-cell gene removed | PASS |
 | clean final object | one RNA counts layer; no author analysis state | serialized synthetic E2E plus independent validator | PASS |
+| small CSV reader selection | prebuild dimensions + RAM decision, then `data.table::fread()` | 2 × 2 genes-by-cells fixture | PASS |
+| small compressed file with unsafe dense dimensions | Python streaming selected from `genes * cells * 8`, independent of gzip bytes | GSE166504-shaped 25,127 × 82,168 decision fixture, 32 GiB RAM | PASS |
+| 10x missing gene name | prebuild records feature-ID fallback | unique feature IDs plus one `NA` gene name | PASS |
+| 10x dimension mismatch | prebuild STOP before `Read10X()` | matrix 3 × 2 versus two feature rows | PASS |
+| non-single-cell modality gate | STOP before download/build | GSE116504-shaped `Expression profiling by array` Stage A fixture | PASS |
+| multi-input memory lifecycle | release prepared/aligned lists after combine and merged reference after construction | exact full-count comparison in global min.cells regression and synthetic E2E | PASS |
 
 The synthetic pooled test increments injected reader functions directly. It does not infer call counts from log text.
 
@@ -66,12 +72,12 @@ The local project initially lacked GSE231993. The published v2 Release asset was
 
 Per-sample cells: GSM7307094 4,481; GSM7307095 5,993; GSM7307096 3,866; GSM7307097 6,421; GSM7307098 776; GSM7307099 6,529; GSM7307100 4,596; GSM7307101 5,305; GSM7307102 5,270; GSM7307103 4,633; GSM7307104 6,578; GSM7307105 6,217. All match the required regression values. Total build time was 128.580 seconds; `CreateSeuratObject()` took 6.090 seconds and serialization took 30.690 seconds.
 
-## Test commands
+## 2026-09-19 regression commands
 
-- Python unit tests: 31/31 PASS.
+- Python unit tests: 67/67 PASS.
 - R reader regression (`test_seurat.R`): PASS.
 - R pooled call-count regression (`test_pooled_inputs.R`): PASS.
 - R global min.cells regression (`test_global_min_cells.R`): PASS.
+- R text reader-selection regression (`test_stream_text.R`): PASS.
 - Synthetic subprocess E2E, serialized validation, pooled E2E and H5AD failure/retry: PASS.
-- GSE181919 real pooled rebuild and independent validation: PASS.
-- GSE231993 real 10x rebuild, exact metrics and independent validation: PASS.
+- No 2026-09-19 real large-data rebuild was performed, as requested.
