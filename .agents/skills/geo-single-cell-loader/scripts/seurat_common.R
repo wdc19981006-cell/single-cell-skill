@@ -11,6 +11,16 @@ need <- function(packages) {
   absent <- packages[!vapply(packages, requireNamespace, quietly = TRUE, FUN.VALUE = logical(1))]
   if (length(absent)) stop("Missing R packages: ", paste(absent, collapse = ", "), ". See README dependency commands.")
 }
+read_utf8_csv <- function(path, ...) {
+  # fileEncoding converts to the native Windows locale, which can truncate
+  # UTF-8 clinical labels when that locale cannot represent them.
+  result <- read.csv(path, stringsAsFactors=FALSE, check.names=FALSE,
+                     colClasses="character", encoding="UTF-8", ...)
+  if (length(names(result)) && startsWith(names(result)[1], intToUtf8(65279L))) {
+    names(result)[1] <- substring(names(result)[1], 2L)
+  }
+  result
+}
 repo_path <- function(root, relative, area = "data") {
   if (blank(relative) || grepl("^[/\\\\]|^[A-Za-z]:|\\\\", relative) || ".." %in% strsplit(relative, "/", fixed=TRUE)[[1]]) stop("Unsafe relative path: ", relative)
   base <- normalizePath(file.path(root, area), winslash="/", mustWork=TRUE)
@@ -21,7 +31,7 @@ repo_path <- function(root, relative, area = "data") {
 }
 read_manifest <- function(path, root) {
   need(c("jsonlite"))
-  m <- read.csv(path, stringsAsFactors=FALSE, check.names=FALSE, na.strings=c("", "NA"), colClasses="character", fileEncoding="UTF-8-BOM")
+  m <- read_utf8_csv(path, na.strings=c("", "NA"))
   fields <- c(required_fields, "local_path", "file_type", "count_source", "count_evidence", "metadata_evidence")
   if (!nrow(m) || !all(fields %in% names(m))) stop("Missing manifest fields")
   if (any(vapply(m[fields], function(x) any(blank(x)), logical(1)))) stop("Missing required manifest value")
@@ -374,7 +384,7 @@ map_metadata <- function(object, manifest, expected_samples) {
   if (!identical(unname(as.character(object$sample)), unname(expected_samples))) stop("Sample changed during mapping")
   object
 }
-default_cell_map_reader <- function(path) read.csv(path,stringsAsFactors=FALSE,check.names=FALSE,colClasses="character",fileEncoding="UTF-8-BOM")
+default_cell_map_reader <- function(path) read_utf8_csv(path)
 normalize_reader_result <- function(result,row,root) {
   if (is.list(result) && all(c("counts","reader","input_signature","source_path","input_cells","input_features") %in% names(result))) {
     result$counts <- as_sparse_counts(result$counts)
