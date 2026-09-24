@@ -42,12 +42,16 @@ def confirm(report, confirmation, output, root):
         rows = [row for row in rows if row['sample'] in selected_set]
     groups = approval.get('groups', {})
     if set(groups) != {r['sample'] for r in rows}: raise ValueError('Grouping keys must exactly match report samples')
+    cell_map_digests = {}
     for row in rows:
         row['group'] = groups[row['sample']]
         if not missing(row.get('cell_map_path')):
             area = 'data/' + row['database']
             permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
-            row['cell_map_md5'] = digest(local(root,row['cell_map_path'],permitted))
+            cellmap = local(root,row['cell_map_path'],permitted)
+            if cellmap not in cell_map_digests:
+                cell_map_digests[cellmap] = digest(cellmap)
+            row['cell_map_md5'] = cell_map_digests[cellmap]
     validate_manifest(rows, root, allow_pending_probes=True)
     if output.exists(): raise ValueError('Manifest already exists; choose a new path or explicitly archive it first')
     write_csv(output, rows)

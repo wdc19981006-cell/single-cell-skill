@@ -239,6 +239,7 @@ def detect_trio(directory):
 def validate_manifest(rows, root, allow_pending_probes=False):
     if not rows: raise ValueError('Empty manifest')
     seen, databases, destinations, assemblies = set(), set(), {}, {}
+    cell_map_digests = {}
     for row in rows:
         for key in REQUIRED + ('local_path', 'file_type', 'count_source', 'count_evidence', 'metadata_evidence'):
             if missing(row.get(key)): raise ValueError('Missing ' + key)
@@ -261,7 +262,12 @@ def validate_manifest(rows, root, allow_pending_probes=False):
         if not missing(row.get('cell_map_path')):
             permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
             cellmap = local(root, row['cell_map_path'], permitted)
-            if missing(row.get('cell_map_md5')) or not cellmap.is_file() or digest(cellmap) != row['cell_map_md5']:
+            if not cellmap.is_file():
+                raise ValueError('Cell map missing or changed; review and reconfirm')
+            actual = cell_map_digests.get(cellmap)
+            if actual is None:
+                actual = cell_map_digests[cellmap] = digest(cellmap)
+            if missing(row.get('cell_map_md5')) or actual != row['cell_map_md5']:
                 raise ValueError('Cell map missing or changed; review and reconfirm')
         files = json.loads(row.get('files_json') or '[]')
         if not isinstance(files, list): raise ValueError('files_json must be a list')

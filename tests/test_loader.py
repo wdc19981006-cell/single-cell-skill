@@ -11,6 +11,7 @@ from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / '.agents/skills/geo-single-cell-loader/scripts'
 sys.path.insert(0, str(SCRIPTS))
+import common
 from common import detect_trio, file_type, choose_filtered, local, read_csv, validate_manifest, verify_confirmation, write_csv, rank_raw_count_candidates, select_verified_raw_counts
 from build_manifest import confirm
 from download_processed import extract_member, run, sha256
@@ -157,6 +158,25 @@ class LoaderTests(unittest.TestCase):
         confirm(report,approval,output,self.root); validate_manifest(read_csv(output),self.root)
         mapping.write_text('cell,sample\nc2,GSM2\n',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed'): validate_manifest(read_csv(output),self.root)
+    def test_shared_cell_map_is_hashed_once_per_validation(self):
+        mapping = self.workflow / 'large_pooled_map.csv'
+        mapping.write_text('cell,sample\nc1,GSM1\nc2,GSM2\n', encoding='utf-8')
+        rows = [row('GSM1'), row('GSM2')]
+        for item in rows:
+            item['local_path'] = 'data/GSE999999999/raw/pooled'
+            item['cell_map_path'] = 'data/GSE999999999/.workflow/large_pooled_map.csv'
+        report = self.workflow / 'sample_report.csv'
+        approval = self.workflow / 'group_confirmation.json'
+        output = self.workflow / 'sample_manifest.csv'
+        write_csv(report, rows)
+        approval.write_text(json.dumps(dict(confirmed_by='user', user_statement='SIMULATED',
+                                            groups={'GSM1':'A','GSM2':'B'})), encoding='utf-8')
+        with patch('build_manifest.digest', wraps=common.digest) as hashed:
+            confirm(report, approval, output, self.root)
+        self.assertEqual(sum(call.args[0] == mapping for call in hashed.call_args_list), 1)
+        with patch('common.digest', wraps=common.digest) as hashed:
+            validate_manifest(read_csv(output), self.root)
+        self.assertEqual(sum(call.args[0] == mapping for call in hashed.call_args_list), 1)
     def test_confirmation_integrity_and_order(self):
         rows=[row('GSM2'),row('GSM1')]
         report=self.workflow/'sample_report.csv'; approval=self.workflow/'group_confirmation.json'; output=self.workflow/'sample_manifest.csv'
