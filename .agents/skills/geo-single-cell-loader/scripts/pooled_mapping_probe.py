@@ -87,9 +87,25 @@ def check_pooled(rows, root, workflow):
         if not cells or any(not cell for cell in cells) or len(cells) != len(set(cells)):
             raise ValueError('Pooled matrix has blank or duplicate barcode IDs')
         suffixes = Counter(match.group(1) for cell in cells if (match := SUFFIX.search(cell)))
-        gsm_ids = _gsm_ids(rows)
+        selected_samples = {row['sample'] for row in rows}
+        receipt = json.loads((workflow / 'sample_manifest.confirmation.json').read_text(encoding='utf-8'))
+        explicit_subset = receipt.get('selected_samples')
+        if explicit_subset is not None:
+            if (not isinstance(explicit_subset, list) or len(explicit_subset) != len(set(explicit_subset))
+                    or set(explicit_subset) != selected_samples):
+                raise ValueError('Confirmed selected samples differ from pooled manifest rows')
+            with (workflow / 'sample_report.csv').open(encoding='utf-8-sig', newline='') as handle:
+                all_report_rows = list(csv.DictReader(handle))
+            source_samples = {row['sample'] for row in all_report_rows}
+            if len(source_samples) != len(all_report_rows) or not selected_samples <= source_samples:
+                raise ValueError('Selected samples are absent from the complete Stage A report')
+            gsm_ids = _gsm_ids(all_report_rows)
+        else:
+            source_samples = selected_samples
+            gsm_ids = _gsm_ids(rows)
         result.update(barcode_count=len(cells), barcode_suffix_counts=dict(sorted(suffixes.items())),
-                      gsm_count=len(gsm_ids), gsm_ids=sorted(gsm_ids))
+                      gsm_count=len(gsm_ids), gsm_ids=sorted(gsm_ids),
+                      explicit_subset=explicit_subset is not None)
         evidence_file = workflow / 'mapping_evidence.json'
         evidence = json.loads(evidence_file.read_text(encoding='utf-8')) if evidence_file.exists() else {}
         checks = evidence.get('checks', [])
@@ -123,9 +139,11 @@ def check_pooled(rows, root, workflow):
                     raise ValueError('Candidate map lacks configured cell/sample columns')
                 mapped_cells = [item[cell_key] for item in mapping]
                 mapped_samples = [aliases.get(item[sample_key], item[sample_key]) for item in mapping]
+                mapped_set = set(mapped_samples)
                 if (len(mapped_cells) != len(cells) or len(set(mapped_cells)) != len(cells) or
                         set(mapped_cells) != set(cells) or any(not value for value in mapped_samples) or
-                        set(mapped_samples) != {row['sample'] for row in rows}):
+                        not selected_samples <= mapped_set or not mapped_set <= source_samples or
+                        (explicit_subset is None and mapped_set != selected_samples)):
                     raise ValueError('Candidate map is not exhaustive for matrix cells and manifest samples')
                 canonical = workflow / ('cell_map_' + hashlib.sha256(first['local_path'].encode()).hexdigest()[:12] + '.csv')
                 with canonical.open('w', encoding='utf-8', newline='') as handle:
@@ -134,7 +152,9 @@ def check_pooled(rows, root, workflow):
                     writer.writerows({'cell': cell, 'sample': sample}
                                      for cell, sample in zip(mapped_cells, mapped_samples))
                 result.update(status='VERIFIED', cell_map_path=f'data/{gse}/.workflow/{canonical.name}',
-                              mapping_source=candidate['source_url'])
+                              mapping_source=candidate['source_url'],
+                              excluded_samples=sorted(mapped_set - selected_samples),
+                              excluded_cells=sum(sample not in selected_samples for sample in mapped_samples))
                 entry['status'] = 'verified'
                 return result['cell_map_path']
             except (KeyError, OSError, ValueError) as error:

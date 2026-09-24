@@ -42,6 +42,16 @@ read_manifest <- function(path, root) {
   confirmation <- jsonlite::fromJSON(receipt)
   if (!identical(unname(tools::md5sum(path)), confirmation$manifest_md5) || blank(confirmation$user_statement) || !identical(confirmation$confirmed_by, "user")) stop("Manifest changed or unconfirmed")
   if (!setequal(names(confirmation$groups), m$sample) || !identical(unname(unlist(confirmation$groups[m$sample])), m$group)) stop("Confirmed groups differ from manifest")
+  selected <- confirmation$selected_samples
+  if (!is.null(selected)) {
+    if (anyDuplicated(selected) || !setequal(selected,m$sample)) stop("Confirmed selected samples differ from manifest")
+    report_path <- file.path(dirname(path),"sample_report.csv")
+    if (!file.exists(report_path)) stop("Complete Stage A sample report is missing for selected pooled input")
+    report <- read_utf8_csv(report_path)
+    if (!"sample" %in% names(report) || anyDuplicated(report$sample) || !all(m$sample %in% report$sample)) stop("Selected samples are absent from Stage A report")
+    attr(m,"source_samples") <- report$sample
+  }
+  attr(m,"subset_confirmed") <- !is.null(selected)
   for (field in intersect(optional_fields, names(m))) {
     evidence <- paste0(field, "_evidence")
     if (any(!blank(m[[field]])) && (!evidence %in% names(m) || any(!blank(m[[field]]) & blank(m[[evidence]])))) stop("Missing public evidence for ", field)
@@ -401,7 +411,8 @@ normalize_reader_result <- function(result,row,root) {
   if (is.null(reader_used) || !nzchar(reader_used)) reader_used <- "injected reader"
   reader_contract(result,reader_used,route)
 }
-map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=default_cell_map_reader) {
+map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=default_cell_map_reader,
+                            allow_subset=FALSE,source_samples=NULL) {
   counts <- input$counts
   samples <- rows$sample
   map_values <- vapply(seq_len(nrow(rows)),function(i) value(rows[i,,drop=FALSE],"cell_map_path"),character(1))
@@ -431,10 +442,17 @@ map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=defau
     missing_cells <- setdiff(colnames(counts),cells)
     extra_cells <- setdiff(cells,colnames(counts))
     if (length(missing_cells) || length(extra_cells)) stop("Cell map cell set must exactly match the expression matrix columns.")
-    unknown_samples <- setdiff(unique(mapped_samples),samples)
+    permitted_samples <- if (allow_subset) source_samples else samples
+    if (allow_subset && (is.null(permitted_samples) || !all(samples %in% permitted_samples))) stop("Selected samples lack a complete source inventory.")
+    unknown_samples <- setdiff(unique(mapped_samples),permitted_samples)
     missing_samples <- setdiff(samples,unique(mapped_samples))
     if (length(unknown_samples) || length(missing_samples)) stop("Cell map sample set must exactly match the manifest samples for this input.")
     sample_for_cell <- mapped_samples[match(colnames(counts),cells)]
+    if (allow_subset) {
+      keep <- which(sample_for_cell %in% samples)
+      counts <- counts[,keep,drop=FALSE]
+      sample_for_cell <- sample_for_cell[keep]
+    }
   } else {
     if (nrow(rows) != 1L) stop("Shared input requires one consistent cell_map_path across manifest rows.")
     sample_for_cell <- rep(samples[[1]],ncol(counts))
@@ -455,6 +473,8 @@ prepare_input_groups <- function(manifest) {
 }
 prepare_expression_inputs <- function(manifest, root, reader=read_expression, cell_map_reader=default_cell_map_reader) {
   if (!nrow(manifest)) stop("Manifest has no rows")
+  allow_subset <- isTRUE(attr(manifest,"subset_confirmed"))
+  source_samples <- attr(manifest,"source_samples")
   groups <- prepare_input_groups(manifest)
   counts_list <- list()
   cell_sample_map <- character()
@@ -478,7 +498,8 @@ prepare_expression_inputs <- function(manifest, root, reader=read_expression, ce
     }
     read_seconds <- proc.time()[["elapsed"]] - read_started
     mapping_started <- proc.time()[["elapsed"]]
-    mapped <- map_input_cells(input,rows,root,cell_map_cache,cell_map_reader)
+    mapped <- map_input_cells(input,rows,root,cell_map_cache,cell_map_reader,
+                              allow_subset=allow_subset,source_samples=source_samples)
     cell_map_reads <- cell_map_reads + mapped$cell_map_reads
     counts_list[[sprintf("input_%03d",input_index)]] <- mapped$counts
     cell_sample_map <- c(cell_sample_map,mapped$cell_sample_map)

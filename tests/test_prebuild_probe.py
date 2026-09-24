@@ -209,6 +209,35 @@ class PrebuildProbeTests(unittest.TestCase):
         self.assertEqual(json.loads((workflow / 'pooled_mapping_probe.json').read_text())['status'], 'VERIFIED')
         verify_confirmation(manifest)
 
+    def test_confirmed_subset_keeps_complete_pooled_map(self):
+        gse = 'GSE999999999'
+        self._h5(gse, [1, 2, 3])
+        rows = [row(gse, 'GSM1', 'pooled.h5', '10x_h5'),
+                row(gse, 'GSM2', 'pooled.h5', '10x_h5')]
+        workflow, manifest = self.setup_manifest(gse, rows)
+        write_csv(workflow / 'sample_report.csv',
+                  [{'sample': sample} for sample in ('GSM1', 'GSM2', 'GSM3')])
+        receipt_path = workflow / 'sample_manifest.confirmation.json'
+        receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+        receipt['selected_samples'] = ['GSM1', 'GSM2']
+        receipt_path.write_text(json.dumps(receipt), encoding='utf-8')
+        candidate = workflow / 'mapping_candidates' / 'cells.csv'
+        candidate.parent.mkdir()
+        write_csv(candidate, [
+            {'cell': f'AAACCTGAGGCTACGA-{index}', 'sample': f'GSM{index}'}
+            for index in (1, 2, 3)
+        ])
+        self._evidence(workflow, dict(source_type='geo_supplementary',
+            source_url='https://example.org/geo/cell_metadata.csv',
+            local_path=f'data/{gse}/.workflow/mapping_candidates/cells.csv'))
+        run(manifest, self.root)
+        result = json.loads((workflow / 'pooled_mapping_probe.json').read_text())
+        self.assertEqual(result['status'], 'VERIFIED')
+        self.assertEqual(result['excluded_samples'], ['GSM3'])
+        self.assertEqual(result['excluded_cells'], 1)
+        self.assertEqual(len(read_csv(self.root / result['cell_map_path'])), 3)
+        verify_confirmation(manifest)
+
     def test_gse264203_seven_suffixes_six_gsm_stops(self):
         gse = 'GSE264203'
         self._h5(gse, range(1, 8))

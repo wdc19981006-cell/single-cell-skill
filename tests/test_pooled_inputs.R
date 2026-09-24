@@ -36,6 +36,18 @@ stopifnot(reader_calls==1L,cell_map_calls==1L,prepared$reader_calls==1L,prepared
 stopifnot(length(prepared$counts_list)==1L,identical(colnames(prepared$counts_list[[1]]),expected_cells))
 stopifnot(identical(unname(prepared$cell_sample_map[expected_cells]),rep(c("SampleA","SampleB","SampleC"),each=2)))
 
+# A user-confirmed subset retains complete source mapping but only selected columns.
+subset_manifest <- manifest[1:2,,drop=FALSE]
+attr(subset_manifest,"subset_confirmed") <- TRUE
+attr(subset_manifest,"source_samples") <- manifest$sample
+reader_calls <- 0L; cell_map_calls <- 0L
+selected <- prepare_expression_inputs(subset_manifest,fixture_root,reader,map_reader)
+stopifnot(reader_calls==1L,cell_map_calls==1L)
+stopifnot(identical(colnames(selected$counts_list[[1]]),expected_cells[1:4]))
+stopifnot(identical(unname(selected$cell_sample_map),rep(c("SampleA","SampleB"),each=2)))
+unconfirmed_subset <- manifest[1:2,,drop=FALSE]
+expect_error("Cell map sample set must exactly match",prepare_expression_inputs(unconfirmed_subset,fixture_root,reader,map_reader))
+
 # A separate author metadata table is a mapping input, not a new expression reader.
 separate_path <- file.path(workflow,"separate_metadata.csv")
 write.csv(data.frame(barcode=paste0("cell",1:6),author_sample=rep(c("SampleA","SampleB","SampleC"),each=2),author_cluster=letters[1:6]),separate_path,row.names=FALSE,quote=FALSE)
