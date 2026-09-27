@@ -9,6 +9,7 @@ cell_qc:
   pMT_max: 25
   pHB_max: 1
   pRP_max: 100
+  max_predicted_qc_removal_fraction: 0.15
 
 doublet:
   enabled: true

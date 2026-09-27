@@ -38,7 +38,7 @@ sc_sample_legend <- function(n_samples) {
   if (n_samples<=10L) return(ggplot2::guides(color=ggplot2::guide_legend(ncol=1)))
   if (n_samples<=25L) return(ggplot2::guides(color=ggplot2::guide_legend(ncol=2)))
   list(ggplot2::theme(legend.position="bottom"),
-       ggplot2::guides(color=ggplot2::guide_legend(ncol=min(5L,ceiling(n_samples/5)))))
+       ggplot2::guides(color=ggplot2::guide_legend(ncol=min(18L,ceiling(n_samples/4)),byrow=TRUE)))
 }
 
 sc_umap_panel <- function(frame,field,limits,n_samples) {
@@ -93,7 +93,9 @@ qc_plot_doublets <- function(object,paths,report) {
   n_samples <- length(unique(frame$sample))
   panels <- lapply(c("sample","DF","DF_adj"),function(field)
     sc_umap_panel(frame,field,limits,n_samples))
-  save_sc_plot(patchwork::wrap_plots(panels,ncol=3),"doublet_umap","umap_3panel",
+  combined <- patchwork::wrap_plots(panels,ncol=3,guides=if(n_samples>25L) "collect" else "keep")
+  if(n_samples>25L) combined <- combined & ggplot2::theme(legend.position="bottom")
+  save_sc_plot(combined,"doublet_umap","umap_3panel",
                paths$qc,nrow(frame),n_samples,report)
   violin <- rbind(data.frame(class=metadata$DF,call="DF",nFeature_RNA=metadata$nFeature_RNA),
                   data.frame(class=metadata$DF_adj,call="DF_adj",nFeature_RNA=metadata$nFeature_RNA))
@@ -104,21 +106,28 @@ qc_plot_doublets <- function(object,paths,report) {
 }
 
 qc_plot_cycle <- function(object,paths,report) {
-  meta <- object@meta.data
-  n_samples <- length(unique(meta$sample))
-  phase <- data.frame(sample=as.character(meta$sample),Phase=as.character(meta$Phase))
-  phase_plot <- ggplot2::ggplot(phase,ggplot2::aes(x=sample,fill=Phase)) +
-    ggplot2::geom_bar(position="fill") +
-    ggplot2::labs(x="Sample",y="Cell fraction",title="Cell-cycle phase") + theme_sc() +
-    ggplot2::theme(axis.text.x=ggplot2::element_text(angle=50,hjust=1))
-  type <- if(n_samples>10L) "large_sample_violin" else "violin"
-  save_sc_plot(phase_plot,"cell_cycle_phase",type,paths$qc,ncol(object),n_samples,report)
+  embedding <- SeuratObject::Embeddings(object[["umap"]])
+  limits <- sc_umap_limits(embedding)
+  n_samples <- length(unique(object$sample))
+  phase <- sc_cycle_phase_panel(object,limits)
+  save_sc_plot(phase,"cell_cycle_phase","umap_single",paths$qc,ncol(object),n_samples,report)
   metrics <- c("S.Score","G2M.Score","CC.Difference")
-  scores <- do.call(rbind,lapply(metrics,function(metric)
-    data.frame(sample=as.character(meta$sample),metric=metric,value=as.numeric(meta[[metric]]))))
-  score_plot <- ggplot2::ggplot(scores,ggplot2::aes(x=sample,y=value)) +
-    ggplot2::geom_violin(fill="#74b8a0",scale="width") +
-    ggplot2::facet_wrap(~metric,scales="free_y",ncol=3) + theme_sc() +
-    ggplot2::theme(axis.text.x=ggplot2::element_text(angle=50,hjust=1))
-  save_sc_plot(score_plot,"cell_cycle_score",type,paths$qc,ncol(object),n_samples,report)
+  panels <- lapply(metrics,function(metric) sc_cycle_feature_panel(object,metric,limits))
+  save_sc_plot(patchwork::wrap_plots(panels,ncol=3),"cell_cycle_score","feature_3panel",
+               paths$qc,ncol(object),n_samples,report)
+}
+
+sc_cycle_phase_panel <- function(object,limits) {
+  object$Phase <- factor(as.character(object$Phase),levels=c("G1","S","G2M"))
+  Seurat::DimPlot(object,reduction="umap",group.by="Phase",pt.size=get_umap_point_size(ncol(object))) +
+    ggplot2::scale_color_manual(values=c(G1="#4C78A8",S="#F2A541",G2M="#59A14F"),drop=FALSE) +
+    ggplot2::labs(title="Cell-cycle phase",x="UMAP_1",y="UMAP_2") +
+    ggplot2::coord_fixed(xlim=limits$x,ylim=limits$y,expand=FALSE) + theme_sc_umap()
+}
+
+sc_cycle_feature_panel <- function(object,metric,limits) {
+  Seurat::FeaturePlot(object,features=metric,reduction="umap",combine=FALSE,
+                      pt.size=get_umap_point_size(ncol(object)))[[1]] +
+    ggplot2::labs(title=metric,x="UMAP_1",y="UMAP_2") +
+    ggplot2::coord_fixed(xlim=limits$x,ylim=limits$y,expand=FALSE) + theme_sc_umap()
 }

@@ -19,6 +19,18 @@ stopifnot(all(vapply(umap_panels,function(p) identical(p$coordinates$ratio,1) &&
           all(vapply(umap_panels,function(p) identical(p$coordinates$limits$x,limits$x) &&
                        identical(p$coordinates$limits$y,limits$y),logical(1))),
           tail(umap_panels[[2]]$data$DF,1)=="Doublet")
+legend_57 <- sc_sample_legend(57L)
+stopifnot(ceiling(57L/legend_57[[2]]$colour$ncol)<=4L)
+frame_57 <- data.frame(x=seq_len(57L),y=sin(seq_len(57L)),
+  sample=paste0("Sample",seq_len(57L)),DF=rep("Singlet",57L),DF_adj=rep("Singlet",57L))
+limits_57 <- sc_umap_limits(as.matrix(frame_57[,c("x","y")]))
+panels_57 <- lapply(c("sample","DF","DF_adj"),function(field)
+  sc_umap_panel(frame_57,field,limits_57,57L))
+plot_57 <- patchwork::wrap_plots(panels_57,ncol=3,guides="collect") &
+  ggplot2::theme(legend.position="bottom")
+stopifnot(inherits(ggplot2::ggplotGrob(plot_57),"gtable"),
+  all(vapply(panels_57,function(p) identical(p$coordinates$limits$x,limits_57$x) &&
+    identical(p$coordinates$limits$y,limits_57$y),logical(1))))
 set.seed(17)
 source_genes <- Seurat::cc.genes
 s_genes <- unique(source_genes$s.genes)[seq_len(24)]
@@ -26,13 +38,13 @@ g2m_genes <- setdiff(unique(source_genes$g2m.genes),s_genes)[seq_len(24)]
 features <- unique(c(paste0("MT-",seq_len(4)),paste0("RPS",seq_len(4)),"HBA1","HBB",
                      s_genes,g2m_genes,paste0("GENE",seq_len(950))))
 
-make_fixture <- function(base,gse,low=TRUE) {
+make_fixture <- function(base,gse,low=TRUE,second_cells=42L,feature_ids=features) {
   dataset <- file.path(base,"data",gse)
   dir.create(dataset,recursive=TRUE)
-  sample <- c(rep("SampleA",125),if(low) rep("SampleB",42) else character())
+  sample <- c(rep("SampleA",125),if(low) rep("SampleB",second_cells) else character())
   cells <- paste0(sample,"_cell",seq_along(sample))
-  dense <- matrix(stats::rpois(length(features)*length(cells),lambda=2),nrow=length(features),
-                  dimnames=list(features,cells))
+  dense <- matrix(stats::rpois(length(feature_ids)*length(cells),lambda=2),nrow=length(feature_ids),
+                  dimnames=list(feature_ids,cells))
   counts <- Matrix::Matrix(dense,sparse=TRUE)
   meta <- data.frame(sample=sample,database=gse,group=ifelse(sample=="SampleA","Tumor","Control"),
                      row.names=cells)
@@ -60,7 +72,15 @@ bad_pk_api$find.pK <- function(stats) data.frame(pK=NA_real_,BCmetric=NA_real_)
 pk_error <- tryCatch(qc_select_pk(NULL,3L,bad_pk_api,"SampleA"),error=conditionMessage)
 stopifnot(grepl("pK search stopped for sample SampleA",pk_error,fixed=TRUE),
           qc_choose_pcs(c(10,9,8),list(pc_cumulative_variance=90,
-            pc_individual_variance=5,pc_elbow_drop=100),3L)==3L)
+            pc_individual_variance=5,pc_elbow_drop=100),3L)==3L,
+          qc_choose_pcs(c(10,5,2),list(pc_cumulative_variance=90,
+            pc_individual_variance=30,pc_elbow_drop=100),3L)==3L)
+
+boundary <- data.frame(nFeature_RNA=c(200,201,4000,3999,300),
+  nCount_RNA=c(600,500,600,30000,501),pMT=c(1,1,25,1,24.9),
+  pHB=c(0,0,0,1,0.9),pRP=c(1,1,1,100,99.9))
+cfg_boundary <- qc_config(list(),list())$cell_qc
+stopifnot(identical(qc_cell_keep(boundary,cfg_boundary),c(FALSE,FALSE,FALSE,FALSE,TRUE)))
 
 temporary <- tempfile("qc-fixture-",tmpdir=file.path(root,"data"))
 dir.create(temporary)
@@ -123,6 +143,19 @@ stopifnot(all(file.exists(plot_files)),all(file.info(plot_files)$size>0),
           setequal(report$metric[report$section=="PLOT"],expected_plots),
           any(report$metric=="doublet_umap_before_filter"),
           length(list.files(paths$qc,pattern="^qc_report\\.csv$"))==1L)
+plot_object <- qc_prepare_cycle_plot_object(final)
+plot_limits <- sc_umap_limits(SeuratObject::Embeddings(plot_object[["umap"]]))
+phase_panel <- sc_cycle_phase_panel(plot_object,plot_limits)
+score_panels <- lapply(c("S.Score","G2M.Score","CC.Difference"),function(metric)
+  sc_cycle_feature_panel(plot_object,metric,plot_limits))
+stopifnot(inherits(phase_panel,"ggplot"),length(score_panels)==3L,
+  all(vapply(score_panels,inherits,logical(1),"ggplot")),
+  all(vapply(c(list(phase_panel),score_panels),function(p)
+    identical(p$coordinates$limits$x,plot_limits$x) &&
+      identical(p$coordinates$limits$y,plot_limits$y) &&
+      identical(p$coordinates$ratio,1),logical(1))),
+  !any(c("pca","umap") %in% names(final@reductions)))
+rm(plot_object); gc()
 stopifnot(!length(list.files(paths$qc,pattern="summary\\.csv$")))
 
 gse <- "GSE999999998"
@@ -163,5 +196,49 @@ report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
 stopifnot(any(report$metric=="missing_package" & report$value=="DoubletFinder" &
   grepl("R version 4.5.0",report$note,fixed=TRUE) &
   grepl("D:/R/R-4.5.0/library",report$note,fixed=TRUE)))
+
+# The precheck prediction and actual strict filter must select identical cells.
+gse <- "GSE999999996"
+object <- make_fixture(temporary,gse,low=FALSE)
+paths <- qc_paths(temporary,gse)
+object$nCount_RNA[seq_len(25)] <- 500
+saveRDS(object,paths$raw)
+stopifnot(identical(qc_precheck(temporary,gse,available),"NEEDS_USER_DECISION"))
+removal_report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
+stopifnot(any(removal_report$sample=="ALL" & removal_report$metric=="predicted_removed_fraction" &
+                removal_report$status=="NEEDS_USER_DECISION"),
+          as.integer(removal_report$value[removal_report$sample=="SampleA" &
+            removal_report$metric=="predicted_after_qc_cells"][1])==100L)
+jsonlite::write_json(list(decision_type="accept_qc_removal",affected_samples="SampleA",
+  user_statement="SIMULATED USER DECISION: accept current QC removal",confirmed_by="user",
+  accept_qc_removal=TRUE),paths$decision,auto_unbox=TRUE)
+stopifnot(identical(qc_precheck(temporary,gse,available),"PASS"))
+filter_object <- qc_add_percentages(object,"human")
+filtered <- qc_filter_cells(filter_object,qc_config(paths,qc_decision(paths,"SampleA")),qc_report_new())
+stopifnot(ncol(filtered)==100L,
+          identical(colnames(filtered),rownames(filter_object@meta.data)[
+            qc_cell_keep(filter_object@meta.data,cfg_boundary)]))
+
+gse <- "GSE999999994"
+object <- make_fixture(temporary,gse,second_cells=125L)
+paths <- qc_paths(temporary,gse)
+object$nCount_RNA[which(object$sample=="SampleB")[seq_len(22)]] <- 500
+saveRDS(object,paths$raw)
+stopifnot(identical(qc_precheck(temporary,gse,available),"NEEDS_USER_DECISION"))
+removal_report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
+stopifnot(as.numeric(removal_report$value[removal_report$sample=="ALL" &
+            removal_report$metric=="predicted_removed_fraction"][1])<0.15,
+          as.numeric(removal_report$value[removal_report$sample=="SampleB" &
+            removal_report$metric=="predicted_removed_fraction"][1])>0.15)
+
+gse <- "GSE999999993"
+object <- make_fixture(temporary,gse,low=FALSE,
+  feature_ids=c(paste0("MT-",seq_len(4)),paste0("RPS",seq_len(4)),"HBA1","HBB",
+                paste0("GENE",seq_len(998))))
+paths <- qc_paths(temporary,gse)
+stopifnot(identical(qc_precheck(temporary,gse,available),"NEEDS_USER_DECISION"))
+coverage_report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
+stopifnot(any(coverage_report$section=="CELL_CYCLE" &
+  coverage_report$metric=="S_features_matched" & coverage_report$status=="NEEDS_USER_DECISION"))
 unlink(temporary,recursive=TRUE)
-cat("PASS: QC precheck, all three user decisions, missing-package report, per-sample doublet control flow, raw counts, reports, PDFs and clean final object.\n")
+cat("PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.\n")

@@ -8,7 +8,7 @@ qc_default_doublet_api <- function() list(
 
 qc_choose_pcs <- function(stdev,cfg,max_pc) {
   if(length(stdev)<2L || !all(is.finite(stdev)) || sum(stdev)<=0) stop("PCA variance unavailable")
-  pct <- stdev^2/sum(stdev^2)*100
+  pct <- stdev/sum(stdev)*100
   cumulative <- cumsum(pct)
   variance_pick <- which(cumulative >= cfg$pc_cumulative_variance & pct < cfg$pc_individual_variance)[1]
   drop_pick <- which(head(pct,-1L)-tail(pct,-1L) > cfg$pc_elbow_drop)[1]

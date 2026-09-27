@@ -11,7 +11,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-SCRIPTS = Path(__file__).resolve().parents[1] / ".agents/skills/geo-single-cell-loader/scripts"
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / ".agents/skills/geo-single-cell-loader/scripts"
 sys.path.insert(0, str(SCRIPTS))
 from common import validate_manifest, write_csv
 from build_manifest import confirm
@@ -116,12 +117,8 @@ class SplitRawCountsTests(unittest.TestCase):
         self.assertTrue(rows[0]["cell_map_md5"])
 
     def test_large_comma_counts_select_streaming_automatically(self):
-        rscript = shutil.which("Rscript")
-        if not rscript:
-            windows_r = Path("D:/R/R-4.5.3/bin/Rscript.exe")
-            rscript = str(windows_r) if windows_r.is_file() else None
-        if not rscript:
-            self.skipTest("Rscript unavailable")
+        if not Path("D:/R/R-4.5.0/bin/Rscript.exe").is_file() or not shutil.which("bash"):
+            self.skipTest("R 4.5.0 launcher unavailable")
         source = (SCRIPTS / "seurat_common.R").as_posix()
         code = (
             f'source("{source}"); Sys.unsetenv("GEO_SINGLE_CELL_STREAM_TEXT"); '
@@ -130,7 +127,8 @@ class SplitRawCountsTests(unittest.TestCase):
             'stopifnot(stream_text_candidate(row,174415491)); '
             'row$delimiter <- "tab"; stopifnot(!stream_text_candidate(row,174415491))'
         )
-        subprocess.run([rscript, "-e", code], check=True, capture_output=True)
+        subprocess.run(["bash", "qc/r450_rscript.sh", "-e", code], cwd=ROOT,
+                       check=True, capture_output=True)
 
 
 if __name__ == "__main__":

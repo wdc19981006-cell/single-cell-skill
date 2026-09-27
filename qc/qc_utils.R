@@ -58,6 +58,9 @@ qc_config <- function(paths, decision=list()) {
       !isTRUE(cfg$doublet$enabled) || !isTRUE(cfg$cell_cycle$enabled)) stop("Required QC pipeline settings changed")
   for (entry in c("min_cells","max_pcs")) if (!is.numeric(cfg$doublet[[entry]]) || cfg$doublet[[entry]] < 2) stop("Invalid doublet configuration")
   if (!is.numeric(cfg$doublet$expected_rate) || cfg$doublet$expected_rate <= 0 || cfg$doublet$expected_rate >= 1) stop("Invalid expected doublet rate")
+  limit <- cfg$cell_qc$max_predicted_qc_removal_fraction
+  if (!is.numeric(limit) || length(limit)!=1L || !is.finite(limit) || limit<0 || limit>=1)
+    stop("Invalid predicted QC removal fraction limit")
   cfg
 }
 
@@ -72,13 +75,17 @@ qc_decision <- function(paths, samples) {
   types <- as.character(d$decision_type)
   if (!length(affected) || anyDuplicated(affected) || anyDuplicated(c(removed,kept)) ||
       any(!c(removed,kept,affected) %in% samples) ||
-      any(!types %in% c("remove_low_cell_samples","keep_without_doubletfinder","override_parameters","accept_default_conflicts")))
+      any(!types %in% c("remove_low_cell_samples","keep_without_doubletfinder","override_parameters","accept_default_conflicts","accept_qc_removal")))
     stop("QC decision sample list or type invalid")
-  if (length(c(removed,kept)) && !setequal(c(removed,kept), affected))
-    stop("QC affected_samples must exactly match removed/kept samples")
+  if (length(c(removed,kept)) &&
+      !(if ("accept_qc_removal" %in% types) all(c(removed,kept) %in% affected)
+        else setequal(c(removed,kept), affected)))
+    stop("QC affected_samples must include removed/kept samples; match them exactly without a separate removal-acceptance decision")
   if (length(removed) && !"remove_low_cell_samples" %in% d$decision_type) stop("Removal decision_type missing")
   if (length(kept) && !"keep_without_doubletfinder" %in% d$decision_type) stop("Keep decision_type missing")
   if (!is.null(d$parameter_overrides) && !"override_parameters" %in% d$decision_type) stop("Override decision_type missing")
+  if (!is.null(d$accept_qc_removal) && (!identical(d$accept_qc_removal, TRUE) ||
+      !"accept_qc_removal" %in% types)) stop("accept_qc_removal requires an explicit user decision")
   d$removed_samples <- removed
   d$kept_low_cell_samples <- kept
   d
@@ -124,6 +131,27 @@ qc_add_percentages <- function(object, species) {
     }
   }
   object
+}
+
+qc_cell_filter_rules <- function(meta, thresholds) {
+  list(nFeature_min=meta$nFeature_RNA <= thresholds$nFeature_min,
+       nFeature_max=meta$nFeature_RNA >= thresholds$nFeature_max,
+       nCount_min=meta$nCount_RNA <= thresholds$nCount_min,
+       nCount_max=meta$nCount_RNA >= thresholds$nCount_max,
+       pMT_max=meta$pMT >= thresholds$pMT_max,
+       pHB_max=meta$pHB >= thresholds$pHB_max,
+       pRP_max=meta$pRP >= thresholds$pRP_max)
+}
+qc_cell_keep <- function(meta, thresholds) !Reduce(`|`,qc_cell_filter_rules(meta,thresholds))
+
+qc_cycle_features <- function(object) {
+  reference <- Seurat::cc.genes
+  available <- rownames(object)
+  matched <- function(names) {
+    indexes <- match(toupper(names),toupper(available))
+    unique(available[stats::na.omit(indexes)])
+  }
+  list(s=matched(reference$s.genes),g2m=matched(reference$g2m.genes))
 }
 
 qc_check_dependencies <- function(report, package_available=function(p) requireNamespace(p,quietly=TRUE)) {

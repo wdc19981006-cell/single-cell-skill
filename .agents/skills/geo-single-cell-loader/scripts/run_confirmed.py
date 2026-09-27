@@ -65,6 +65,7 @@ def run(gse, root=ROOT, rscript="Rscript"):
     manifest = f"data/{gse}/.workflow/sample_manifest.csv"
     status, reason = "success", ""
     handoff = None
+    independent_validation_seconds = None
     run_started = time.perf_counter()
     try:
         with (workflow / "execution.log").open("a", encoding="utf-8") as log:
@@ -82,21 +83,6 @@ def run(gse, root=ROOT, rscript="Rscript"):
             execute("dependencies", [rscript, str(SCRIPTS / "check_dependencies.R")], log, root)
             execute("build", [rscript, str(SCRIPTS / "build_seurat.R"), str(root), manifest], log, root)
             independent_validation_seconds = execute("validation", [rscript, str(SCRIPTS / "validate_seurat.R"), str(root), manifest, f"data/{gse}/seurat_raw.rds"], log, root)
-            handoff = raw_handoff(gse, paths)
-        build_profile = workflow / "build_profile.json"
-        if build_profile.exists():
-            profile = json.loads(build_profile.read_text(encoding="utf-8"))
-            profile["independent_validation_seconds"] = independent_validation_seconds
-            profile["pipeline_total_seconds"] = time.perf_counter() - run_started
-            probe = workflow / "candidate_probe.json"
-            if probe.exists():
-                profile["candidate_probe"] = json.loads(probe.read_text(encoding="utf-8"))
-            build_profile.write_text(json.dumps(profile, indent=2), encoding="utf-8")
-        (workflow / "validation.json").write_text(json.dumps({
-            "status": "success", "validator": "validate_seurat.R",
-            "validated_at_utc": datetime.now(timezone.utc).isoformat(),
-            "rds_bytes": paths["final"].stat().st_size,
-        }, indent=2), encoding="utf-8")
     except KeyboardInterrupt:
         status, reason = "interrupted", "User or process interruption"
     except Exception as error:
@@ -107,6 +93,27 @@ def run(gse, root=ROOT, rscript="Rscript"):
         if info.exists() and info.read_text(encoding="utf-8").startswith("STATUS: COMPLETE_RAW"):
             old = info.read_text(encoding="utf-8")
             info.write_text(old.replace("STATUS: COMPLETE_RAW", "STATUS: BUILD_FAILED", 1) + f"\nFailure: {reason}\n", encoding="utf-8")
+    if status == "success":
+        (workflow / "validation.json").write_text(json.dumps({
+            "status": "success", "validator": "validate_seurat.R",
+            "validated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "rds_bytes": paths["final"].stat().st_size,
+        }, indent=2), encoding="utf-8")
+        try:
+            build_profile = workflow / "build_profile.json"
+            if build_profile.exists():
+                profile = json.loads(build_profile.read_text(encoding="utf-8"))
+                profile["independent_validation_seconds"] = independent_validation_seconds
+                profile["pipeline_total_seconds"] = time.perf_counter() - run_started
+                probe = workflow / "candidate_probe.json"
+                if probe.exists():
+                    profile["candidate_probe"] = json.loads(probe.read_text(encoding="utf-8"))
+                build_profile.write_text(json.dumps(profile, indent=2), encoding="utf-8")
+            handoff = raw_handoff(gse, paths)
+        except Exception as error:
+            handoff = f"HANDOFF_WARNING: {error}; validated raw object remains COMPLETE_RAW"
+            with (workflow / "execution.log").open("a", encoding="utf-8") as log:
+                log.write(handoff + "\n")
     try:
         url = finalize(gse, root, status, reason)
     except Exception as error:

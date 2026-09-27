@@ -1,13 +1,3 @@
-qc_cycle_features <- function(object) {
-  reference <- Seurat::cc.genes
-  available <- rownames(object)
-  matched <- function(names) {
-    indexes <- match(toupper(names),toupper(available))
-    unique(available[stats::na.omit(indexes)])
-  }
-  list(s=matched(reference$s.genes),g2m=matched(reference$g2m.genes))
-}
-
 qc_score_cycle <- function(object,paths,report) {
   features <- qc_cycle_features(object)
   if(length(features$s)<5L || length(features$g2m)<5L)
@@ -17,7 +7,11 @@ qc_score_cycle <- function(object,paths,report) {
   normalized <- Seurat::NormalizeData(object,verbose=FALSE)
   scored <- Seurat::CellCycleScoring(normalized,s.features=features$s,g2m.features=features$g2m,set.ident=FALSE)
   scored$CC.Difference <- scored$S.Score-scored$G2M.Score
-  qc_plot_cycle(scored,paths,report)
+  # This object is for spatial diagnostics only; the final object below is
+  # reconstructed from the untouched raw counts and scored metadata.
+  plot_object <- qc_prepare_cycle_plot_object(scored)
+  qc_plot_cycle(plot_object,paths,report)
+  rm(plot_object); gc()
   for (phase in c("G1","S","G2M")) qc_report_add(report,"CELL_CYCLE",metric=paste0(phase,"_cells"),value=sum(scored$Phase==phase))
   # Rebuild from raw counts to remove the temporary normalized data layer and any analysis state.
   counts <- qc_counts(object)
@@ -26,4 +20,15 @@ qc_score_cycle <- function(object,paths,report) {
   if(length(final@reductions) || length(final@graphs) || length(final@neighbors)) stop("QC object retained downstream analysis state")
   if(!identical(qc_counts(final),counts)) stop("Raw counts changed during cell-cycle scoring")
   final
+}
+
+qc_prepare_cycle_plot_object <- function(scored) {
+  plot_object <- Seurat::NormalizeData(scored,verbose=FALSE)
+  plot_object <- Seurat::FindVariableFeatures(plot_object,nfeatures=min(2000L,nrow(plot_object)-1L),verbose=FALSE)
+  max_pc <- min(20L,ncol(plot_object)-1L,length(Seurat::VariableFeatures(plot_object))-1L,nrow(plot_object)-1L)
+  if (max_pc<2L) stop("Insufficient cells/features for cell-cycle UMAP")
+  plot_object <- Seurat::ScaleData(plot_object,verbose=FALSE)
+  plot_object <- Seurat::RunPCA(plot_object,npcs=max_pc,verbose=FALSE)
+  plot_object <- Seurat::RunUMAP(plot_object,dims=seq_len(max_pc),verbose=FALSE)
+  plot_object
 }

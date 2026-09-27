@@ -406,6 +406,30 @@ class LoaderTests(unittest.TestCase):
         self.assertTrue(info.read_text(encoding='utf-8').startswith('STATUS: BUILD_FAILED'))
         self.assertFalse((self.workflow.parent / 'qc').exists())
 
+    def test_handoff_failure_preserves_validated_raw(self):
+        (self.workflow / 'inspection.json').write_text(json.dumps({
+            'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
+        }), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(json.dumps({
+            'run_id': '20260927T000000Z-12345678'
+        }), encoding='utf-8')
+        info = self.workflow.parent / 'sample_info.txt'
+        info.write_text('STATUS: COMPLETE_RAW\nChanged summary layout\n', encoding='utf-8')
+        raw = self.workflow.parent / 'seurat_raw.rds'
+        raw.write_bytes(b'validated synthetic raw object')
+        output = io.StringIO()
+        with patch.object(confirmed_runner, 'execute', return_value=0.1), \
+             patch.object(confirmed_runner, 'restore_provenance'), \
+             patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit') as finalize, \
+             redirect_stdout(output):
+            confirmed_runner.run('GSE999999999', self.root)
+        self.assertEqual(raw.read_bytes(), b'validated synthetic raw object')
+        self.assertEqual(info.read_text(encoding='utf-8'), 'STATUS: COMPLETE_RAW\nChanged summary layout\n')
+        self.assertIn('HANDOFF_WARNING', output.getvalue())
+        self.assertNotIn('BUILD_FAILED', output.getvalue())
+        self.assertEqual(json.loads((self.workflow / 'validation.json').read_text())['status'], 'success')
+        self.assertEqual(finalize.call_args.args[2], 'success')
+
     def test_download_reuse_and_checksum_refusal(self):
         r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'
         r['files_json']=json.dumps([dict(url='https://example.org/matrix.mtx.gz',local_path=target)])

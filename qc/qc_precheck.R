@@ -55,6 +55,14 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
                   note=if(hits==0L) "Review species or gene naming; percentage would be zero" else "")
     if (hits==0L) needs <- c(needs,paste(metric,"features absent"))
   }
+  cycle_features <- qc_cycle_features(object)
+  for (entry in names(c(S="s",G2M="g2m"))) {
+    hits <- length(cycle_features[[c(S="s",G2M="g2m")[[entry]]]])
+    qc_report_add(report,"CELL_CYCLE",metric=paste0(entry,"_features_matched"),value=hits,
+      status=if(hits<5L) "NEEDS_USER_DECISION" else "PASS",
+      note=if(hits<5L) "Gene identifier/species may not match the default cell-cycle gene set" else "")
+    if(hits<5L) needs <- c(needs,paste(entry,"cell-cycle genes matched fewer than five"))
+  }
   object <- qc_add_percentages(object,cfg$species)
   metadata <- object@meta.data
   removed <- decision$removed_samples %||% character()
@@ -82,13 +90,7 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
   }
   active <- !metadata$sample %in% removed
   if (!any(active)) return(finish("FAILED_INPUT","All samples would be removed"))
-  rules <- list(nFeature_min=metadata$nFeature_RNA < cfg$cell_qc$nFeature_min,
-                nFeature_max=metadata$nFeature_RNA > cfg$cell_qc$nFeature_max,
-                nCount_min=metadata$nCount_RNA < cfg$cell_qc$nCount_min,
-                nCount_max=metadata$nCount_RNA > cfg$cell_qc$nCount_max,
-                pMT_max=metadata$pMT > cfg$cell_qc$pMT_max,
-                pHB_max=metadata$pHB > cfg$cell_qc$pHB_max,
-                pRP_max=metadata$pRP > cfg$cell_qc$pRP_max)
+  rules <- qc_cell_filter_rules(metadata,cfg$cell_qc)
   for (metric in names(rules)) {
     fraction <- mean(rules[[metric]][active])
     conflict <- fraction > 0.5 && !isTRUE(decision$accept_default_conflicts) &&
@@ -97,10 +99,25 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
       status=if(conflict) "NEEDS_USER_DECISION" else "PASS",note=if(conflict) "More than half of active cells fail this default threshold" else "")
     if(conflict) needs <- c(needs,paste("Default",metric,"conflicts with data distribution"))
   }
-  predicted_keep <- active & !Reduce(`|`,rules)
+  predicted_keep <- active & qc_cell_keep(metadata,cfg$cell_qc)
+  removal_limit <- cfg$cell_qc$max_predicted_qc_removal_fraction
+  report_removal <- function(sample,input,after) {
+    removed_cells <- input-after
+    fraction <- removed_cells/input
+    fields <- list(input_cells=input,predicted_after_qc_cells=after,
+                   predicted_removed_cells=removed_cells,predicted_removed_fraction=round(fraction,4))
+    for (name in names(fields)) {
+      qc_report_add(report,"CELL_QC",sample,name,fields[[name]],
+        status=if(name=="predicted_removed_fraction" && fraction>removal_limit &&
+                  !isTRUE(decision$accept_qc_removal)) "NEEDS_USER_DECISION" else "PASS")
+    }
+    if(fraction>removal_limit && !isTRUE(decision$accept_qc_removal))
+      needs <<- c(needs,paste(sample,"predicted QC removal exceeds",removal_limit))
+  }
+  report_removal("ALL",sum(active),sum(predicted_keep))
   for (sample in setdiff(samples,removed)) {
     count <- sum(predicted_keep & metadata$sample==sample)
-    qc_report_add(report,"CELL_QC",sample,"predicted_after_qc_cells",count)
+    report_removal(sample,sum(active & metadata$sample==sample),count)
     if(count==0L) {
       qc_report_add(report,"CELL_QC",sample,"predicted_after_qc_cells",count,status="NEEDS_USER_DECISION",note="Default QC would empty this sample")
       needs <- c(needs,paste("Cell QC would empty",sample))
@@ -113,6 +130,8 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
   if(length(needs)) {
     low <- needs[grepl("cells; group=",needs,fixed=TRUE)]
     if(length(low)) cat("以下样本细胞数不足",cfg$doublet$min_cells,"，不建议单独运行DoubletFinder：\n",paste(low,collapse="\n"),"\n请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。\n",sep="")
+    if(any(grepl("predicted QC removal exceeds",needs,fixed=TRUE)))
+      cat("默认 QC 参数预计删除超过",100*removal_limit,"%的细胞，请确认继续使用当前阈值或修改参数。\n",sep="")
     return(finish("NEEDS_USER_DECISION",paste(unique(needs),collapse="; ")))
   }
   finish("PASS")
