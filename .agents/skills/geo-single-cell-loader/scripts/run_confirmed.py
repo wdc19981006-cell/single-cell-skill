@@ -10,10 +10,37 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from audit_run import finalize, restore_provenance, run_id
-from common import ROOT, dataset_paths
+from common import ROOT, dataset_paths, read_csv
 from stage_a_policy import UnsupportedModality, assess_single_cell_modality
 
 SCRIPTS = Path(__file__).resolve().parent
+
+
+def raw_handoff(gse, paths):
+    """Report the validated raw stage without initiating the independent QC stage."""
+    info = paths["info"].read_text(encoding="utf-8").splitlines()
+    if not info or info[0] != "STATUS: COMPLETE_RAW":
+        raise RuntimeError("Raw handoff requires STATUS: COMPLETE_RAW")
+    def value(label):
+        index = info.index(label)
+        return info[index + 1]
+    rows = read_csv(paths["workflow"] / "sample_summary.csv")
+    if not rows:
+        raise RuntimeError("Raw handoff requires a sample summary")
+    groups = {}
+    for row in rows:
+        groups[row["group"]] = groups.get(row["group"], 0) + int(row["cells"])
+    return "\n".join((
+        "STATUS: COMPLETE_RAW",
+        f"GSE: {gse}",
+        f"Samples: {value('Total samples:')}",
+        f"Cells: {value('Total cells:')}",
+        f"Genes: {value('Total genes:')}",
+        "Groups (cells): " + "; ".join(f"{group}={cells}" for group, cells in groups.items()),
+        f"Raw expression: data/{gse}/raw/",
+        f"Raw Seurat: data/{gse}/seurat_raw.rds",
+        "原始 Seurat 数据已经构建并验证完成。是否继续进行 QC（细胞质量过滤、DoubletFinder、细胞周期评分）？",
+    ))
 
 
 def execute(label, command, log, root):
@@ -37,6 +64,7 @@ def run(gse, root=ROOT, rscript="Rscript"):
     run_id(workflow)
     manifest = f"data/{gse}/.workflow/sample_manifest.csv"
     status, reason = "success", ""
+    handoff = None
     run_started = time.perf_counter()
     try:
         with (workflow / "execution.log").open("a", encoding="utf-8") as log:
@@ -54,6 +82,7 @@ def run(gse, root=ROOT, rscript="Rscript"):
             execute("dependencies", [rscript, str(SCRIPTS / "check_dependencies.R")], log, root)
             execute("build", [rscript, str(SCRIPTS / "build_seurat.R"), str(root), manifest], log, root)
             independent_validation_seconds = execute("validation", [rscript, str(SCRIPTS / "validate_seurat.R"), str(root), manifest, f"data/{gse}/seurat_raw.rds"], log, root)
+            handoff = raw_handoff(gse, paths)
         build_profile = workflow / "build_profile.json"
         if build_profile.exists():
             profile = json.loads(build_profile.read_text(encoding="utf-8"))
@@ -75,9 +104,9 @@ def run(gse, root=ROOT, rscript="Rscript"):
     if status != "success":
         (workflow / "validation.json").write_text(json.dumps({"status": status, "reason": reason}, indent=2), encoding="utf-8")
         info = paths["info"]
-        if info.exists() and info.read_text(encoding="utf-8").startswith("STATUS: COMPLETE"):
+        if info.exists() and info.read_text(encoding="utf-8").startswith("STATUS: COMPLETE_RAW"):
             old = info.read_text(encoding="utf-8")
-            info.write_text(old.replace("STATUS: COMPLETE", "STATUS: BUILD_FAILED", 1) + f"\nFailure: {reason}\n", encoding="utf-8")
+            info.write_text(old.replace("STATUS: COMPLETE_RAW", "STATUS: BUILD_FAILED", 1) + f"\nFailure: {reason}\n", encoding="utf-8")
     try:
         url = finalize(gse, root, status, reason)
     except Exception as error:
@@ -85,6 +114,7 @@ def run(gse, root=ROOT, rscript="Rscript"):
     print(f"Audit: {url}")
     if status != "success":
         raise RuntimeError(f"{status}: {reason}")
+    print(handoff)
     return url
 
 

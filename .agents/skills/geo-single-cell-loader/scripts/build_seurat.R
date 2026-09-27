@@ -140,7 +140,7 @@ withCallingHandlers({
     group=m$group[match(names(retained),m$sample)],stringsAsFactors=FALSE),
     file.path(workflow,"sample_summary.csv"),row.names=FALSE)
   if (!file.rename(partial,final)) stop("Could not finalize validated RDS")
-  update_sample_info(out,"COMPLETE",m,seurat,input_records,warnings_seen)
+  update_sample_info(out,"COMPLETE_RAW",m,seurat,input_records,warnings_seen)
 },warning=function(w) {warnings_seen <<- c(warnings_seen,conditionMessage(w))})
 cat("Validated output:",final,"\n")
 },error=function(e) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 qc_runner_source <- if(!is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 qc_runner_dir <- dirname(normalizePath(qc_runner_source,winslash="/",mustWork=TRUE))
-for (name in c("qc_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R"))
+for (name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R"))
   source(file.path(qc_runner_dir,name))
 
 qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE),df_api=NULL) {
@@ -9,7 +9,8 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
   if(file.exists(paths$final)) stop("seurat_qc.rds exists; archive it explicitly before rebuilding")
   status <- qc_precheck(root,gse,package_available)
   if(status!="PASS") stop("QC precheck stopped: ",status,"; inspect ",paths$report)
-  prior <- utils::read.csv(paths$report,stringsAsFactors=FALSE,check.names=FALSE,fileEncoding="UTF-8-BOM")
+  prior <- utils::read.csv(paths$report,stringsAsFactors=FALSE,check.names=FALSE)
+  prior$metric[prior$section=="RUN" & prior$metric=="status"] <- "precheck_status"
   report <- qc_report_new()
   report$rows <- lapply(seq_len(nrow(prior)),function(i) prior[i,,drop=FALSE])
   started <- proc.time()[["elapsed"]]
@@ -27,10 +28,10 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
     }
     active_cells <- ncol(object)
     object <- qc_add_percentages(object,cfg$species)
-    qc_plot_metrics(object,file.path(paths$qc,"before_QC.pdf"),"Before cell QC")
+    qc_plot_metrics(object,paths,"before_QC","Before cell QC",report)
     filtered <- qc_filter_cells(object,cfg,report)
     after_cell_qc <- ncol(filtered)
-    qc_plot_metrics(filtered,file.path(paths$qc,"after_QC.pdf"),"After cell QC")
+    qc_plot_metrics(filtered,paths,"after_QC","After cell QC",report)
     rm(object,counts); gc()
     actual_api <- if(is.null(df_api)) qc_default_doublet_api() else df_api
     doubled <- qc_run_doublets(filtered,cfg,decision,paths,report,actual_api)
@@ -42,7 +43,7 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
     if(!all(c("pMT","pRP","pHB","S.Score","G2M.Score","Phase","CC.Difference","pANN","DF","DF_adj","doublet_status") %in% names(final@meta.data))) stop("Final QC metadata incomplete")
     if(!identical(rownames(final@meta.data),SeuratObject::Cells(final))) stop("Final cell/metadata alignment changed")
     for (field in c("sample","database","group")) if(any(qc_blank(final@meta.data[[field]]))) stop("Final metadata missing ",field)
-    finish_status <- if(doubled$unevaluated>0L) "QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS" else "COMPLETE"
+    finish_status <- if(doubled$unevaluated>0L) "QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS" else "COMPLETE_QC"
     fields <- list(raw_cells=raw_cells,after_cell_qc_cells=after_cell_qc,
       after_doublet_cells=ncol(final),removed_by_cell_qc=active_cells-after_cell_qc,
       removed_doublets=doubled$pre_filter_cells-ncol(final),final_cells=ncol(final),final_genes=nrow(final),
@@ -52,9 +53,11 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
       value=paste(unique(final$sample[final$DF_adj=="NotEvaluated"]),collapse=";"),
       status="USER_CONFIRMED_SKIP",note=decision$user_statement)
     qc_report_add(report,"RUN",metric="status",value=finish_status,
-      status=if(finish_status=="COMPLETE") "PASS" else finish_status)
-    required <- c("before_QC.pdf","after_QC.pdf","doublet_umap.pdf","doublet_vlnplot.pdf","cell_cycle_phase.pdf","cell_cycle_score.pdf")
-    if(any(!file.exists(file.path(paths$qc,required)))) stop("Required QC PDF missing")
+      status=if(finish_status=="COMPLETE_QC") "PASS" else finish_status)
+    required <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
+                                   "cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
+    files <- file.path(paths$qc,required)
+    if(any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("Required QC PDF/PNG missing or empty")
     pending <- paste0(paths$final,".pending")
     saveRDS(final,pending)
     serialized <- readRDS(pending)
@@ -63,6 +66,7 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
     qc_report_write(report,paths$report)
     finish_status
   },error=function(e) {
+    report$rows <- Filter(function(row) !(row$section=="RUN" && row$metric=="status"),report$rows)
     qc_report_add(report,"RUN",metric="status",value="FAILED",status="FAILED_INPUT",note=conditionMessage(e))
     qc_report_write(report,paths$report)
     stop(e)

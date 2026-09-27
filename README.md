@@ -13,7 +13,7 @@
 3. 告诉用户“group 尚未创建，请确认分组方式。”确认前不批量下载表达矩阵。
 4. 用户确认后，保存分组记录、生成并校验 manifest、自动下载源表达文件。
 5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
-6. 全部结果保存在 `data/<GSE>/`。
+6. 全部结果保存在 `data/<GSE>/`。Loader 以 `COMPLETE_RAW` 结束并询问是否继续 QC；未获用户确认不会自动质控。
 
 ## GEO MCP-first Stage A
 
@@ -51,7 +51,9 @@ Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后
 
 已有 `seurat_raw.rds` 时，可请求“对 GSE… 进行质控”。`single-cell-qc` 先执行 precheck；若低细胞样本、默认阈值冲突或物种/基因命名不确定，状态为 `NEEDS_USER_DECISION`，必须由用户明确选择后把原话和决定持久化为 `data/<GSE>/qc/qc_decision.json`。低细胞样本可由用户选择删除、保留但不运行 DoubletFinder，或修改最低细胞阈值；保留未检测样本时最终状态为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`，不会把它们误标成 Singlet。
 
-固定 R 流程仅进行基础细胞 QC、逐 sample 的两次 DoubletFinder（含自动 pK 与同型调整）、合并后的 doublet UMAP，以及 cell-cycle scoring；不做整合、注释或细胞周期回归。输出为 `data/<GSE>/qc/seurat_qc.rds`、一份 `qc_report.csv` 和六张 PDF，原始 `seurat_raw.rds` 不覆盖。最终 QC 对象保留 raw RNA counts、原 metadata 和 QC 指标，不继承临时 PCA、UMAP、聚类或 normalized data。
+固定 R 流程仅进行基础细胞 QC、逐 sample 的两次 DoubletFinder（含自动 pK 与同型调整）、合并后的 doublet UMAP，以及 cell-cycle scoring；不做整合、注释或细胞周期回归。输出为 `data/<GSE>/qc/seurat_qc.rds`、一份 `qc_report.csv` 和六组 PDF+PNG，原始 `seurat_raw.rds` 不覆盖。所有正式图通过 `qc/plot_utils.R` 的 `save_sc_plot()` 保存；UMAP 使用固定纵横比、共享坐标范围和动态点大小。最终 QC 对象保留 raw RNA counts、原 metadata 和 QC 指标，不继承临时 PCA、UMAP、聚类或 normalized data。
+
+Loader 完成并验证 `seurat_raw.rds` 后会报告 GSE、样本、cells、genes、group 和文件位置，然后询问是否继续 QC；只有用户同意才转入独立的 `single-cell-qc` Skill。日后也可直接说“对 GSE156625 进行质控”：QC 复用现有原始对象，不重新执行 GEO 发现、下载或构建。找不到原始 RDS 时会停止并提示先完成 Loader。普通 QC 完成状态为 `COMPLETE_QC`；经用户确认保留未检测 DoubletFinder 的低细胞样本时为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`。
 
 QC 依赖检查、测试与运行通过 `bash qc/r450_rscript.sh` 调用 `D:/R/R-4.5.0/bin/Rscript.exe`（library：`D:/R/R-4.5.0/library`）。启动器只在该进程内禁用 `cli` 计时线程，并在 R 退出清理时应用本机所需的兼容设置；不修改 QC 分析代码或已安装包。若指定 Rscript 不存在或缺包，直接停止并报告，不自动切换环境或安装。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
 
@@ -122,7 +124,7 @@ STATUS: WAITING_FOR_GROUP_CONFIRMATION
 
 文件包括研究标题/说明、测序类型、组织、候选 processed 格式、总样本数，以及逐样本属性。尚未由证据确定的内容明确标注；整套资料没有的 optional 字段不会显示大量 NA。公开事实经 Skill 审阅后同步更新 TXT。
 
-确认分组后状态为 `GROUP_CONFIRMED`，逐样本增加 group，并增加 GROUP SUMMARY。创建、序列化并验证成功后状态为 `COMPLETE`，附加 PROCESSING SUMMARY：总样本/细胞/基因数、sample/group 细胞数、输出位置、实际读取格式和 reader、counts source、Seurat 版本、创建时间和 warnings。
+确认分组后状态为 `GROUP_CONFIRMED`，逐样本增加 group，并增加 GROUP SUMMARY。创建、序列化并验证原始对象成功后状态为 `COMPLETE_RAW`，附加 PROCESSING SUMMARY：总样本/细胞/基因数、sample/group 细胞数、输出位置、实际读取格式和 reader、counts source、Seurat 版本、创建时间和 warnings。QC 的状态独立记录在 `qc/qc_report.csv`，不会把 Loader 状态改成 QC 完成。
 
 构建失败时尽可能写入 `BUILD_FAILED` 和 `Failure:` 原因，保留已经下载的数据。确认前仍保持等待状态。部分开发检索保存在 `.workflow/development/`，不能覆盖完整报告，也不能用于后续分组确认。
 

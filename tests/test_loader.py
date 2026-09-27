@@ -1,5 +1,6 @@
 """Offline regression tests. No real GEO downloads or biological group inference."""
 import copy
+from contextlib import redirect_stdout
 import io
 import json
 import sys
@@ -358,6 +359,52 @@ class LoaderTests(unittest.TestCase):
                 confirmed_runner.run('GSE999999999', self.root)
         execute.assert_not_called()
         self.assertFalse((self.workflow.parent / 'raw').exists())
+
+    def test_loader_handoff_stops_before_qc_and_asks_user(self):
+        (self.workflow / 'inspection.json').write_text(json.dumps({
+            'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
+        }), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(json.dumps({
+            'run_id': '20260927T000000Z-12345678'
+        }), encoding='utf-8')
+        (self.workflow.parent / 'sample_info.txt').write_text(
+            'STATUS: COMPLETE_RAW\nTotal samples:\n2\nTotal cells:\n30\nTotal genes:\n250\n',encoding='utf-8')
+        write_csv(self.workflow / 'sample_summary.csv', [
+            {'sample': 'GSM1', 'cells': '10', 'group': 'Control'},
+            {'sample': 'GSM2', 'cells': '20', 'group': 'Tumor'},
+        ])
+        (self.workflow.parent / 'seurat_raw.rds').write_bytes(b'synthetic raw object')
+        output = io.StringIO()
+        with patch.object(confirmed_runner, 'execute', return_value=0.1) as execute, \
+             patch.object(confirmed_runner, 'restore_provenance'), \
+             patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit'), \
+             redirect_stdout(output):
+            confirmed_runner.run('GSE999999999', self.root)
+        self.assertEqual([call.args[0] for call in execute.call_args_list],
+                         ['download', 'prebuild_probe', 'dependencies', 'build', 'validation'])
+        message = output.getvalue()
+        for expected in ('STATUS: COMPLETE_RAW', 'Samples: 2', 'Cells: 30', 'Genes: 250',
+                         'Control=10', 'Tumor=20', 'data/GSE999999999/raw/',
+                         'data/GSE999999999/seurat_raw.rds', '是否继续进行 QC'):
+            self.assertIn(expected, message)
+        self.assertFalse((self.workflow.parent / 'qc').exists())
+
+    def test_confirmed_failure_replaces_complete_raw_status(self):
+        (self.workflow / 'inspection.json').write_text(json.dumps({
+            'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
+        }), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(json.dumps({
+            'run_id': '20260927T000000Z-12345678'
+        }), encoding='utf-8')
+        info = self.workflow.parent / 'sample_info.txt'
+        info.write_text('STATUS: COMPLETE_RAW\nSynthetic summary\n',encoding='utf-8')
+        with patch.object(confirmed_runner, 'execute', side_effect=RuntimeError('synthetic validation failure')), \
+             patch.object(confirmed_runner, 'restore_provenance'), \
+             patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit'):
+            with self.assertRaisesRegex(RuntimeError, 'synthetic validation failure'):
+                confirmed_runner.run('GSE999999999', self.root)
+        self.assertTrue(info.read_text(encoding='utf-8').startswith('STATUS: BUILD_FAILED'))
+        self.assertFalse((self.workflow.parent / 'qc').exists())
 
     def test_download_reuse_and_checksum_refusal(self):
         r=row(); target='data/GSE999999999/raw/GSM2/matrix.mtx.gz'

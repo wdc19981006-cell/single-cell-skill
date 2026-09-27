@@ -19,6 +19,7 @@ cfg <- qc_config(list())
 result <- qc_run_doublet_sample(object,"SampleA",cfg,report,qc_default_doublet_api())
 metrics <- do.call(rbind,report$rows)
 stopifnot(ncol(result)==130L,all(c("pANN","DF","DF_adj") %in% names(result@meta.data)),
+          !any(grepl("^seurat_clusters$|^RNA_snn_res\\.",names(result@meta.data))),
           all(result$DF %in% c("Singlet","Doublet")),
           all(result$DF_adj %in% c("Singlet","Doublet")),
           all(c("selected_pK","pc_used","nExp_poi","nExp_poi_adj") %in% metrics$metric))

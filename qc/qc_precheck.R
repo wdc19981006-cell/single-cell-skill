@@ -12,7 +12,11 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     qc_report_write(report,paths$report)
     status
   }
-  if (!file.exists(paths$raw)) return(finish("FAILED_INPUT","seurat_raw.rds missing"))
+  if (!file.exists(paths$raw)) {
+    note <- "seurat_raw.rds missing; complete data download and raw object build first"
+    message("未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。")
+    return(finish("FAILED_INPUT",note))
+  }
   missing <- qc_check_dependencies(report,package_available)
   if (length(missing)) return(finish("FAILED_INPUT","Required package missing; no packages were installed"))
   object <- tryCatch(readRDS(paths$raw),error=function(e)e)
@@ -28,6 +32,14 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
 
   needs <- character()
   if (!identical(cfg$species,"human") && !identical(cfg$species,"mouse")) needs <- c(needs,"Unsupported species")
+  if ("species" %in% names(object@meta.data)) {
+    observed <- unique(as.character(object$species))
+    if (length(observed)!=1L || any(qc_blank(observed)) || !identical(tolower(observed),cfg$species)) {
+      qc_report_add(report,"CONFIG",metric="species_metadata",value=paste(observed,collapse=";"),
+                    status="NEEDS_USER_DECISION",note="Raw metadata species conflicts with QC species; confirm before analysis")
+      needs <- c(needs,"Species metadata conflicts with QC config")
+    }
+  }
   source_text <- paste(capture.output(print(unique(object@meta.data[,intersect(names(object@meta.data),c("source_type","modality","technology")),drop=FALSE]))),collapse=" ")
   if (grepl("snRNA|single[- ]nucle|nuclei",source_text,ignore.case=TRUE) &&
       is.null(decision$accept_default_conflicts) && is.null(decision$parameter_overrides)) {

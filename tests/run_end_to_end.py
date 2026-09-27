@@ -23,13 +23,15 @@ from sample_info import refresh
 GSE = 'GSE999999999'
 REL = f'data/{GSE}/.workflow/sample_manifest.csv'
 
-def main(rscript):
+def main(rscript, root=ROOT, rscript_arg=None):
+    fixture_root = root
     env = dict(os.environ, GEO_SINGLE_CELL_PYTHON=sys.executable, LC_ALL='C')
-    log = ROOT/f'data/{GSE}/.workflow/integration-tests.txt'
+    log = root/f'data/{GSE}/.workflow/integration-tests.txt'
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text('', encoding='utf-8')
     def rrun(script, root, *args, success=True):
-        result = subprocess.run([rscript, str(script), str(root), *args], env=env, capture_output=True)
+        command = [rscript] + ([rscript_arg] if rscript_arg else []) + [str(script), str(root), *args]
+        result = subprocess.run(command, env=env, capture_output=True, cwd=ROOT)
         output = (result.stdout + result.stderr).decode('utf-8', errors='replace')
         with log.open('a',encoding='utf-8') as f: f.write(f'\n{script.name}: exit={result.returncode}\n{output}\n')
         if (result.returncode == 0) != success:
@@ -44,26 +46,27 @@ def main(rscript):
         write_csv(workflow/'sample_report.csv',rows)
         (workflow/'group_confirmation.json').write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED INTEGRATION TEST ONLY',groups={r['sample']:r['group'] for r in rows})),encoding='utf-8')
         confirm(workflow/'sample_report.csv',workflow/'group_confirmation.json',workflow/'sample_manifest.csv',root)
-    refresh(ROOT,GSE)
-    run(ROOT/REL,ROOT)
-    build(ROOT); validate(ROOT)
-    rrun(ROOT/'tests/test_final_object.R',ROOT)
-    info=(ROOT/f'data/{GSE}/sample_info.txt').read_text(encoding='utf-8')
-    assert info.startswith('STATUS: COMPLETE')
+    refresh(root,GSE)
+    run(root/REL,root)
+    build(root); validate(root)
+    rrun(ROOT/'tests/test_final_object.R',root)
+    info=(root/f'data/{GSE}/sample_info.txt').read_text(encoding='utf-8')
+    assert info.startswith('STATUS: COMPLETE_RAW')
     for value in ('Total samples:\n4','Total cells:\n16','Total genes:\n250','GROUP SUMMARY','PROCESSING SUMMARY','raw/','seurat_raw.rds','min.cells = 3','min.features = 200','Counts source:','Warnings:'):
         assert value in info, value
     for name in ('FixtureZ','FixtureA','FixtureH','FixtureT'): assert name in info
     assert 'patient:' not in info
-    summary=(ROOT/f'data/{GSE}/.workflow/run_summary.txt').read_text(encoding='utf-8')
+    summary=(root/f'data/{GSE}/.workflow/run_summary.txt').read_text(encoding='utf-8')
     for value in ('Input routing:','Performance:','Manifest rows: 4','Unique input signatures: 4','Unique physical expression inputs: 4','Expression matrices actually read: 4','Cell maps actually read: 0','reader: data.table::fread','file_size_bytes:','total_build_seconds:'):
         assert value in summary, value
-    final=ROOT/f'data/{GSE}/seurat_raw.rds'; before=sha256(final)
-    assert 'Output exists' in build(ROOT,success=False)
+    final=root/f'data/{GSE}/seurat_raw.rds'; before=sha256(final)
+    assert 'Output exists' in build(root,success=False)
     assert sha256(final)==before
-    assert (ROOT/f'data/{GSE}/sample_info.txt').read_text(encoding='utf-8')==info
+    assert (root/f'data/{GSE}/sample_info.txt').read_text(encoding='utf-8')==info
     print('PASS: primary E2E (4 samples, 16 cells, 250 genes), complete TXT and overwrite refusal',flush=True)
 
-    template=read_csv(ROOT/REL)[3]
+    template=read_csv(fixture_root/REL)[3]
+    source_h5ad=fixture_root/f'data/{GSE}/raw/counts.h5ad'
     with tempfile.TemporaryDirectory(prefix='geo-pooled-') as tmp:
         root=Path(tmp); raw=root/f'data/{GSE}/raw'; raw.mkdir(parents=True)
         with (raw/'pooled.csv').open('w',newline='') as f:
@@ -88,8 +91,8 @@ def main(rscript):
 
     with tempfile.TemporaryDirectory(prefix='geo-failure-') as tmp:
         root=Path(tmp); raw=root/f'data/{GSE}/raw'; raw.mkdir(parents=True)
-        source=raw/'counts.h5ad'; shutil.copy2(ROOT/f'data/{GSE}/raw/counts.h5ad',source)
-        r=dict(read_csv(ROOT/REL)[2],local_path=f'data/{GSE}/raw/counts.h5ad',count_source='X')
+        source=raw/'counts.h5ad'; shutil.copy2(source_h5ad,source)
+        r=dict(read_csv(fixture_root/REL)[2],local_path=f'data/{GSE}/raw/counts.h5ad',count_source='X')
         approve(root,[r]); before=sha256(source)
         build(root,success=False)
         info_path=root/f'data/{GSE}/sample_info.txt'
@@ -101,12 +104,16 @@ def main(rscript):
         (workflow/'sample_manifest.confirmation.json').rename(workflow/'failed_manifest.confirmation.json')
         r['count_source']='counts'; approve(root,[r]); build(root); validate(root)
         complete=info_path.read_text(encoding='utf-8')
-        assert complete.startswith('STATUS: COMPLETE') and 'Failure:' not in complete
+        assert complete.startswith('STATUS: COMPLETE_RAW') and 'Failure:' not in complete
         assert sha256(source)==before
     print('PASS: normalized H5AD build failure recorded, raw preserved, reconfirmed retry succeeds',flush=True)
-    for area in ('datasets','manifests','logs','output'): assert not (ROOT/area).exists()
+    for area in ('datasets','manifests','logs','output'): assert not (fixture_root/area).exists()
     print('PASS: no legacy runtime directories; full R subprocess logs in '+str(log),flush=True)
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__); parser.add_argument('--rscript',required=True)
-    main(parser.parse_args().rscript)
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--rscript',required=True)
+    parser.add_argument('--rscript-arg',help='Optional launcher script argument (for Git Bash on Windows)')
+    parser.add_argument('--root',type=Path,default=ROOT,help='Isolated fixture root')
+    arguments=parser.parse_args()
+    main(arguments.rscript,arguments.root.resolve(),arguments.rscript_arg)

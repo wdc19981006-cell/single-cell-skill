@@ -30,7 +30,11 @@ qc_report_write <- function(report, path) {
   rows <- if (length(report$rows)) do.call(rbind,report$rows) else
     data.frame(section=character(),sample=character(),metric=character(),value=character(),status=character(),note=character())
   temporary <- paste0(path,".pending")
-  utils::write.csv(rows,temporary,row.names=FALSE,na="",fileEncoding="UTF-8")
+  # This R 4.5.0 host can double-convert strings marked UTF-8 when writing
+  # through the native locale. All workflow text arrives as UTF-8 bytes;
+  # remove only the encoding flag so write.csv emits those bytes unchanged.
+  for (field in names(rows)) Encoding(rows[[field]]) <- "unknown"
+  utils::write.csv(rows,temporary,row.names=FALSE,na="")
   if (file.exists(path) && !file.remove(path)) stop("Cannot replace qc_report.csv")
   if (!file.rename(temporary,path)) stop("Cannot finalize qc_report.csv")
   invisible(rows)
@@ -99,6 +103,10 @@ qc_validate_input <- function(object, gse) {
   if (!identical(rownames(metadata),colnames(counts))) stop("FAILED_INPUT: metadata and count cells differ")
   for (field in c("sample","database","group"))
     if (!field %in% names(metadata) || any(qc_blank(metadata[[field]]))) stop("FAILED_INPUT: missing or blank metadata field: ",field)
+  for (field in c("nFeature_RNA","nCount_RNA"))
+    if (!field %in% names(metadata) || !is.numeric(metadata[[field]]) ||
+        any(!is.finite(metadata[[field]]) | metadata[[field]]<0))
+      stop("FAILED_INPUT: missing or invalid QC metric: ",field)
   if (any(as.character(metadata$database) != gse)) stop("FAILED_INPUT: database metadata differs from GSE")
   counts
 }

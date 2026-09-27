@@ -12,7 +12,7 @@ update_sample_info <- function(out,status,m=NULL,object=NULL,inputs=character(),
   lines <- lines[!grepl("^STATUS:",lines)]
   lines <- c(paste("STATUS:",status),lines)
   if(!is.null(failure)) lines <- c(lines,"","Failure:",failure)
-  if(status == "COMPLETE") {
+  if(status == "COMPLETE_RAW") {
     # Manifest is the sole source for sample/group values in the final report.
     sample_heading <- which(lines == "SAMPLE INFORMATION")
     if(length(sample_heading)) lines <- lines[seq_len(max(1L,sample_heading[1]-2L))]

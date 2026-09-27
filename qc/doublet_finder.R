@@ -8,7 +8,7 @@ qc_default_doublet_api <- function() list(
 
 qc_choose_pcs <- function(stdev,cfg,max_pc) {
   if(length(stdev)<2L || !all(is.finite(stdev)) || sum(stdev)<=0) stop("PCA variance unavailable")
-  pct <- stdev/sum(stdev)*100
+  pct <- stdev^2/sum(stdev^2)*100
   cumulative <- cumsum(pct)
   variance_pick <- which(cumulative >= cfg$pc_cumulative_variance & pct < cfg$pc_individual_variance)[1]
   drop_pick <- which(head(pct,-1L)-tail(pct,-1L) > cfg$pc_elbow_drop)[1]
@@ -18,7 +18,7 @@ qc_choose_pcs <- function(stdev,cfg,max_pc) {
   min(min(candidate),max_pc)
 }
 
-qc_preprocess_for_doublet <- function(object,cfg,sample) {
+qc_preprocess_for_doublet <- function(object,cfg,sample,cluster=TRUE) {
   result <- tryCatch({
     object <- Seurat::NormalizeData(object,verbose=FALSE)
     object <- Seurat::FindVariableFeatures(object,nfeatures=min(2000L,nrow(object)-1L),verbose=FALSE)
@@ -29,8 +29,10 @@ qc_preprocess_for_doublet <- function(object,cfg,sample) {
     object <- Seurat::RunPCA(object,npcs=max_pc,verbose=FALSE)
     pc_used <- qc_choose_pcs(object[["pca"]]@stdev,cfg$doublet,max_pc)
     if (pc_used<2L) stop("fewer than two usable PCs")
-    object <- Seurat::FindNeighbors(object,reduction="pca",dims=seq_len(pc_used),verbose=FALSE)
-    object <- Seurat::FindClusters(object,resolution=cfg$doublet$clustering_resolution,verbose=FALSE)
+    if (cluster) {
+      object <- Seurat::FindNeighbors(object,reduction="pca",dims=seq_len(pc_used),verbose=FALSE)
+      object <- Seurat::FindClusters(object,resolution=cfg$doublet$clustering_resolution,verbose=FALSE)
+    }
     list(object=object,pc_used=pc_used,max_pc=max_pc)
   },error=function(e) stop("DoubletFinder preprocessing stopped for sample ",sample,": ",conditionMessage(e),call.=FALSE))
   result
@@ -62,6 +64,7 @@ qc_new_df_column <- function(before,after,prefix,sample) {
 }
 
 qc_run_doublet_sample <- function(object,sample,cfg,report,api) {
+  original_metadata <- names(object@meta.data)
   processed <- qc_preprocess_for_doublet(object,cfg,sample)
   object <- processed$object
   pc_used <- processed$pc_used
@@ -93,28 +96,10 @@ qc_run_doublet_sample <- function(object,sample,cfg,report,api) {
     selected_pK=pk,pc_used=pc_used)
   for (metric in names(metrics)) qc_report_add(report,"DOUBLET",sample,metric,metrics[[metric]],
     note=if(metric=="expected_doublet_rate") "Expected proportion, not a measured doublet rate" else "")
-  # Retain only original metadata and the three public DoubletFinder outputs.
-  object@meta.data[[pann]] <- NULL
-  object@meta.data[[df]] <- NULL
-  object@meta.data[[df_adj]] <- NULL
+  # Discard temporary clustering and DoubletFinder implementation columns.
+  public_metadata <- unique(c(original_metadata,"pANN","DF","DF_adj","doublet_status"))
+  object@meta.data <- object@meta.data[,public_metadata,drop=FALSE]
   object
-}
-
-qc_plot_doublets <- function(object,paths) {
-  embedding <- SeuratObject::Embeddings(object[["umap"]])
-  metadata <- object@meta.data[rownames(embedding),,drop=FALSE]
-  frame <- data.frame(x=embedding[,1],y=embedding[,2],sample=metadata$sample,
-                      DF=metadata$DF,DF_adj=metadata$DF_adj)
-  panels <- lapply(c("sample","DF","DF_adj"),function(field)
-    ggplot2::ggplot(frame,ggplot2::aes(x=x,y=y,color=.data[[field]])) +
-      ggplot2::geom_point(size=0.2) + ggplot2::labs(title=field,color=field,x="UMAP 1",y="UMAP 2") +
-      ggplot2::theme_bw())
-  ggplot2::ggsave(file.path(paths$qc,"doublet_umap.pdf"),patchwork::wrap_plots(panels,ncol=3),width=15,height=5)
-  violin <- rbind(data.frame(class=metadata$DF,call="DF",nFeature_RNA=metadata$nFeature_RNA),
-                  data.frame(class=metadata$DF_adj,call="DF_adj",nFeature_RNA=metadata$nFeature_RNA))
-  plot <- ggplot2::ggplot(violin,ggplot2::aes(x=class,y=nFeature_RNA,fill=class)) +
-    ggplot2::geom_violin(scale="width") + ggplot2::facet_wrap(~call) + ggplot2::theme_bw()
-  ggplot2::ggsave(file.path(paths$qc,"doublet_vlnplot.pdf"),plot,width=10,height=5)
 }
 
 qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doublet_api()) {
@@ -139,10 +124,10 @@ qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doub
   metadata <- merged@meta.data[colnames(counts),,drop=FALSE]
   raw <- Seurat::CreateSeuratObject(counts=counts,min.cells=0,min.features=0,meta.data=metadata)
   rm(merged,counts); gc()
-  processed <- qc_preprocess_for_doublet(raw,cfg,"ALL")
+  processed <- qc_preprocess_for_doublet(raw,cfg,"ALL",cluster=FALSE)
   map <- Seurat::RunUMAP(processed$object,dims=seq_len(processed$pc_used),verbose=FALSE)
-  qc_plot_doublets(map,paths)
-  qc_report_add(report,"RUN",metric="doublet_umap_before_filter",value="doublet_umap.pdf",status="PASS")
+  qc_plot_doublets(map,paths,report)
+  qc_report_add(report,"RUN",metric="doublet_umap_before_filter",value="doublet_umap.pdf; doublet_umap.png",status="PASS")
   metadata <- map@meta.data
   accepted <- metadata$DF_adj=="Singlet" | (metadata$DF_adj=="NotEvaluated" & metadata$sample %in% kept)
   if(!any(accepted)) stop("No cells remain after DF_adj filtering")

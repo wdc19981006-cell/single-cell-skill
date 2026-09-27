@@ -1,16 +1,3 @@
-qc_plot_metrics <- function(object,path,title) {
-  metrics <- c("pMT","pRP","pHB","nFeature_RNA","nCount_RNA")
-  metadata <- object@meta.data
-  long <- do.call(rbind,lapply(metrics,function(metric) data.frame(
-    sample=as.character(metadata$sample),metric=metric,value=as.numeric(metadata[[metric]]))))
-  plot <- ggplot2::ggplot(long,ggplot2::aes(x=sample,y=value)) +
-    ggplot2::geom_violin(fill="#6aaed6",scale="width",na.rm=TRUE) +
-    ggplot2::facet_wrap(~metric,scales="free_y",ncol=3) +
-    ggplot2::labs(title=title,x="Sample",y="Value") +
-    ggplot2::theme_bw() + ggplot2::theme(axis.text.x=ggplot2::element_text(angle=50,hjust=1))
-  ggplot2::ggsave(path,plot,width=13,height=8,limitsize=FALSE)
-}
-
 qc_filter_cells <- function(object,cfg,report) {
   meta <- object@meta.data
   thresholds <- cfg$cell_qc
