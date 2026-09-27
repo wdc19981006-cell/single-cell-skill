@@ -47,6 +47,14 @@ Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后
 
 **Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，最终均写为 `data/<GSE>/seurat_raw.rds`：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
 
+## 独立单细胞 QC
+
+已有 `seurat_raw.rds` 时，可请求“对 GSE… 进行质控”。`single-cell-qc` 先执行 precheck；若低细胞样本、默认阈值冲突或物种/基因命名不确定，状态为 `NEEDS_USER_DECISION`，必须由用户明确选择后把原话和决定持久化为 `data/<GSE>/qc/qc_decision.json`。低细胞样本可由用户选择删除、保留但不运行 DoubletFinder，或修改最低细胞阈值；保留未检测样本时最终状态为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`，不会把它们误标成 Singlet。
+
+固定 R 流程仅进行基础细胞 QC、逐 sample 的两次 DoubletFinder（含自动 pK 与同型调整）、合并后的 doublet UMAP，以及 cell-cycle scoring；不做整合、注释或细胞周期回归。输出为 `data/<GSE>/qc/seurat_qc.rds`、一份 `qc_report.csv` 和六张 PDF，原始 `seurat_raw.rds` 不覆盖。最终 QC 对象保留 raw RNA counts、原 metadata 和 QC 指标，不继承临时 PCA、UMAP、聚类或 normalized data。
+
+QC 依赖检查、测试与运行通过 `bash qc/r450_rscript.sh` 调用 `D:/R/R-4.5.0/bin/Rscript.exe`（library：`D:/R/R-4.5.0/library`）。启动器只在该进程内禁用 `cli` 计时线程，并在 R 退出清理时应用本机所需的兼容设置；不修改 QC 分析代码或已安装包。若指定 Rscript 不存在或缺包，直接停止并报告，不自动切换环境或安装。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
+
 在样本资料确实支持这些类别时，用户可回复：
 
 ```text
