@@ -55,6 +55,8 @@ Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后
 
 QC 依赖检查、测试与运行通过 `bash qc/r450_rscript.sh` 调用 `D:/R/R-4.5.0/bin/Rscript.exe`（library：`D:/R/R-4.5.0/library`）。启动器只在该进程内禁用 `cli` 计时线程，并在 R 退出清理时应用本机所需的兼容设置；不修改 QC 分析代码或已安装包。若指定 Rscript 不存在或缺包，直接停止并报告，不自动切换环境或安装。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
 
+Rscript 退出码 139 的最小复现、排查过程、绕过范围与验证见 [R 4.5.0 退出问题记录](docs/r450-cli-exit-139.md)。
+
 在样本资料确实支持这些类别时，用户可回复：
 
 ```text
