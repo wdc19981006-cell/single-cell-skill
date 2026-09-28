@@ -1,0 +1,27 @@
+args <- commandArgs(trailingOnly=TRUE)
+script <- sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
+source(file.path(dirname(normalizePath(script)),"qc_utils.R"))
+if (length(args)!=2L) stop("Usage: run_r45.py qc/validate_qc.R ROOT GSE")
+paths <- qc_paths(args[1],args[2])
+object <- readRDS(paths$final)
+counts <- qc_validate_input(object,args[2])
+if (!identical(names(object@assays),"RNA") || !identical(SeuratObject::Layers(object[["RNA"]]),"counts")) stop("QC object must contain raw RNA counts only")
+required <- c("pMT","pRP","pHB","S.Score","G2M.Score","Phase","CC.Difference","pANN","DF","DF_adj","doublet_status")
+if (!all(required %in% names(object@meta.data))) stop("QC metadata incomplete")
+if (any(!object$DF_adj %in% c("Singlet","NotEvaluated"))) stop("Unexpected final doublet calls")
+if (any(object$DF_adj=="NotEvaluated" & object$doublet_status!="SKIPPED_LOW_CELL")) stop("Unassessed cells lack skip marker")
+if (length(object@reductions) || length(object@graphs) || length(object@neighbors)) stop("QC object retains temporary analysis state")
+report <- read.csv(paths$report,encoding="UTF-8",stringsAsFactors=FALSE)
+status <- tail(report$value[report$section=="RUN" & report$metric=="status"],1)
+expected <- if (any(object$DF_adj=="NotEvaluated")) "QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS" else "COMPLETE_QC"
+if (!identical(status,expected)) stop("QC report and artifact disagree")
+for (metric in c("final_cells","final_genes")) {
+  value <- tail(report$value[report$section=="RUN" & report$metric==metric],1)
+  dimension <- if(metric=="final_cells") ncol(object) else nrow(object)
+  if (length(value)!=1L || as.integer(value)!=dimension) stop("QC report dimensions disagree")
+}
+plots <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
+  "cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
+files <- file.path(paths$qc,plots)
+if (any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("QC PDF/PNG outputs incomplete")
+cat("Read-only QC artifact validation:",expected,"\n")

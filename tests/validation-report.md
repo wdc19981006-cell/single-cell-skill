@@ -1,32 +1,57 @@
-# Validation report — 2026-09-27
+# R45 runtime and workflow validation — 2026-09-28
 
-This report records checks actually run for the targeted QC and raw-handoff fixes. No real GSE was rebuilt or downloaded.
+This report records executed checks for the runtime refactor. `GSE225857`
+was read only. No real GEO expression data was downloaded or rebuilt; no R
+package was installed, upgraded, or removed.
 
-## Environment
+## Environment observed
 
-| Component | Verified value |
+| Item | Actual result |
 |---|---|
-| R | 4.5.0 (2025-04-11 ucrt) |
-| R library | `D:/R/R-4.5.0/library` |
-| Seurat | 5.4.0 |
-| DoubletFinder | 2.0.6 |
-| Rscript exit-139 workaround | `qc/r450_rscript.sh` (used for every R check) |
-| Python | `C:/Python312/python.exe` |
+| R executable | `D:/R/R-4.5.0/bin/Rscript.exe` |
+| R version | `4.5.0` (`R version 4.5.0 (2025-04-11 ucrt)`) |
+| `R.home()` | `D:/R/R-4.5.0` |
+| `.libPaths()` | `D:/R/R-4.5.0/library` |
+| Seurat / SeuratObject | `5.4.0` / `5.4.0` |
+| DoubletFinder | `2.0.6` |
+| Other core packages | Matrix `1.7.3`, jsonlite `2.0.0`, yaml `2.3.12`, ggplot2 `4.0.2`, patchwork `1.3.2` |
+| Python used | `C:/Python312/python.exe` (3.12.0) |
+| CLI exit workaround | Active in child process; `library(cli)` exited 0 and intentional `stop()` exited 1 |
 
-The R launcher check passed: normal exit remained successful, an intentional R error returned exit 1, and `--vanilla` was rejected because it disables the required exit profile. Startup locale warnings and warnings about packages built under R 4.5.3 were observed; no package was installed, upgraded, or removed.
+The QC-route healthcheck exited 0 and wrote `.runtime/r45/health.json`. No
+`C.UTF-8` startup warnings were observed in the runtime acceptance checks.
+The installed `cli` emitted a package-built-under-R-4.5.3 warning in the
+compatibility shell test; the process still used R 4.5.0 and exited 0.
 
-## Results
+## Executed results
 
-| Check | Actual result |
+| Check | Observed result |
 |---|---|
-| Python `unittest discover -s tests -p 'test_*.py' -q` | **72/72 passed**, no skips. Includes raw-handoff failure preserving `COMPLETE_RAW` and successful validation. The streaming-route test now uses the R 4.5.0 launcher rather than looking for R 4.5.3. |
-| `tests/test_qc.R` | **PASS**: strict QC boundaries, precheck/formal-filter equivalence, overall and per-sample >15% guard, persisted user acceptance, precheck cell-cycle gene coverage, PC rule, 57-sample legend, UMAP/three-panel cell-cycle plots, clean final counts-only object, and existing QC decision/DoubletFinder mock flow. |
-| `tests/test_qc_real_df.R` | **PASS**: actual DoubletFinder `paramSweep`, pK selection and both classification calls ran on a synthetic 130-cell object. This verifies real DoubletFinder computation, not a real GEO cohort. |
-| Other R tests | **7/7 passed**: `test_10x_literal_na.R`, `test_final_object.R`, `test_global_min_cells.R`, `test_pooled_inputs.R`, `test_seurat.R`, `test_stream_text.R`, `test_utf8_manifest.R`. H5AD fallback was explicitly set to `C:/Python312/python.exe` for `test_seurat.R`. |
-| R launcher shell test | **PASS**: `tests/test_r450_launcher.sh`. |
-| Synthetic E2E | **PASS** in an isolated ignored-data directory: four-input raw build + independent validation (16 cells/250 genes), pooled matrix/cell map, and normalized-H5AD failure/retry. Both temporary E2E directories were removed after testing; existing GSE data was untouched. |
-| `git diff --check` | Run before commit; see commit verification. |
+| Python `unittest discover -s tests -p 'test_*.py'` | **PASS, 81 tests**, no skips. Covers Loader routes, checkpoint/artifact recovery, audit resume, launcher native-crash classification, interruption versus validation failure, and QC orchestration/decision gate. |
+| `tests/runtime/run_tests.py --real-fixture` | **PASS**: `1+1`, `library(cli)`, ggplot2, SeuratObject, Seurat and DoubletFinder each exited 0. Intentional `stop("RUNTIME_TEST_ERROR")` exited 1. RDS and Chinese UTF-8 TXT/JSON round trips passed. |
+| `tests/test_r450_launcher.sh` | **PASS**: deprecated compatibility command invokes the unified runtime, keeps normal success and R error exit 1, and rejects `--vanilla`. |
+| `tests/run_regressions.py` synthetic Loader | **PASS**: four-input raw build and independent validation (16 cells, 250 genes), pooled matrix/cell map, normalized H5AD failure/retry, raw retention, and refusal to overwrite an existing final RDS. Used an isolated ignored synthetic workspace. |
+| Existing raw artifact recovery | **PASS**: synthetic `sample_info.txt` was set to `BUILD_FAILED`; independent validation of the existing RDS restored `COMPLETE_RAW`. The RDS SHA256 was unchanged and no build/download ran. |
+| Other Loader R tests | **7/7 PASS**: `test_10x_literal_na.R`, `test_final_object.R`, `test_global_min_cells.R`, `test_pooled_inputs.R`, `test_seurat.R`, `test_stream_text.R`, `test_utf8_manifest.R`. Python H5AD fallback was explicitly set to `C:/Python312/python.exe`. |
+| QC synthetic `test_qc.R` | **PASS**: precheck, user-decision gates, strict thresholds, mock DoubletFinder flow, cell cycle, plots, final object and raw hash preservation. |
+| Real DoubletFinder `test_qc_real_df.R` | **PASS**: installed DoubletFinder performed `paramSweep`, pK selection and both classification calls on a synthetic 130-cell object; exit 0. This was not a real GEO cohort. |
+| Existing QC artifact recovery | **PASS**: independent read-only QC validation through `qc/run_workflow.py`; no new QC build. |
+| `GSE225857` read-only raw validation | **PASS, exit 0**: 196,473 cells and 17,066 genes. SHA256 before and after: `6691e028ea8ecfda86711956c3b1b5c1d91b184fc87550d94822e3922bd3a7ab`. No download or build was started. |
+| Native crash classification | **PASS (simulated exit codes)**: 139, −1073741819 and 3221225477 remain `R_NATIVE_CRASH` even after stdout contains `PASS`. No real native crash was induced. |
+| Real GSE QC / real-cohort DoubletFinder | **NOT RUN**; no biological user decision to initiate QC was part of this refactor. |
 
-The first `test_seurat.R` run without `GEO_SINGLE_CELL_PYTHON` stopped because the optional zellkonverter route was unavailable. After explicitly selecting the existing Python fallback, an existing synthetic `split_input.rds` could not be overwritten on this host. The test now writes that negative-case fixture to a unique temporary filename; the rerun passed. The first isolated E2E attempt lacked the source file needed by `test_final_object.R`; adding it to a fresh isolated fixture allowed the full E2E rerun to pass. These were test setup issues, not passes claimed from failed runs.
+For this previously cleaned dataset, `validate_seurat.R --existing` checked
+the raw object structure, retained user-confirmed groups and dimensions from
+`sample_info.txt`. Its original manifest was no longer local, so this check
+could not repeat the full manifest/receipt comparison performed at build time.
 
-No real GSE QC or real-data DoubletFinder run was performed in this revision.
+The first regression attempt stopped at `test_stream_text.R` because the new
+test runner omitted that test's required Python executable argument. The runner
+was corrected; the complete rerun passed. An earlier runtime attempt stopped
+at a syntax error in the new archived-artifact validation branch. That syntax
+was corrected, and `GSE225857` then passed read-only validation. Failed
+attempts are not counted as passes.
+
+`git diff --check` and the tracked-code R invocation search passed before
+commit. Commit, push and final worktree status are recorded in the delivery
+summary after they occur.

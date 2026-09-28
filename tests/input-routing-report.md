@@ -1,6 +1,6 @@
 # Stage B input-routing validation report
 
-Validation date: 2026-09-19 (original real-data metrics retained from 2026-09-16). Runtime: Windows 11, R 4.5.3, Seurat 5.5.1, SeuratObject 5.4.0, Python 3.12. Tests used generated fixtures or previously recorded real-run evidence; the 2026-09-19 change did not redownload or rebuild GSE166504, GSE189175, or GSE289173. Runtime data remains under git-ignored `data/`.
+HISTORICAL validation date: 2026-09-19 (original metrics retained from 2026-09-16). Historical runtime: Windows 11, R 4.5.3, Seurat 5.5.1, SeuratObject 5.4.0, Python 3.12. This is not the current environment configuration; see `runtime/r45/config.py`. Tests used generated fixtures or previously recorded real-run evidence; that change did not redownload or rebuild GSE166504, GSE189175, or GSE289173.
 
 ## Reader coverage
 

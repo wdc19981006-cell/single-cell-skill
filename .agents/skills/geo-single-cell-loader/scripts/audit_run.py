@@ -30,6 +30,53 @@ ROUTING_COLUMNS = (
     "reader_selection_reason", "dense_conversion",
 )
 
+# Small metadata only; keep the audit's ten-file contract. Original manifest
+# bytes and receipt must survive cleanup without regenerating a confirmation.
+RESUME_FILES = ("state.json", "sample_manifest.csv", "sample_manifest.confirmation.json",
+                "sample_report.csv", "group_confirmation.json", "download.json",
+                "file_selection_reasons.csv")
+
+
+def restore_workflow(gse, root=ROOT):
+    paths = dataset_paths(root, gse)
+    workflow = paths["workflow"]
+    if workflow.exists() and any(workflow.iterdir()):
+        raise ValueError("Refusing to overwrite an active workflow")
+    temporary, checkout = clone_audit()
+    try:
+        candidates = sorted((checkout / gse).glob("*/stage_a.json"), reverse=True)
+        for source in candidates:
+            inspection = json.loads(source.read_text(encoding="utf-8"))
+            resume = inspection.pop("_workflow_resume", None)
+            if resume and "sample_manifest.csv" in resume:
+                break
+        else:
+            raise ValueError("Prior audit has no resumable manifest; restore reviewed evidence before a build. Existing RDS can use validate_seurat.R --existing.")
+        if set(resume) - set(RESUME_FILES):
+            raise ValueError("Unexpected audit resume filename")
+        workflow.mkdir(parents=True, exist_ok=True)
+        for name, content in resume.items():
+            (workflow / name).write_bytes(content.encode("utf-8"))
+        (workflow / "inspection.json").write_text(json.dumps(inspection, ensure_ascii=False, indent=2), encoding="utf-8")
+        for row in read_csv(workflow / "sample_manifest.csv"):
+            relative = row.get("cell_map_path", "")
+            if not relative:
+                continue
+            target = (root / relative).resolve()
+            if target.is_relative_to(workflow.resolve()) and not target.exists():
+                preserved = paths["dataset"] / "cell_map" / target.name
+                if not preserved.is_file():
+                    raise ValueError("Preserved cell map missing: " + relative)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(preserved, target)
+        for name in ("sample_summary.csv", "run_summary.txt", "input_routing.csv", "build_profile.json"):
+            if (source.parent / name).exists():
+                shutil.copy2(source.parent / name, workflow / name)
+        run_id(workflow)
+        return workflow
+    finally:
+        temporary.cleanup()
+
 
 def git(*args, cwd=None):
     result = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True)
@@ -154,7 +201,12 @@ def prepare_bundle(gse, root, status, reason, destination):
     destination.mkdir(parents=True, exist_ok=True)
     inspection_file = workflow / "inspection.json"
     inspection = json.loads(inspection_file.read_text(encoding="utf-8")) if inspection_file.exists() else {}
-    (destination / "stage_a.json").write_text(json.dumps(inspection or {"status": "unavailable"}, ensure_ascii=False, indent=2), encoding="utf-8")
+    archived_inspection = dict(inspection or {"status": "unavailable"})
+    archived_inspection["_workflow_resume"] = {
+        name: (workflow / name).read_bytes().decode("utf-8")
+        for name in RESUME_FILES if (workflow / name).is_file()
+    }
+    (destination / "stage_a.json").write_text(json.dumps(archived_inspection, ensure_ascii=False, indent=2), encoding="utf-8")
     selected = selected_files(workflow)
     stated_reasons = {}
     reasons_file = workflow / "file_selection_reasons.csv"
@@ -269,7 +321,7 @@ def finalize(gse, root=ROOT, status="success", reason=""):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
-    for action in ("start", "restore-provenance", "finalize"):
+    for action in ("start", "restore-provenance", "resume", "finalize"):
         command = sub.add_parser(action)
         command.add_argument("gse")
         command.add_argument("--root", type=Path, default=ROOT)
@@ -282,6 +334,8 @@ def main():
         print(run_id(dataset_paths(root, args.gse)["workflow"], require_clean=True))
     elif args.action == "restore-provenance":
         print(restore_provenance(args.gse, root))
+    elif args.action == "resume":
+        print(restore_workflow(args.gse, root))
     else:
         print(finalize(args.gse, root, args.status, args.reason))
 

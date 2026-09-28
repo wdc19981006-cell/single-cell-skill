@@ -1,3 +1,4 @@
+if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
 qc_script_dir <- dirname(normalizePath(sys.frame(1)$ofile, winslash="/", mustWork=TRUE))
 qc_required_packages <- c("Seurat", "SeuratObject", "Matrix", "yaml", "jsonlite", "ggplot2", "patchwork", "DoubletFinder")
 qc_blank <- function(x) is.na(x) | !nzchar(trimws(as.character(x)))

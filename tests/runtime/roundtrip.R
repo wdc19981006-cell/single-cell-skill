@@ -1,0 +1,10 @@
+folder <- commandArgs(trailingOnly=TRUE)[1]
+object <- list(counts=matrix(1:6,nrow=2),label="runtime")
+saveRDS(object,file.path(folder,"roundtrip.rds.pending"))
+stopifnot(identical(object,readRDS(file.path(folder,"roundtrip.rds.pending"))))
+text <- intToUtf8(c(20013,25991,27979,35797))
+writeLines(enc2utf8(text),file.path(folder,"sample_info.txt"),useBytes=TRUE)
+stopifnot(identical(readLines(file.path(folder,"sample_info.txt"),encoding="UTF-8"),text))
+jsonlite::write_json(list(user_statement=text),file.path(folder,"decision.json"),auto_unbox=TRUE)
+stopifnot(identical(jsonlite::fromJSON(file.path(folder,"decision.json"))$user_statement,text))
+cat("PASS: RDS and UTF-8 round trips\n")

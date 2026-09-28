@@ -1,8 +1,8 @@
 args <- commandArgs(trailingOnly=TRUE)
 root <- normalizePath(if(length(args)) args[1] else ".",winslash="/",mustWork=TRUE)
 source(file.path(root,"qc","run_qc.R"))
-stopifnot(grepl("4.5.0",R.version.string,fixed=TRUE),
-          "D:/R/R-4.5.0/library" %in% .libPaths(),
+stopifnot(isTRUE(getOption("r45.runtime.active")),
+          Sys.getenv("R45_EXPECTED_LIBRARY") %in% .libPaths(),
           requireNamespace("DoubletFinder",quietly=TRUE))
 stopifnot(identical(unname(sc_plot_dimensions("umap_2panel")),c(11,5)),
           identical(unname(sc_plot_dimensions("umap_3panel")),c(16,5)),
@@ -194,8 +194,8 @@ missing <- function(p) p!="DoubletFinder"
 stopifnot(identical(qc_precheck(temporary,gse,missing),"FAILED_INPUT"))
 report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
 stopifnot(any(report$metric=="missing_package" & report$value=="DoubletFinder" &
-  grepl("R version 4.5.0",report$note,fixed=TRUE) &
-  grepl("D:/R/R-4.5.0/library",report$note,fixed=TRUE)))
+  grepl(R.version.string,report$note,fixed=TRUE) &
+  grepl(Sys.getenv("R45_EXPECTED_LIBRARY"),report$note,fixed=TRUE)))
 
 # The precheck prediction and actual strict filter must select identical cells.
 gse <- "GSE999999996"
@@ -240,5 +240,7 @@ stopifnot(identical(qc_precheck(temporary,gse,available),"NEEDS_USER_DECISION"))
 coverage_report <- utils::read.csv(paths$report,stringsAsFactors=FALSE)
 stopifnot(any(coverage_report$section=="CELL_CYCLE" &
   coverage_report$metric=="S_features_matched" & coverage_report$status=="NEEDS_USER_DECISION"))
-unlink(temporary,recursive=TRUE)
+if (identical(Sys.getenv("QC_TEST_RETAIN_FIXTURE"),"1")) {
+  writeLines(temporary,file.path(root,"data","qc_fixture_path.txt"))
+} else unlink(temporary,recursive=TRUE)
 cat("PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.\n")

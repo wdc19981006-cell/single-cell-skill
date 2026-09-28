@@ -1,8 +1,8 @@
-#!/usr/bin/env Rscript
+# Invoke through runtime/r45/run_r45.py.
 argv <- commandArgs(trailingOnly=TRUE)
 script <- sub("^--file=", "", commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(script)),"seurat_common.R"))
-if (length(argv) != 2L) stop("Usage: Rscript build_seurat.R REPOSITORY_ROOT MANIFEST_RELATIVE_PATH")
+if (length(argv) != 2L) stop("Usage: run_r45.py build_seurat.R REPOSITORY_ROOT MANIFEST_RELATIVE_PATH")
 root <- normalizePath(argv[1],winslash="/",mustWork=TRUE)
 if (!grepl("^data/GSE[0-9]+/\\.workflow/[^/]+\\.csv$",argv[2])) stop("Manifest must be under data/<GSE>/.workflow/")
 gse <- strsplit(argv[2],"/",fixed=TRUE)[[1]][2]
@@ -139,6 +139,7 @@ withCallingHandlers({
   write.csv(data.frame(sample=names(retained),cells=as.integer(retained),
     group=m$group[match(names(retained),m$sample)],stringsAsFactors=FALSE),
     file.path(workflow,"sample_summary.csv"),row.names=FALSE)
+  if (file.exists(final)) stop("Output appeared during build; refusing to overwrite")
   if (!file.rename(partial,final)) stop("Could not finalize validated RDS")
   update_sample_info(out,"COMPLETE_RAW",m,seurat,input_records,warnings_seen)
 },warning=function(w) {warnings_seen <<- c(warnings_seen,conditionMessage(w))})
@@ -146,6 +147,6 @@ cat("Validated output:",final,"\n")
 },error=function(e) {
   info_path <- file.path(out,"sample_info.txt")
   waiting <- file.exists(info_path) && any(readLines(info_path,n=1L,warn=FALSE) == "STATUS: WAITING_FOR_GROUP_CONFIRMATION")
-  if (dir.exists(out) && !waiting) tryCatch(update_sample_info(out,"BUILD_FAILED",failure=conditionMessage(e)),error=function(report_error) message("Could not update sample_info: ",conditionMessage(report_error)))
+  if (dir.exists(out) && !waiting && !file.exists(final)) tryCatch(update_sample_info(out,"BUILD_FAILED",failure=conditionMessage(e)),error=function(report_error) message("Could not update sample_info: ",conditionMessage(report_error)))
   stop(e)
 })

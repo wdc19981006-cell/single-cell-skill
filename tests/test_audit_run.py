@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".agents/skills/geo-single-cell-loader/scripts"))
-from audit_run import AUDIT_FILES, finalize, prepare_bundle, restore_provenance, run_id
+from audit_run import AUDIT_FILES, finalize, prepare_bundle, restore_provenance, restore_workflow, run_id
 from common import write_csv
 
 
@@ -121,6 +121,26 @@ class AuditRunTests(unittest.TestCase):
         paths = subprocess.run(["git", "--git-dir", str(remote), "ls-tree", "-r", "--name-only", "main"],
                                check=True, capture_output=True, text=True).stdout.splitlines()
         self.assertEqual({Path(p).name for p in paths}, set(AUDIT_FILES))
+
+    def test_audit_roundtrip_restores_exact_manifest_and_checkpoint(self):
+        checkpoint = {'download': 'DOWNLOAD_COMPLETE', 'raw_build': 'FAILED'}
+        (self.workflow / 'state.json').write_text(json.dumps(checkpoint), encoding='utf-8')
+        manifest_bytes = (self.workflow / 'sample_manifest.csv').read_bytes()
+        checkout = self.root / 'resume-audit'
+        target = checkout / 'GSE123/20260928T000000Z-12345678'
+        prepare_bundle('GSE123', self.root, 'failure', 'runtime failed', target)
+        import shutil
+        shutil.rmtree(self.workflow)
+        class Temporary:
+            def cleanup(self): pass
+        with patch('audit_run.clone_audit', return_value=(Temporary(), checkout)):
+            restored = restore_workflow('GSE123', self.root)
+            with self.assertRaisesRegex(ValueError, 'active workflow'):
+                restore_workflow('GSE123', self.root)
+        self.assertEqual((restored / 'sample_manifest.csv').read_bytes(), manifest_bytes)
+        self.assertEqual(json.loads((restored / 'state.json').read_text()), checkpoint)
+        self.assertTrue((restored / 'audit_run.json').exists())
+        self.assertEqual({p.name for p in target.iterdir()}, set(AUDIT_FILES))
 
 
 if __name__ == "__main__":

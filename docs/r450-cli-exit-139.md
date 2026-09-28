@@ -1,5 +1,9 @@
 # R 4.5.0：QC 测试完成后 Rscript 返回 139
 
+> HISTORICAL：本文记录早期诊断。当前所有 R 入口已统一为
+> [`runtime/r45/run_r45.py`](../runtime/r45/run_r45.py)，环境定义仅在
+> `runtime/r45/config.py`。本文提及的旧安装试验不属于当前工作流。
+
 记录日期：2026-09-27。此文档记录本机排查及仓库内的兼容处理，不代表 Windows/R/`cli` 的通用修复。
 
 ## 现象与环境
@@ -30,7 +34,7 @@
 
 ## 仓库内处理
 
-[启动脚本](../qc/r450_rscript.sh)固定调用 `D:/R/R-4.5.0/bin/Rscript.exe`，并设置项目内的 `R_PROFILE_USER` 和进程局部的 `CLI_NO_THREAD=1`。[退出 profile](../qc/r450_exit_profile.R)只在 R 的退出清理时将当前进程的 `PROCESSOR_ARCHITECTURE` 临时设为 `ARM64`，使 `cli` 避开本机崩溃的线程取消分支；分析计算期间保留真实架构。未处理异常时，profile 仍以状态码 1 退出，不把错误误报为成功。
+[统一启动器](../runtime/r45/run_r45.py)设置项目内 `R_PROFILE_USER` 和进程局部的 `CLI_NO_THREAD=1`。[退出 profile](../runtime/r45/r45_profile.R)只在退出清理时将当前进程的 `PROCESSOR_ARCHITECTURE` 临时设为 `ARM64`；分析计算期间保留真实架构。未处理异常仍以状态码 1 退出。启动时缺少架构环境变量会按 `R.version$arch` 补齐真实架构，避免退出处理递归报错。
 
 调用方式（Git Bash，在仓库根目录）：
 
@@ -41,7 +45,7 @@ bash qc/r450_rscript.sh qc/run_qc.R D:/CodexProjects/single-cell-skill GSE123456
 
 启动脚本拒绝 `--vanilla` 和 `--no-init-file`，因为它们会禁用必需的 profile。若指定 Rscript 不存在则停止；不会自动切换 R、安装包或修改 QC 分析流程。
 
-这只是**本项目 QC 命令的退出阶段绕过**：未经启动脚本包装的 Rscript 仍可能返回 139；主动在分析中卸载 `cli` 也不在保护范围内。它不应被设置成机器全局 R 配置。升级 R、`cli` 或编译工具链后应重新运行最小复现和回归测试，再决定是否移除此处理。
+当前处理覆盖本项目 Loader、QC、测试和临时 R 命令。主动在分析中卸载 `cli` 不在退出保护范围内；若进程仍崩溃，记录 `R_NATIVE_CRASH` 并停止，保留已完成 artifact。此 profile 不应设置为机器全局配置。
 
 ## 验证
 

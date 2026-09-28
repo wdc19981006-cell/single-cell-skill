@@ -1,15 +1,11 @@
-if (.Platform$OS.type == "windows" && !nzchar(Sys.getenv("PROCESSOR_ARCHITECTURE"))) {
-  # cli <=3.6.6 dereferences this normally-present Windows variable on unload.
-  arch <- switch(R.version$arch, x86_64="AMD64", aarch64="ARM64", i386="x86", R.version$arch)
-  Sys.setenv(PROCESSOR_ARCHITECTURE=arch)
-}
+if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
 geo_scripts_dir <- dirname(normalizePath(sys.frame(1)$ofile,winslash="/",mustWork=TRUE))
 required_fields <- c("database", "sample", "tissue", "disease", "source_type", "group")
 optional_fields <- c("patient", "specimen", "cohort", "treatment")
 blank <- function(x) is.na(x) | tolower(trimws(as.character(x))) %in% c("", "na", "nan", "null", "none")
 need <- function(packages) {
   absent <- packages[!vapply(packages, requireNamespace, quietly = TRUE, FUN.VALUE = logical(1))]
-  if (length(absent)) stop("Missing R packages: ", paste(absent, collapse = ", "), ". See README dependency commands.")
+  if (length(absent)) stop("R_PACKAGE_MISSING: ", paste(absent, collapse = ", "))
 }
 read_utf8_csv <- function(path, ...) {
   # fileEncoding converts to the native Windows locale, which can truncate

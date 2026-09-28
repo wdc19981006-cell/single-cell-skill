@@ -375,13 +375,15 @@ class LoaderTests(unittest.TestCase):
         ])
         (self.workflow.parent / 'seurat_raw.rds').write_bytes(b'synthetic raw object')
         output = io.StringIO()
-        with patch.object(confirmed_runner, 'execute', return_value=0.1) as execute, \
+        with patch.object(confirmed_runner, 'execute') as execute, \
+             patch.object(confirmed_runner, 'execute_r', return_value=0.1) as execute_r, \
              patch.object(confirmed_runner, 'restore_provenance'), \
              patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit'), \
              redirect_stdout(output):
             confirmed_runner.run('GSE999999999', self.root)
-        self.assertEqual([call.args[0] for call in execute.call_args_list],
-                         ['download', 'prebuild_probe', 'dependencies', 'build', 'validation'])
+        execute.assert_not_called()
+        self.assertEqual([call.args[0] for call in execute_r.call_args_list],
+                         ['healthcheck', 'validation'])
         message = output.getvalue()
         for expected in ('STATUS: COMPLETE_RAW', 'Samples: 2', 'Cells: 30', 'Genes: 250',
                          'Control=10', 'Tumor=20', 'data/GSE999999999/raw/',
@@ -418,12 +420,14 @@ class LoaderTests(unittest.TestCase):
         raw = self.workflow.parent / 'seurat_raw.rds'
         raw.write_bytes(b'validated synthetic raw object')
         output = io.StringIO()
-        with patch.object(confirmed_runner, 'execute', return_value=0.1), \
+        with patch.object(confirmed_runner, 'execute') as execute, \
+             patch.object(confirmed_runner, 'execute_r', return_value=0.1), \
              patch.object(confirmed_runner, 'restore_provenance'), \
              patch.object(confirmed_runner, 'finalize', return_value='https://example.org/audit') as finalize, \
              redirect_stdout(output):
             confirmed_runner.run('GSE999999999', self.root)
         self.assertEqual(raw.read_bytes(), b'validated synthetic raw object')
+        execute.assert_not_called()
         self.assertEqual(info.read_text(encoding='utf-8'), 'STATUS: COMPLETE_RAW\nChanged summary layout\n')
         self.assertIn('HANDOFF_WARNING', output.getvalue())
         self.assertNotIn('BUILD_FAILED', output.getvalue())
@@ -512,5 +516,70 @@ class LoaderTests(unittest.TestCase):
             (self.root/target).write_bytes(b'tampered')
             with self.assertRaisesRegex(ValueError,'provenance'): run(manifest,self.root)
         self.assertEqual((self.root/target).read_bytes(),b'tampered')
+
+    def test_build_exit_crash_preserves_artifact_and_resume_only_validates(self):
+        (self.workflow / 'inspection.json').write_text(json.dumps({
+            'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
+        }), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(json.dumps({
+            'run_id': '20260928T000000Z-12345678'
+        }), encoding='utf-8')
+        raw = self.workflow.parent / 'raw/counts.csv'
+        raw.parent.mkdir()
+        raw.write_bytes(b'verified raw bytes')
+        artifact = self.workflow.parent / 'seurat_raw.rds'
+        def crash(label, script, args, log, root):
+            if label == 'build':
+                artifact.write_bytes(b'validated serialized artifact')
+                raise confirmed_runner.RRunError(label, script, 139, 'R_NATIVE_CRASH')
+            return 0.1
+        with patch.object(confirmed_runner, 'execute', return_value=0.1), \
+             patch.object(confirmed_runner, 'execute_r', side_effect=crash), \
+             patch.object(confirmed_runner, 'restore_provenance'), \
+             patch.object(confirmed_runner, 'finalize', return_value='audit'):
+            with self.assertRaisesRegex(RuntimeError, 'R_NATIVE_CRASH'):
+                confirmed_runner.run('GSE999999999', self.root)
+        state = json.loads((self.workflow / 'state.json').read_text())
+        self.assertEqual(state['download'], 'DOWNLOAD_COMPLETE')
+        self.assertEqual(state['raw_build'], 'RAW_ARTIFACT_CREATED_BUT_RUNTIME_FAILED')
+        self.assertEqual(state['error']['exit_code'], 139)
+        self.assertEqual(raw.read_bytes(), b'verified raw bytes')
+        with patch.object(confirmed_runner, 'execute') as execute, \
+             patch.object(confirmed_runner, 'execute_r', return_value=0.1) as rcall, \
+             patch.object(confirmed_runner, 'restore_provenance') as restore, \
+             patch.object(confirmed_runner, 'finalize', return_value='audit'):
+            confirmed_runner.run('GSE999999999', self.root)
+        execute.assert_not_called()
+        restore.assert_not_called()
+        self.assertEqual([call.args[0] for call in rcall.call_args_list], ['healthcheck', 'validation'])
+        self.assertEqual(artifact.read_bytes(), b'validated serialized artifact')
+        self.assertEqual(json.loads((self.workflow / 'state.json').read_text())['raw_build'], 'COMPLETE_RAW')
+
+    def test_existing_artifact_validation_error_and_interruption_are_distinct(self):
+        (self.workflow / 'inspection.json').write_text(json.dumps({
+            'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
+        }), encoding='utf-8')
+        (self.workflow / 'audit_run.json').write_text(json.dumps({
+            'run_id': '20260928T000000Z-12345678'
+        }), encoding='utf-8')
+        artifact = self.workflow.parent / 'seurat_raw.rds'
+        artifact.write_bytes(b'existing fixture')
+        for category, expected_status in [('R_SCRIPT_ERROR', 'failure'), ('INTERRUPTED', 'interrupted')]:
+            def rcall(label, script, args, log, root):
+                if label == 'validation':
+                    raise confirmed_runner.RRunError(label, script, 1, category)
+                return 0.1
+            with self.subTest(category=category), \
+                 patch.object(confirmed_runner, 'execute') as download, \
+                 patch.object(confirmed_runner, 'execute_r', side_effect=rcall), \
+                 patch.object(confirmed_runner, 'finalize', return_value='audit') as finalize:
+                with self.assertRaisesRegex(RuntimeError, expected_status):
+                    confirmed_runner.run('GSE999999999', self.root)
+            download.assert_not_called()
+            self.assertEqual(finalize.call_args.args[2], expected_status)
+            self.assertEqual(artifact.read_bytes(), b'existing fixture')
+            state = json.loads((self.workflow / 'state.json').read_text())
+            self.assertEqual(state['raw_build'], 'RAW_ARTIFACT_PRESENT_BUT_VALIDATION_FAILED')
+            self.assertEqual(state['error']['category'], category)
 
 if __name__=='__main__': unittest.main(verbosity=2)

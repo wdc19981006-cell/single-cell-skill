@@ -55,9 +55,17 @@ Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后
 
 Loader 完成并验证 `seurat_raw.rds` 后会报告 GSE、样本、cells、genes、group 和文件位置，然后询问是否继续 QC；只有用户同意才转入独立的 `single-cell-qc` Skill。日后也可直接说“对 GSE156625 进行质控”：QC 复用现有原始对象，不重新执行 GEO 发现、下载或构建。找不到原始 RDS 时会停止并提示先完成 Loader。普通 QC 完成状态为 `COMPLETE_QC`；经用户确认保留未检测 DoubletFinder 的低细胞样本时为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`。
 
-QC 依赖检查、测试与运行通过 `bash qc/r450_rscript.sh` 调用 `D:/R/R-4.5.0/bin/Rscript.exe`（library：`D:/R/R-4.5.0/library`）。启动器只在该进程内禁用 `cli` 计时线程，并在 R 退出清理时应用本机所需的兼容设置；不修改 QC 分析代码或已安装包。若指定 Rscript 不存在或缺包，直接停止并报告，不自动切换环境或安装。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
+QC 使用 `qc/run_workflow.py`，依赖检查、precheck、运行与恢复均通过项目 R45 Runtime。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
 
-Rscript 退出码 139 的最小复现、排查过程、绕过范围与验证见 [R 4.5.0 退出问题记录](docs/r450-cli-exit-139.md)。
+## R Runtime
+
+正式环境为 Windows 11 + R 4.5.0，安装位置 `D:/R/R-4.5.0`；唯一环境定义位于 `runtime/r45/config.py`。所有 Loader、Raw Builder、QC、测试及临时 R 验证都经过 `runtime/r45/run_r45.py`，用户不需要手动调用 Rscript.exe。Python 负责 GEO discovery/download/routing；R 负责 Seurat build/validation/QC。
+
+启动器固定 R 和 library，只在子进程设置 profile、`CLI_NO_THREAD=1` 和 `LC_ALL=C`。分析期间使用真实架构，仅退出 cleanup 阶段选择已验证的 cli workaround。正常 R 错误保留原始非零退出码；139 / Windows access violation 记录为 `R_NATIVE_CRASH`，即使输出 PASS 也不会被视为成功。没有 R 环境 fallback，不安装、升级或删除包，不修改系统设置。
+
+`--healthcheck` 输出 `.runtime/r45/health.json`；`--route qc|text|10x_h5|h5ad_native` 只要求对应的额外包。每个独立 workflow 至少检查一次。每次 R 调用的环境、阶段、脚本、stdout/stderr、退出码和时长写入忽略的 `.runtime/r45/`。临时验证使用 `--expr "sessionInfo()"`。旧 `qc/r450_rscript.sh` 保留为兼容入口。
+
+下载完成、原始对象完成、QC 完成分别记录为 `DOWNLOAD_COMPLETE`、`COMPLETE_RAW`、`COMPLETE_QC`。中断恢复先校验已有 bytes/provenance 或最终 RDS；不覆盖 final、不重复构建已完成大矩阵。`.workflow/state.json` 在审计清理前记录 checkpoint，原始 manifest/receipt 和状态随十文件审计保存；清理后可通过 `audit_run.py resume GSE` 恢复。已有 QC final 使用独立验证恢复。详见 [Runtime 说明](runtime/r45/README.md) 与 [历史退出问题记录](docs/r450-cli-exit-139.md)。
 
 在样本资料确实支持这些类别时，用户可回复：
 
@@ -146,35 +154,33 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 
 依赖：Python 3.10+（检索、manifest、下载只用标准库）；R + Seurat、SeuratObject、Matrix、jsonlite；H5 需要 hdf5r。H5AD 优先 zellkonverter、SingleCellExperiment、SummarizedExperiment；缺失时显式设置 `GEO_SINGLE_CELL_PYTHON` 指向已验证安装 anndata/numpy/scipy 的解释器。不会自动安装环境。合成 fixture 另需 h5py、pandas。先定位实际 Python/R，不使用 Windows Store 的 python/python3 占位程序。
 
-```powershell
-# 将变量设置为本机已验证的 Python 与 Rscript 可执行文件绝对路径。
-$Scripts = '.agents/skills/geo-single-cell-loader/scripts'
-$Workflow = 'data/GSE231993/.workflow'
-& $PythonExe "$Scripts/audit_run.py" start GSE231993
-& $RscriptExe "$Scripts/check_dependencies.R"
+```bash
+ROOT=D:/CodexProjects/single-cell-skill
+PY=/c/Python312/python.exe
+SCRIPTS="$ROOT/.agents/skills/geo-single-cell-loader/scripts"
+WORKFLOW="$ROOT/data/GSE231993/.workflow"
+"$PY" "$SCRIPTS/audit_run.py" start GSE231993
+"$PY" "$ROOT/runtime/r45/run_r45.py" --healthcheck
 # 仅在真实 geo MCP 调用失败时使用，并记录实际原因：
-& $PythonExe "$Scripts/inspect_geo.py" GSE231993 --fallback-reason "geo/get_geo_info tool error: <actual error>"
+"$PY" "$SCRIPTS/inspect_geo.py" GSE231993 --fallback-reason "geo/get_geo_info tool error: <actual error>"
 # Skill 审阅证据、完善 sample_report.csv 与 inspection.json 后：
-& $PythonExe "$Scripts/sample_info.py" GSE231993
+"$PY" "$SCRIPTS/sample_info.py" GSE231993
 # 用户确认 group，并保存 group_confirmation.json 后：
-& $PythonExe "$Scripts/build_manifest.py" --report "$Workflow/sample_report.csv" --confirmation "$Workflow/group_confirmation.json" --output "$Workflow/sample_manifest.csv"
-& $PythonExe "$Scripts/build_manifest.py" --validate "$Workflow/sample_manifest.csv"
-$env:GEO_RSCRIPT = $RscriptExe
-& $PythonExe "$Scripts/run_confirmed.py" GSE231993
+"$PY" "$SCRIPTS/build_manifest.py" --report "$WORKFLOW/sample_report.csv" --confirmation "$WORKFLOW/group_confirmation.json" --output "$WORKFLOW/sample_manifest.csv"
+"$PY" "$SCRIPTS/build_manifest.py" --validate "$WORKFLOW/sample_manifest.csv"
+"$PY" "$SCRIPTS/run_confirmed.py" GSE231993
 ```
 
 测试：
 
-```powershell
-& $PythonExe -m unittest discover -s tests -p 'test_*.py' -v
-& $PythonExe tests/make_fixtures.py
-$env:GEO_SINGLE_CELL_PYTHON = $PythonExe
-& $RscriptExe tests/test_seurat.R .
-& $RscriptExe tests/test_global_min_cells.R .
-& $RscriptExe tests/test_pooled_inputs.R .
-& $PythonExe tests/run_end_to_end.py --rscript $RscriptExe
+```bash
+ROOT=D:/CodexProjects/single-cell-skill
+PY=/c/Python312/python.exe
+"$PY" -m unittest discover -s "$ROOT/tests" -p 'test_*.py' -v
+"$PY" "$ROOT/tests/runtime/run_tests.py" --real-fixture
+"$PY" "$ROOT/tests/run_regressions.py"
 ```
 
-合成数据使用保留测试编号 `GSE999999999`，分组批准明确标注 SIMULATED；不对应真实临床组。重复端到端测试前显式归档已有测试 RDS，构建脚本不会覆盖。旧布局数据需按 GSE 迁移并比较大小/hash；保留原始 manifest/receipt，不自动修改 hash 来认可新路径。无法确定归属的文件保留并报告。
+合成数据使用保留测试编号 `GSE999999999`，分组批准明确标注 SIMULATED；不对应真实临床组。`tests/run_regressions.py` 每次创建独立合成 workspace，不覆盖已有测试或真实 RDS。旧布局数据需按 GSE 迁移并比较大小/hash；保留原始 manifest/receipt，不自动修改 hash 来认可新路径。无法确定归属的文件保留并报告。
 
 详见 [metadata contract](.agents/skills/geo-single-cell-loader/references/metadata-schema.md)、[format routing](.agents/skills/geo-single-cell-loader/references/format-routing.md) 和 [实际验证报告](tests/validation-report.md)。公开元数据仍需证据审阅，任意作者私有格式或超内存矩阵可能需要额外适配。Skill 已启用隐式调用，但是否自动选中取决于 Codex 会话的 Skill 发现；自动选择不由 Python 单元测试保证。

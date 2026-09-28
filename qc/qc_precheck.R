@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript
+# Invoke through runtime/r45/run_r45.py.
 qc_precheck_source <- if(!is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(qc_precheck_source,winslash="/",mustWork=TRUE)),"qc_utils.R"))
 
@@ -139,7 +139,7 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
 
 if (sys.nframe()==0L) {
   args <- commandArgs(trailingOnly=TRUE)
-  if(length(args)!=2L) stop("Usage: Rscript qc/qc_precheck.R REPOSITORY_ROOT GSE")
+  if(length(args)!=2L) stop("Usage: run_r45.py qc/qc_precheck.R REPOSITORY_ROOT GSE")
   status <- qc_precheck(args[1],args[2])
   cat("QC precheck:",status,"\n")
   if(status!="PASS") quit(status=1L)

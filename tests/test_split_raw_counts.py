@@ -117,7 +117,7 @@ class SplitRawCountsTests(unittest.TestCase):
         self.assertTrue(rows[0]["cell_map_md5"])
 
     def test_large_comma_counts_select_streaming_automatically(self):
-        if not Path("D:/R/R-4.5.0/bin/Rscript.exe").is_file() or not shutil.which("bash"):
+        if not (ROOT / "runtime/r45/run_r45.py").is_file():
             self.skipTest("R 4.5.0 launcher unavailable")
         source = (SCRIPTS / "seurat_common.R").as_posix()
         code = (
@@ -127,7 +127,7 @@ class SplitRawCountsTests(unittest.TestCase):
             'stopifnot(stream_text_candidate(row,174415491)); '
             'row$delimiter <- "tab"; stopifnot(!stream_text_candidate(row,174415491))'
         )
-        subprocess.run(["bash", "qc/r450_rscript.sh", "-e", code], cwd=ROOT,
+        subprocess.run([sys.executable, "runtime/r45/run_r45.py", "--expr", code], cwd=ROOT,
                        check=True, capture_output=True)
 
 

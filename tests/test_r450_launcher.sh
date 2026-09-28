@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bash qc/r450_rscript.sh -e 'stopifnot(grepl("R version 4.5.0", R.version.string), identical(.libPaths(), "D:/R/R-4.5.0/library")); library(cli); cat("PASS\n")' >/dev/null
+bash qc/r450_rscript.sh -e 'stopifnot(isTRUE(getOption("r45.runtime.active")), identical(.libPaths(), Sys.getenv("R45_EXPECTED_LIBRARY"))); library(cli); cat("PASS\n")' >/dev/null
 
 if bash qc/r450_rscript.sh -e 'library(cli); stop("intentional failure")' >/dev/null 2>&1; then
   printf 'R failure was hidden by the launcher\n' >&2

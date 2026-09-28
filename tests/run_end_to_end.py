@@ -7,7 +7,6 @@ import csv
 import json
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -19,23 +18,27 @@ from build_manifest import confirm
 from common import read_csv, write_csv
 from download_processed import run, sha256
 from sample_info import refresh
+sys.path.insert(0, str(ROOT / 'runtime/r45'))
+from runtime import RRunError, run_r45
 
 GSE = 'GSE999999999'
 REL = f'data/{GSE}/.workflow/sample_manifest.csv'
 
-def main(rscript, root=ROOT, rscript_arg=None):
+def main(root=ROOT):
     fixture_root = root
     env = dict(os.environ, GEO_SINGLE_CELL_PYTHON=sys.executable, LC_ALL='C')
     log = root/f'data/{GSE}/.workflow/integration-tests.txt'
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text('', encoding='utf-8')
     def rrun(script, root, *args, success=True):
-        command = [rscript] + ([rscript_arg] if rscript_arg else []) + [str(script), str(root), *args]
-        result = subprocess.run(command, env=env, capture_output=True, cwd=ROOT)
-        output = (result.stdout + result.stderr).decode('utf-8', errors='replace')
-        with log.open('a',encoding='utf-8') as f: f.write(f'\n{script.name}: exit={result.returncode}\n{output}\n')
-        if (result.returncode == 0) != success:
-            raise AssertionError(f'{script.name}: unexpected exit {result.returncode}\n{output}')
+        try:
+            result = run_r45(script, [str(root), *args], stage='synthetic_e2e', cwd=root, env=env)
+            code, output = result.returncode, result.stdout + result.stderr
+        except RRunError as error:
+            code, output = error.exit_code, error.output
+        with log.open('a',encoding='utf-8') as f: f.write(f'\n{script.name}: exit={code}\n{output}\n')
+        if (code == 0) != success:
+            raise AssertionError(f'{script.name}: unexpected exit {code}\n{output}')
         return output
     def build(root, success=True):
         return rrun(SCRIPTS/'build_seurat.R',root,REL,success=success)
@@ -112,8 +115,6 @@ def main(rscript, root=ROOT, rscript_arg=None):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--rscript',required=True)
-    parser.add_argument('--rscript-arg',help='Optional launcher script argument (for Git Bash on Windows)')
     parser.add_argument('--root',type=Path,default=ROOT,help='Isolated fixture root')
     arguments=parser.parse_args()
-    main(arguments.rscript,arguments.root.resolve(),arguments.rscript_arg)
+    main(arguments.root.resolve())

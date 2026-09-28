@@ -28,7 +28,6 @@ From the repository root on this Windows Git Bash setup, with the repository pat
 ```bash
 ROOT=D:/CodexProjects/single-cell-skill
 PY=/c/Python312/python.exe
-RS=/d/R/R-4.5.3/bin/Rscript.exe
 
 mkdir -p data/GSE149614/.workflow/public_metadata
 curl --fail --location \
@@ -43,15 +42,10 @@ curl --fail --location \
   --output data/GSE149614/.workflow/sample_manifest.csv
 "$PY" "$ROOT/.agents/skills/geo-single-cell-loader/scripts/build_manifest.py" \
   --validate data/GSE149614/.workflow/sample_manifest.csv
-"$PY" "$ROOT/.agents/skills/geo-single-cell-loader/scripts/download_processed.py" \
-  data/GSE149614/.workflow/sample_manifest.csv
-"$PY" "$ROOT/examples/gse149614/prepare.py" verify-download
-LC_ALL= LC_CTYPE= "$RS" .agents/skills/geo-single-cell-loader/scripts/check_dependencies.R
-LC_ALL= LC_CTYPE= GEO_SINGLE_CELL_STREAM_TEXT=1 GEO_SINGLE_CELL_PYTHON=C:/Python312/python.exe \
-"$RS" .agents/skills/geo-single-cell-loader/scripts/build_seurat.R \
-  . data/GSE149614/.workflow/sample_manifest.csv
-LC_ALL= LC_CTYPE= "$RS" .agents/skills/geo-single-cell-loader/scripts/validate_seurat.R \
-  . data/GSE149614/.workflow/sample_manifest.csv data/GSE149614/seurat_raw.rds
+# Start audit_run.py before Stage A as required by the current audit policy.
+GEO_SINGLE_CELL_STREAM_TEXT=1 GEO_SINGLE_CELL_PYTHON=C:/Python312/python.exe \
+"$PY" "$ROOT/.agents/skills/geo-single-cell-loader/scripts/run_confirmed.py" GSE149614
+# The runner performs download, probes, R45 health/build/validation and audit.
 ```
 
 The pooled text matrix has roughly 1.85 billion numeric fields. The streaming reader avoids materializing all zeros, but its temporary triplets and sparse conversion still need substantial disk and memory. It checks integer, finite, nonnegative counts, unique gene/cell IDs, and row widths before Seurat construction. No cells or genes are subsampled. Runtime data under `data/` are ignored by Git; only this run logic belongs in the repository history.

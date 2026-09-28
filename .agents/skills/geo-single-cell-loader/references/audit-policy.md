@@ -23,4 +23,13 @@ The audit directory contains exactly:
 
 Only text/JSON/CSV audit evidence is allowed in the audit repository. Never upload expression matrices, RDS, H5, H5AD, source archives, raw cell maps or other large data. Push the audit at the end of every real terminal run without waiting for another user instruction. If push fails, retain local `.workflow/` for retry and report the failure. Once push succeeds, remove only temporary `.workflow/` files; never remove raw data, RDS, group confirmation or necessary cell maps. Existing raw files can be reused only after URL, size and SHA verification against provenance restored from prior audit runs.
 
+`stage_a.json` additionally carries `_workflow_resume`: the small checkpoint,
+original manifest/receipt, sample report, group confirmation, provenance and
+selection-reason text. No raw cell maps are embedded. `audit_run.py resume GSE`
+restores these exact bytes and the locally preserved cell maps, starts a new
+audit ID, and refuses an active workflow. This preserves resumability after
+the required local cleanup without expanding the ten-file audit contract.
+Historical audits without this metadata require reviewed recovery; completed
+RDS files can still receive `validate_seurat.R --existing` read-only regression.
+
 During a real run, record newly discovered issues and stop when required; avoid broad restructuring mid-run. Later fixes must target a data-structure type, add a regression test, preserve already validated data behavior, and be pushed to the `single-cell-skill` main repository. Input Router should select an optimized route automatically when the verified structure matches a previously optimized type; never key a route only to a GSE accession.

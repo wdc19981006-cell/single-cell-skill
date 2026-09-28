@@ -1,8 +1,8 @@
 args <- commandArgs(trailingOnly=TRUE)
 root <- normalizePath(if(length(args)) args[1] else ".",winslash="/",mustWork=TRUE)
 source(file.path(root,"qc","run_qc.R"))
-stopifnot(grepl("R version 4.5.0",R.version.string,fixed=TRUE),
-          "D:/R/R-4.5.0/library" %in% .libPaths(),
+stopifnot(isTRUE(getOption("r45.runtime.active")),
+          Sys.getenv("R45_EXPECTED_LIBRARY") %in% .libPaths(),
           requireNamespace("DoubletFinder",quietly=TRUE))
 set.seed(29)
 features <- c(paste0("MT-",seq_len(4)),paste0("RPS",seq_len(4)),

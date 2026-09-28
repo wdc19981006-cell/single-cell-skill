@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript
+# Invoke through runtime/r45/run_r45.py.
 qc_runner_source <- if(!is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 qc_runner_dir <- dirname(normalizePath(qc_runner_source,winslash="/",mustWork=TRUE))
 for (name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R"))
@@ -62,6 +62,7 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
     saveRDS(final,pending)
     serialized <- readRDS(pending)
     if(!identical(qc_counts(serialized),qc_counts(final))) stop("Serialized QC counts changed")
+    if(file.exists(paths$final)) stop("seurat_qc.rds appeared during QC; refusing to overwrite")
     if(!file.rename(pending,paths$final)) stop("Could not finalize seurat_qc.rds")
     qc_report_write(report,paths$report)
     finish_status
@@ -76,6 +77,6 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
 
 if (sys.nframe()==0L) {
   args <- commandArgs(trailingOnly=TRUE)
-  if(length(args)!=2L) stop("Usage: Rscript qc/run_qc.R REPOSITORY_ROOT GSE")
+  if(length(args)!=2L) stop("Usage: run_r45.py qc/run_qc.R REPOSITORY_ROOT GSE")
   cat("QC run:",qc_run(args[1],args[2]),"\n")
 }
