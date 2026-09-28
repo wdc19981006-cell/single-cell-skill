@@ -1,5 +1,5 @@
 # Invoke through runtime/r45/run_r45.py.
-qc_runner_source <- if(!is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
+qc_runner_source <- if(sys.nframe() >= 1L && !is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 qc_runner_dir <- dirname(normalizePath(qc_runner_source,winslash="/",mustWork=TRUE))
 for (name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R"))
   source(file.path(qc_runner_dir,name))

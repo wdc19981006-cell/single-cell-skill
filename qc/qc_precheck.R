@@ -1,5 +1,5 @@
 # Invoke through runtime/r45/run_r45.py.
-qc_precheck_source <- if(!is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
+qc_precheck_source <- if(sys.nframe() >= 1L && !is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(qc_precheck_source,winslash="/",mustWork=TRUE)),"qc_utils.R"))
 
 qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE)) {

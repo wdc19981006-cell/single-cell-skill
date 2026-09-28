@@ -14,6 +14,13 @@ spec.loader.exec_module(qc)
 
 
 class QCWorkflowTests(unittest.TestCase):
+    def test_skill_explains_removal_decision_and_real_sample_schema(self):
+        skill = (ROOT / '.agents/skills/single-cell-qc/SKILL.md').read_text(encoding='utf-8')
+        for requirement in ('predicted_removed_fraction > 0.15', '默认 QC 参数预计删除超过15%的细胞',
+                            'accept_qc_removal', 'confirmed_by', 'user_statement',
+                            'ALL', 'every active sample ID', 'Never write this acceptance'):
+            self.assertIn(requirement, skill)
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)

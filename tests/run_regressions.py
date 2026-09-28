@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "runtime/r45"))
 from config import RUNTIME_LOG
-from runtime import run_r45
+from runtime import RRunError, run_r45
 from workflow import digest
 import make_fixtures
 import run_end_to_end
@@ -27,6 +27,19 @@ def main():
     env = dict(os.environ, GEO_SINGLE_CELL_PYTHON=sys.executable, PYTHONIOENCODING="utf-8",
                QC_TEST_RETAIN_FIXTURE="1")
     run_r45(route="qc", stage="regression_health", cwd=ROOT, env=env)
+    # Production entrypoints are executed by the launcher, not sourced by a test.
+    missing_raw = fixture / "data/GSE999999995"
+    missing_raw.mkdir(parents=True)
+    for name in ("qc_precheck.R", "run_qc.R"):
+        try:
+            run_r45(fixture / "qc" / name, [fixture, "GSE999999995"],
+                    stage="direct_qc_entrypoint", cwd=fixture, env=env)
+        except RRunError as error:
+            assert "sys.frame(1)" not in error.output
+            assert "FAILED_INPUT" in error.output or "QC precheck stopped" in error.output
+        else:
+            raise AssertionError(f"{name} should stop for a missing raw fixture")
+        results.append(dict(test="direct_" + name, status="PASS"))
     run_end_to_end.main(fixture)
     results.append(dict(test="synthetic_E2E", status="PASS"))
     dataset = fixture / "data/GSE999999999"

@@ -42,6 +42,62 @@ class LoaderTests(unittest.TestCase):
         r=row(); r.update(local_path='data/GSE999999999/raw/x.h5ad',file_type='10x_h5')
         with self.assertRaisesRegex(ValueError,'H5AD'): validate_manifest([r],self.root)
     def test_h5_routing(self): self.assertEqual(file_type('x_filtered_feature_bc_matrix.h5'),'10x_h5_candidate')
+    def test_input_specific_health_routes_are_unique(self):
+        cases = [
+            (['text'], True, ['base', 'text']),
+            (['10x_mtx'], True, ['base']),
+            (['rds'], True, ['base']),
+            (['10x_h5'], True, ['base', '10x_h5']),
+            (['text', '10x_h5', 'text'], True, ['base', 'text', '10x_h5']),
+            (['h5ad'], True, ['base', 'h5ad_native']),
+            (['h5ad'], False, ['base']),
+        ]
+        for formats, native, expected in cases:
+            with self.subTest(formats=formats, native=native):
+                self.assertEqual(confirmed_runner.required_health_routes(
+                    [{'file_type': kind} for kind in formats], native), expected)
+
+    def test_healthcheck_uses_probed_manifest_routes(self):
+        manifest = self.workflow / 'sample_manifest.csv'
+        for formats, expected in [(['text'], ['base', 'text']),
+                                  (['10x_mtx'], ['base']),
+                                  (['10x_h5'], ['base', '10x_h5']),
+                                  (['text', '10x_h5', 'text'], ['base', 'text', '10x_h5']),
+                                  (['h5ad'], ['base', 'h5ad_native'])]:
+            with self.subTest(formats=formats):
+                write_csv(manifest, [{'file_type': kind} for kind in formats])
+                with patch.object(confirmed_runner, 'execute_r') as checked, \
+                     patch.object(confirmed_runner, 'native_h5ad_available', return_value=True):
+                    confirmed_runner.healthcheck_inputs(
+                        'data/GSE999999999/.workflow/sample_manifest.csv', io.StringIO(), self.root)
+                self.assertEqual([call.kwargs.get('route', 'base') for call in checked.call_args_list], expected)
+
+    def test_h5ad_fallback_verifies_explicit_python_without_native_healthcheck(self):
+        manifest = self.workflow / 'sample_manifest.csv'
+        write_csv(manifest, [{'file_type': 'h5ad'}])
+        with patch.object(confirmed_runner, 'execute_r') as checked, \
+             patch.object(confirmed_runner, 'native_h5ad_available', return_value=False), \
+             patch.object(confirmed_runner, 'verify_h5ad_python') as verified:
+            confirmed_runner.healthcheck_inputs(
+                'data/GSE999999999/.workflow/sample_manifest.csv', io.StringIO(), self.root)
+        self.assertEqual([call.kwargs.get('route', 'base') for call in checked.call_args_list], ['base'])
+        verified.assert_called_once()
+        with patch.dict(confirmed_runner.os.environ, {'GEO_SINGLE_CELL_PYTHON': sys.executable}), \
+             patch.object(confirmed_runner.subprocess, 'run',
+                          return_value=type('Result', (), {'returncode': 0, 'stdout': 'H5AD_PYTHON_PASS\n', 'stderr': ''})()) as command:
+            confirmed_runner.verify_h5ad_python(io.StringIO(), self.root)
+        self.assertEqual(command.call_args.args[0][0], sys.executable)
+        self.assertIn('import anndata, numpy, scipy', command.call_args.args[0][2])
+
+    def test_missing_package_names_the_required_route(self):
+        missing = confirmed_runner.RRunError('healthcheck', 'healthcheck.R', 1,
+                                             'R_PACKAGE_MISSING', 'data.table MISSING')
+        with patch.object(confirmed_runner, 'run_r45', side_effect=missing):
+            with self.assertRaises(confirmed_runner.RRunError) as caught:
+                confirmed_runner.execute_r('healthcheck', None, [], io.StringIO(), self.root,
+                                           route='text')
+        self.assertEqual(caught.exception.category, 'R_PACKAGE_MISSING')
+        self.assertIn('route=text', str(caught.exception))
     def test_raw_count_equivalence_must_be_evidenced(self):
         txt={'url':'https://example.org/raw.txt.gz','raw_counts_id':'study:UMI','same_counts_evidence':'GEO processing'}
         rds={'url':'https://example.org/raw.rds.gz','raw_counts_id':'study:other','same_counts_evidence':'GEO processing'}
@@ -518,6 +574,7 @@ class LoaderTests(unittest.TestCase):
         self.assertEqual((self.root/target).read_bytes(),b'tampered')
 
     def test_build_exit_crash_preserves_artifact_and_resume_only_validates(self):
+        write_csv(self.workflow / 'sample_manifest.csv', [{'file_type': '10x_mtx'}])
         (self.workflow / 'inspection.json').write_text(json.dumps({
             'gse': 'GSE999999999', 'title': 'single-cell RNA-seq synthetic fixture'
         }), encoding='utf-8')

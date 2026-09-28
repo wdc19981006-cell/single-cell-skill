@@ -1,6 +1,7 @@
 """Run the confirmed Stage B pipeline and publish an audit in all terminal states."""
 import argparse
 import json
+import os
 import signal
 import subprocess
 import sys
@@ -76,14 +77,78 @@ def execute(label, command, log, root):
     return time.perf_counter() - started
 
 
-def execute_r(label, script, args, log, root):
+def execute_r(label, script, args, log, root, route=None):
     started = time.perf_counter()
     log.write(f"\n[{datetime.now(timezone.utc).isoformat()}] {label}: {script} {args}\n")
     log.flush()
-    run_r45(script, args, stage=label, log_path=log, cwd=root, route="base" if script is None else None)
+    effective_route = route or ("base" if script is None else None)
+    try:
+        run_r45(script, args, stage=label, log_path=log, cwd=root, route=effective_route)
+    except RRunError as error:
+        if effective_route and error.category == "R_PACKAGE_MISSING":
+            raise RRunError(label, script or "healthcheck.R", error.exit_code,
+                            error.category, f"route={effective_route}\n{error.output}") from error
+        raise
     log.write(f"[{datetime.now(timezone.utc).isoformat()}] {label} exit=0\n")
     log.flush()
     return time.perf_counter() - started
+
+
+def required_health_routes(rows, native_h5ad=True):
+    """Return each health route once, based on the probed manifest format."""
+    formats = {row["file_type"] for row in rows}
+    routes = ["base"]
+    if "text" in formats:
+        routes.append("text")
+    if "10x_h5" in formats:
+        routes.append("10x_h5")
+    if "h5ad" in formats and native_h5ad:
+        routes.append("h5ad_native")
+    return routes
+
+
+def native_h5ad_available(log, root):
+    packages = ("zellkonverter", "SingleCellExperiment", "SummarizedExperiment")
+    expression = "cat('H5AD_NATIVE_AVAILABLE=', all(vapply(c(" + ",".join(
+        json.dumps(package) for package in packages) + "), requireNamespace, logical(1), quietly=TRUE)), '\\n', sep='')"
+    result = run_r45(expression=expression, stage="h5ad_route_probe", log_path=log, cwd=root)
+    marker = [line for line in result.stdout.splitlines() if line.startswith("H5AD_NATIVE_AVAILABLE=")]
+    if len(marker) != 1 or marker[0] not in ("H5AD_NATIVE_AVAILABLE=TRUE", "H5AD_NATIVE_AVAILABLE=FALSE"):
+        raise RuntimeError("H5AD native route probe returned no valid result")
+    return marker[0].endswith("TRUE")
+
+
+def verify_h5ad_python(log, root):
+    executable = os.environ.get("GEO_SINGLE_CELL_PYTHON", "")
+    if not executable or not Path(executable).is_absolute() or not Path(executable).is_file():
+        error = RuntimeError("R_PACKAGE_MISSING route=h5ad_native; GEO_SINGLE_CELL_PYTHON must name an existing absolute Python executable")
+        error.category = "R_PACKAGE_MISSING"
+        raise error
+    command = [executable, "-c", "import anndata, numpy, scipy; print('H5AD_PYTHON_PASS')"]
+    result = subprocess.run(command, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    log.write(f"H5AD Python fallback: {executable}; exit={result.returncode}\n{result.stdout}{result.stderr}")
+    log.flush()
+    if result.returncode or "H5AD_PYTHON_PASS" not in result.stdout:
+        error = RuntimeError(f"H5AD Python fallback missing anndata/numpy/scipy: {result.stderr[-1000:]}")
+        error.category = "R_PACKAGE_MISSING"
+        raise error
+
+
+def healthcheck_inputs(manifest, log, root):
+    rows = read_csv(root / manifest)
+    formats = {row["file_type"] for row in rows}
+    native = True
+    # Base health is mandatory and catches runtime failures before optional probes.
+    execute_r("healthcheck", None, [], log, root)
+    if "h5ad" in formats:
+        native = native_h5ad_available(log, root)
+        if not native:
+            verify_h5ad_python(log, root)
+            log.write("H5AD reader: Python anndata fallback verified\n")
+    for route in required_health_routes(rows, native)[1:]:
+        execute_r("healthcheck", None, [], log, root, route=route)
+    log.write("Required R health routes: " + ", ".join(required_health_routes(rows, native)) + "\n")
+    log.flush()
 
 
 def run(gse, root=ROOT):
@@ -123,7 +188,10 @@ def run(gse, root=ROOT):
                 checkpoint(workflow, raw_build="ARTIFACT_PRESENT")
                 log.write("Existing seurat_raw.rds: skip download, prebuild and build; independently validate.\n")
             stage = "healthcheck"
-            execute_r("healthcheck", None, [], log, root)
+            if paths["final"].is_file():
+                execute_r("healthcheck", None, [], log, root)
+            else:
+                healthcheck_inputs(manifest, log, root)
             checkpoint(workflow, r_health="PASS")
             if not paths["final"].is_file():
                 stage = "dependencies"

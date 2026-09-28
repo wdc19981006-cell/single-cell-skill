@@ -209,6 +209,10 @@ stopifnot(any(removal_report$sample=="ALL" & removal_report$metric=="predicted_r
                 removal_report$status=="NEEDS_USER_DECISION"),
           as.integer(removal_report$value[removal_report$sample=="SampleA" &
             removal_report$metric=="predicted_after_qc_cells"][1])==100L)
+jsonlite::write_json(list(decision_type="accept_qc_removal",affected_samples="ALL",
+  user_statement="SIMULATED USER DECISION: invalid summary identifier",confirmed_by="user",
+  accept_qc_removal=TRUE),paths$decision,auto_unbox=TRUE)
+stopifnot(inherits(try(qc_decision(paths,"SampleA"),silent=TRUE),"try-error"))
 jsonlite::write_json(list(decision_type="accept_qc_removal",affected_samples="SampleA",
   user_statement="SIMULATED USER DECISION: accept current QC removal",confirmed_by="user",
   accept_qc_removal=TRUE),paths$decision,auto_unbox=TRUE)
@@ -230,6 +234,10 @@ stopifnot(as.numeric(removal_report$value[removal_report$sample=="ALL" &
             removal_report$metric=="predicted_removed_fraction"][1])<0.15,
           as.numeric(removal_report$value[removal_report$sample=="SampleB" &
             removal_report$metric=="predicted_removed_fraction"][1])>0.15)
+jsonlite::write_json(list(decision_type="accept_qc_removal",affected_samples="SampleB",
+  user_statement="SIMULATED USER DECISION: keep current thresholds for SampleB",confirmed_by="user",
+  accept_qc_removal=TRUE),paths$decision,auto_unbox=TRUE)
+stopifnot(identical(qc_precheck(temporary,gse,available),"PASS"))
 
 gse <- "GSE999999993"
 object <- make_fixture(temporary,gse,low=FALSE,
