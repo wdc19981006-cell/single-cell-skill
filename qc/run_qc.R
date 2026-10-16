@@ -55,7 +55,7 @@ qc_run <- function(root,gse,package_available=function(p) requireNamespace(p,qui
     qc_report_add(report,"RUN",metric="status",value=finish_status,
       status=if(finish_status=="COMPLETE_QC") "PASS" else finish_status)
     required <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
-                                   "cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
+                                   "singlet_dimplot","cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
     files <- file.path(paths$qc,required)
     if(any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("Required QC PDF/PNG missing or empty")
     pending <- paste0(paths$final,".pending")

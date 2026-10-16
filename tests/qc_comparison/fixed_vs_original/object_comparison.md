@@ -1,0 +1,59 @@
+# Seurat object comparison
+
+Complete RDS reads. Historical inputs are verified against data-QC Git LFS SHA-256; new QC outputs have separate raw-count and artifact validation. Expression is compared exactly in sparse blocks of 512 cells; no dense expression conversion.
+
+EXPECTED_DIFFERENCE denotes a known strategy/state difference, not numerical equivalence. UNEXPECTED_DIFFERENCE requires investigation; a plausible explanation alone is not proof.
+
+Reference code filters DF; Skill filters DF_adj. Reference code repeats a gene prevalence filter (>3 cells); Skill preserves raw genes. Reference code regresses nFeature_RNA and pMT; Skill regresses pMT only. The reference code's intended final step retains normalized data/PCA and cell-cycle scores, but the supplied original RDS artifacts actually contain only counts and no cell-cycle scores. This artifact/protocol mismatch is UNEXPECTED_DIFFERENCE, not a reason to change Skill behavior. Cell-cycle cross-version concordance is therefore unavailable.
+
+| Dataset | Metric | Original | Skill | Classification | Evidence / interpretation |
+|---|---|---|---|---|---|
+| GSE167297 | class | Seurat | Seurat | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | cells | 22312 | 22417 | EXPECTED_DIFFERENCE | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | genes | 21317 | 22026 | EXPECTED_DIFFERENCE | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | assays | RNA | RNA | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | RNA_assay_class | Assay5 | Assay5 | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | RNA_layers | counts | counts | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | VariableFeatures |  |  | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | reductions |  |  | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | graphs |  |  | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | neighbors |  |  | IDENTICAL | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | metadata_columns | orig.ident;nCount_RNA;nFeature_RNA;sample;database;tissue;disease;source_type;group;patient;pMT;pRP;pHB;RNA_snn_res.1;seurat_clusters;pANN;DF;DF_adj | orig.ident;nCount_RNA;nFeature_RNA;sample;database;tissue;disease;source_type;group;patient;pMT;pRP;pHB;pANN;DF;DF_adj;doublet_status;S.Score;G2M.Score;Phase;CC.Difference | EXPECTED_DIFFERENCE | Structural/filter strategy difference; see quantitative checks below |
+| GSE167297 | original_artifact_vs_reference_final_step | Missing expected final analysis state | Counts-only final by design | UNEXPECTED_DIFFERENCE | The actual original RDS does not contain the final cell-cycle/PCA state described by reference code; no values inferred or fabricated |
+| GSE167297 | cell_intersection | 22076 | 22076 | IDENTICAL |  |
+| GSE167297 | cell_exclusive | 236 | 341 | EXPECTED_DIFFERENCE | Different DF/DF_adj filters and PCA/regression; exclusives do not prove cause |
+| GSE167297 | gene_intersection | 21317 | 21317 | IDENTICAL |  |
+| GSE167297 | gene_exclusive | 0 | 709 | EXPECTED_DIFFERENCE | Original extra gene prevalence filter; verify using raw input where available |
+| GSE167297 | counts_mismatched_entries | 0 | 0 | IDENTICAL | Exact sparse comparison on 21317 genes x 22076 cells; max_abs_delta=0 |
+| GSE167297 | sample:GSM5101013 | 418 | 420 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101014 | 1626 | 1633 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101015 | 1837 | 1845 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101016 | 1229 | 1234 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101017 | 2079 | 2088 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101018 | 1174 | 1182 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101019 | 3724 | 3740 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101020 | 2920 | 2932 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101021 | 449 | 452 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101022 | 2513 | 2527 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101023 | 2006 | 2015 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101024 | 847 | 851 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101025 | 468 | 471 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample:GSM5101026 | 1022 | 1027 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | group:DT | 9864 | 9907 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | group:FT | 9560 | 9605 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | group:NC | 2888 | 2905 | EXPECTED_DIFFERENCE | Different final retained cell sets |
+| GSE167297 | sample | 0 | 0 | IDENTICAL | common-cell category mismatches |
+| GSE167297 | group | 0 | 0 | IDENTICAL | common-cell category mismatches |
+| GSE167297 | nFeature_RNA | 0 | 1241 | EXPECTED_DIFFERENCE | common-cell mismatches (tol 1e-10); max_abs_delta=4; both metadata vectors exactly equal sparse per-object counts statistics; differences explained by nonshared gene rows |
+| GSE167297 | nCount_RNA | 0 | 1241 | EXPECTED_DIFFERENCE | common-cell mismatches (tol 1e-10); max_abs_delta=33; both metadata vectors exactly equal sparse per-object counts statistics; differences explained by nonshared gene rows |
+| GSE167297 | pMT | 0 | 0 | IDENTICAL | common-cell mismatches (tol 1e-10); max_abs_delta=0 |
+| GSE167297 | pRP | 0 | 0 | IDENTICAL | common-cell mismatches (tol 1e-10); max_abs_delta=0 |
+| GSE167297 | pHB | 0 | 0 | IDENTICAL | common-cell mismatches (tol 1e-10); max_abs_delta=0 |
+| GSE167297 | DF | 0 | 47 | EXPECTED_DIFFERENCE | common-cell category mismatches |
+| GSE167297 | DF_adj | 0 | 0 | IDENTICAL | common-cell category mismatches |
+| GSE167297 | S.Score | FALSE | TRUE | UNEXPECTED_DIFFERENCE | Required field missing |
+| GSE167297 | G2M.Score | FALSE | TRUE | UNEXPECTED_DIFFERENCE | Required field missing |
+| GSE167297 | Phase | FALSE | TRUE | UNEXPECTED_DIFFERENCE | Required field missing |
+| GSE167297 | CC.Difference | FALSE | TRUE | UNEXPECTED_DIFFERENCE | Required field missing |
+| GSE167297 | DF_all_cells | Singlet=22312 | Doublet=105;Singlet=22312 | EXPECTED_DIFFERENCE | Final objects already filtered: cannot reconstruct all discarded calls |
+| GSE167297 | DF_adj_all_cells | Singlet=22312 | Singlet=22417 | EXPECTED_DIFFERENCE | Final objects already filtered: cannot reconstruct all discarded calls |

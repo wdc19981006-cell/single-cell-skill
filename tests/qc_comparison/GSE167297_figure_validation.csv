@@ -1,0 +1,8 @@
+plot,pdf_pages,width_inches,height_inches,png_width,png_height,dpi,status
+before_QC,1,20.0,8.0,6000,2400,299.9994,PASS
+after_QC,1,20.0,8.0,6000,2400,299.9994,PASS
+doublet_umap,1,16.0,6.875,4800,2064,299.9994,PASS
+doublet_vlnplot,1,10.0,6.0,3000,1800,299.9994,PASS
+singlet_dimplot,1,11.0,6.875,3300,2064,299.9994,PASS
+cell_cycle_phase,1,6.0,5.0,1800,1500,299.9994,PASS
+cell_cycle_score,1,15.0,5.0,4500,1500,299.9994,PASS

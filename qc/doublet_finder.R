@@ -6,34 +6,65 @@ qc_default_doublet_api <- function() list(
   doubletFinder=DoubletFinder::doubletFinder
 )
 
-qc_choose_pcs <- function(stdev,cfg,max_pc) {
-  if(length(stdev)<2L || !all(is.finite(stdev)) || sum(stdev)<=0) stop("PCA variance unavailable")
+qc_pc_selection <- function(stdev,cfg,max_pc) {
+  if(length(max_pc)!=1L || !is.finite(max_pc) || max_pc<2L ||
+     length(stdev)<2L || !all(is.finite(stdev)) || any(stdev<0) || sum(stdev)<=0)
+    stop("PCA standard deviations unavailable or fewer than two usable PCs")
+  max_pc <- min(as.integer(max_pc),length(stdev))
+  stdev <- stdev[seq_len(max_pc)]
+  # Reference-compatible selection uses standard-deviation share, NOT variance.
   pct <- stdev/sum(stdev)*100
   cumulative <- cumsum(pct)
-  variance_pick <- which(cumulative >= cfg$pc_cumulative_variance & pct < cfg$pc_individual_variance)[1]
-  drop_pick <- which(head(pct,-1L)-tail(pct,-1L) > cfg$pc_elbow_drop)[1]
-  candidate <- c(variance_pick,if(length(drop_pick) && !is.na(drop_pick)) drop_pick+1L else NA_integer_)
-  candidate <- candidate[is.finite(candidate) & candidate>=2L]
-  if (!length(candidate)) return(min(20L,max_pc))
-  min(min(candidate),max_pc)
+  variance_pick <- which(cumulative > cfg$pc_cumulative_variance & pct < cfg$pc_individual_variance)[1]
+  drop_candidates <- which(head(pct,-1L)-tail(pct,-1L) > cfg$pc_elbow_drop)
+  drop_pick <- if(length(drop_candidates)) max(drop_candidates)+1L else NA_integer_
+  candidate <- c(variance_pick,drop_pick)
+  candidate <- candidate[is.finite(candidate)]
+  method <- if(length(candidate)==2L) "reference_sd_min_cumulative_last_drop" else
+    if(is.finite(variance_pick)) "reference_sd_cumulative_only" else
+    if(is.finite(drop_pick)) "reference_sd_last_drop_only" else "fallback_min_20_max_pc"
+  pc_used <- as.integer(max(2L,min(if(length(candidate)) min(candidate) else 20L,max_pc)))
+  variance_explained <- stdev^2/sum(stdev^2)*100
+  list(max_pc=max_pc,pc_used=pc_used,variance_pick=variance_pick,drop_pick=drop_pick,
+    selection_method=method,standard_deviation_share=pct,variance_explained=variance_explained,
+    selected_pc_cumulative_sd_share=cumulative[pc_used],
+    selected_pc_cumulative_variance=sum(variance_explained[seq_len(pc_used)]))
+}
+
+qc_choose_pcs <- function(stdev,cfg,max_pc) qc_pc_selection(stdev,cfg,max_pc)$pc_used
+
+qc_report_pcs <- function(report,sample,selection,merged=FALSE) {
+  fields <- c("max_pc","pc_used","variance_pick","drop_pick","selection_method",
+              "selected_pc_cumulative_sd_share","selected_pc_cumulative_variance")
+  for(field in fields) qc_report_add(report,"PCA",sample,
+    metric=paste0(if(merged) "merged_" else "",field),value=selection[[field]],
+    note=if(field=="selected_pc_cumulative_variance") "Diagnostic only: cumulative stdev^2 / sum(stdev^2) * 100 across computed PCs" else
+      "Selection uses stdev / sum(stdev) * 100; variance_pick is the legacy name for the SD-share threshold")
+  for(field in c("standard_deviation_share","variance_explained")) qc_report_add(report,"PCA",sample,
+    metric=paste0(if(merged) "merged_" else "",field),value=paste(signif(selection[[field]],10),collapse=";"),
+    note=if(field=="variance_explained") "Diagnostic only; squared standard deviations, per computed PC (%)" else "Reference selection input; unsquared standard deviations, per computed PC (%)")
+  if(selection$max_pc>=10L && selection$pc_used<=3L) qc_report_add(report,"PCA",sample,
+    metric=if(merged) "merged_low_dim_warning" else "low_dim_warning",value=selection$pc_used,
+    status="PCA_LOW_DIM_WARNING",note="At least 10 PCs available but only 2-3 selected; inspect diagnostics, do not force 20 PCs")
 }
 
 qc_preprocess_for_doublet <- function(object,cfg,sample,cluster=TRUE) {
   result <- tryCatch({
     object <- Seurat::NormalizeData(object,verbose=FALSE)
     object <- Seurat::FindVariableFeatures(object,nfeatures=min(2000L,nrow(object)-1L),verbose=FALSE)
-    max_pc <- min(as.integer(cfg$doublet$max_pcs),ncol(object)-1L,
+    max_pc <- min(50L,as.integer(cfg$doublet$max_pcs),ncol(object)-1L,
                   length(Seurat::VariableFeatures(object))-1L,nrow(object)-1L)
     if (max_pc<3L) stop("fewer than three stable PCs")
     object <- Seurat::ScaleData(object,vars.to.regress="pMT",verbose=FALSE)
     object <- Seurat::RunPCA(object,npcs=max_pc,verbose=FALSE)
-    pc_used <- qc_choose_pcs(object[["pca"]]@stdev,cfg$doublet,max_pc)
+    selection <- qc_pc_selection(object[["pca"]]@stdev,cfg$doublet,max_pc)
+    pc_used <- selection$pc_used
     if (pc_used<2L) stop("fewer than two usable PCs")
     if (cluster) {
       object <- Seurat::FindNeighbors(object,reduction="pca",dims=seq_len(pc_used),verbose=FALSE)
       object <- Seurat::FindClusters(object,resolution=cfg$doublet$clustering_resolution,verbose=FALSE)
     }
-    list(object=object,pc_used=pc_used,max_pc=max_pc)
+    list(object=object,pc_used=pc_used,max_pc=selection$max_pc,selection=selection)
   },error=function(e) stop("DoubletFinder preprocessing stopped for sample ",sample,": ",conditionMessage(e),call.=FALSE))
   result
 }
@@ -43,7 +74,7 @@ qc_select_pk <- function(object,pc_used,api,sample) {
     sweep <- api$paramSweep(object,PCs=seq_len(pc_used),sct=FALSE)
     stats <- api$summarizeSweep(sweep,GT=FALSE)
     # find.pK plots as a side effect; keep the QC directory limited to the
-    # six requested diagnostic PDFs instead of emitting Rplots.pdf in cwd.
+    # requested diagnostic PDFs instead of emitting Rplots.pdf in cwd.
     grDevices::pdf(file=NULL)
     on.exit(grDevices::dev.off(),add=TRUE)
     table <- api$find.pK(stats)
@@ -66,6 +97,7 @@ qc_new_df_column <- function(before,after,prefix,sample) {
 qc_run_doublet_sample <- function(object,sample,cfg,report,api) {
   original_metadata <- names(object@meta.data)
   processed <- qc_preprocess_for_doublet(object,cfg,sample)
+  qc_report_pcs(report,sample,processed$selection)
   object <- processed$object
   pc_used <- processed$pc_used
   pk <- qc_select_pk(object,pc_used,api,sample)
@@ -125,6 +157,7 @@ qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doub
   raw <- Seurat::CreateSeuratObject(counts=counts,min.cells=0,min.features=0,meta.data=metadata)
   rm(merged,counts); gc()
   processed <- qc_preprocess_for_doublet(raw,cfg,"ALL",cluster=FALSE)
+  qc_report_pcs(report,"ALL",processed$selection,merged=TRUE)
   map <- Seurat::RunUMAP(processed$object,dims=seq_len(processed$pc_used),verbose=FALSE)
   qc_plot_doublets(map,paths,report)
   qc_report_add(report,"RUN",metric="doublet_umap_before_filter",value="doublet_umap.pdf; doublet_umap.png",status="PASS")
@@ -133,6 +166,7 @@ qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doub
   if(!any(accepted)) stop("No cells remain after DF_adj filtering")
   original <- qc_counts(raw)
   retained <- rownames(metadata)[accepted]
+  qc_plot_singlets(map,retained,paths,report)
   result <- Seurat::CreateSeuratObject(counts=original[,retained,drop=FALSE],min.cells=0,min.features=0,
                                        meta.data=metadata[retained,,drop=FALSE])
   list(object=result,pre_filter_cells=ncol(raw),unevaluated=sum(result$DF_adj=="NotEvaluated"))

@@ -37,5 +37,6 @@ plots:
   save_after_qc: true
   save_doublet_umap: true
   save_doublet_vlnplot: true
+  save_singlet_dimplot: true
   save_cell_cycle_phase: true
   save_cell_cycle_score: true

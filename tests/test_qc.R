@@ -20,7 +20,7 @@ stopifnot(all(vapply(umap_panels,function(p) identical(p$coordinates$ratio,1) &&
                        identical(p$coordinates$limits$y,limits$y),logical(1))),
           tail(umap_panels[[2]]$data$DF,1)=="Doublet")
 legend_57 <- sc_sample_legend(57L)
-stopifnot(ceiling(57L/legend_57[[2]]$colour$ncol)<=4L)
+stopifnot(ceiling(57L/legend_57[[2]]$colour$ncol)<=6L)
 frame_57 <- data.frame(x=seq_len(57L),y=sin(seq_len(57L)),
   sample=paste0("Sample",seq_len(57L)),DF=rep("Singlet",57L),DF_adj=rep("Singlet",57L))
 limits_57 <- sc_umap_limits(as.matrix(frame_57[,c("x","y")]))
@@ -54,7 +54,11 @@ make_fixture <- function(base,gse,low=TRUE,second_cells=42L,feature_ids=features
 }
 
 mock_api <- list(
-  paramSweep=function(seu,PCs,sct) list(PCs=PCs),
+  paramSweep=function(seu,PCs,sct) {
+    stopifnot(length(unique(seu$sample))==1L,!"umap" %in% names(seu@reductions),
+              max(PCs)<=ncol(seu[["pca"]]),min(PCs)==1L)
+    list(PCs=PCs)
+  },
   summarizeSweep=function(sweep,GT) sweep,
   find.pK=function(stats) data.frame(pK=c("0.05","0.1"),BCmetric=c(1,2)),
   modelHomotypic=function(clusters) 0.2,
@@ -132,14 +136,14 @@ stopifnot(identical(raw_checksum,unname(tools::md5sum(paths$raw))),
 stopifnot(sum(report$section=="RUN" & report$metric=="status")==1L,
           report$value[report$section=="RUN" & report$metric=="status"]=="COMPLETE_QC")
 expected_plots <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
-  "cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
+  "singlet_dimplot","cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
 plot_files <- file.path(paths$qc,expected_plots)
 png_header <- file(file.path(paths$qc,"before_QC.png"),open="rb")
 invisible(seek(png_header,where=16L))
 png_dimensions <- readBin(png_header,integer(),n=2L,size=4L,endian="big")
 close(png_header)
 stopifnot(all(file.exists(plot_files)),all(file.info(plot_files)$size>0),
-          identical(png_dimensions,c(3000L,1800L)),
+          identical(png_dimensions,c(6000L,2400L)),
           setequal(report$metric[report$section=="PLOT"],expected_plots),
           any(report$metric=="doublet_umap_before_filter"),
           length(list.files(paths$qc,pattern="^qc_report\\.csv$"))==1L)

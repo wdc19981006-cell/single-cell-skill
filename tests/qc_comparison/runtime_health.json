@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "r_version": "4.5.0",
+  "r_version_string": "R version 4.5.0 (2025-04-11 ucrt)",
+  "r_home": "D:/R/R-4.5.0",
+  "library": "D:/R/R-4.5.0/library",
+  "lib_paths": [
+    "D:/R/R-4.5.0/library"
+  ],
+  "packages": {
+    "Seurat": "5.4.0",
+    "SeuratObject": "5.4.0",
+    "Matrix": "1.7.3",
+    "jsonlite": "2.0.0",
+    "yaml": "2.3.12",
+    "ggplot2": "4.0.2",
+    "patchwork": "1.3.2",
+    "DoubletFinder": "2.0.6"
+  },
+  "route": "qc",
+  "cli_exit_workaround": true,
+  "checked_at": "2026-10-16T10:05:40.873548+00:00",
+  "exit_code": 0
+}

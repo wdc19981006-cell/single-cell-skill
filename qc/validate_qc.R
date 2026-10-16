@@ -21,7 +21,7 @@ for (metric in c("final_cells","final_genes")) {
   if (length(value)!=1L || as.integer(value)!=dimension) stop("QC report dimensions disagree")
 }
 plots <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
-  "cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
+  "singlet_dimplot","cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
 files <- file.path(paths$qc,plots)
 if (any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("QC PDF/PNG outputs incomplete")
 cat("Read-only QC artifact validation:",expected,"\n")

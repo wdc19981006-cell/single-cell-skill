@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "raw_cells": 27073,
+  "cell_qc_cells": 23243,
+  "old_final_cells": 22374,
+  "fixed_final_cells": 22417,
+  "genes": 22026,
+  "common_cells": 21642,
+  "old_only_cells": 732,
+  "fixed_only_cells": 775,
+  "raw_counts_mismatches": 0,
+  "old_fixed_counts_mismatches": 0,
+  "merged_max_pc": 50,
+  "merged_pc_used": 17,
+  "merged_variance_pick": 42,
+  "merged_drop_pick": 17,
+  "merged_cumulative_variance": 78.7108,
+  "clean_object": true,
+  "cell_cycle_fields_valid": true,
+  "group_sample_database_unchanged": true
+}

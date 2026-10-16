@@ -22,5 +22,8 @@ stopifnot(ncol(result)==130L,all(c("pANN","DF","DF_adj") %in% names(result@meta.
           !any(grepl("^seurat_clusters$|^RNA_snn_res\\.",names(result@meta.data))),
           all(result$DF %in% c("Singlet","Doublet")),
           all(result$DF_adj %in% c("Singlet","Doublet")),
-          all(c("selected_pK","pc_used","nExp_poi","nExp_poi_adj") %in% metrics$metric))
+          all(c("selected_pK","pc_used","max_pc","variance_pick","drop_pick",
+                "selection_method","selected_pc_cumulative_variance","nExp_poi","nExp_poi_adj") %in% metrics$metric),
+          !"umap" %in% names(result@reductions),
+          identical(qc_counts(result),qc_counts(object)))
 cat("PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.\n")

@@ -1,0 +1,9 @@
+dataset,version,path,bytes,sha256,lfs_verified
+GSE149614,original,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE149614/seurat.all_qc.rds,193018256,64fb8ef4a2dc34b0066da1ff0c8fbffffe761d593e2ebca4d3dbc64718807d09,True
+GSE149614,old_skill,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE149614/qc/seurat_qc.rds,197699358,b9e63c643545e5d983a7797fb83475120908710a12be942c2f5812a46d9d3149,True
+GSE167297,original,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE167297/seurat.all_qc.rds,53938090,f8afceae26735d98af551d096578bff54962696fece00ee4cfa7aef168ed6495,True
+GSE167297,old_skill,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE167297/qc/seurat_qc.rds,55940313,86dc48abaf425aec86ec889db5b14564dc3fcce2661cefa81689a88874b07395,True
+GSE183904,original,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE183904/seurat.all_qc.rds,453525022,41ba498cde559614bc41babebe59a442391ffa6829563a83f02e9d99cbfa2f07,True
+GSE183904,old_skill,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE183904/qc/seurat_qc.rds,463920221,93e79bce0c419d0548a205f188ed2626a47a43617fc73334f3fffdbf53988314,True
+GSE189903,original,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE189903/seurat.all_qc.rds,227314882,de7fbf426aecf1de03d76e4c4213df4cdf1d1d94bc5b61bf50ca531ba0e948be,True
+GSE189903,old_skill,D:/CodexProjects/single-cell-skill/.runtime/qc-inputs/GSE189903/qc/seurat_qc.rds,234730648,38209bfaba3164145678efb9b86effbfa51f2f74db6505837ff4b2878b6ed068,True

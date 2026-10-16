@@ -1,0 +1,25 @@
+[
+  {
+    "test": "test_qc_pca.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 6.765
+  },
+  {
+    "test": "test_qc.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 55.078
+  },
+  {
+    "test": "test_qc_real_df.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 9.484
+  },
+  {
+    "test": "QC_existing_artifact_validation",
+    "status": "PASS",
+    "exit_code": 0
+  }
+]

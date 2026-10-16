@@ -59,7 +59,7 @@ def main():
     print("PASS existing raw artifact recovered by validation only", flush=True)
     for name in ("test_10x_literal_na.R", "test_final_object.R", "test_global_min_cells.R",
                  "test_pooled_inputs.R", "test_seurat.R", "test_stream_text.R",
-                 "test_utf8_manifest.R", "test_qc.R", "test_qc_real_df.R"):
+                 "test_utf8_manifest.R", "test_qc_pca.R", "test_qc.R", "test_qc_real_df.R"):
         args = [fixture, sys.executable] if name == "test_stream_text.R" else [fixture]
         result = run_r45(ROOT / "tests" / name, args, stage=name, cwd=fixture, env=env,
                          log_path=RUNTIME_LOG / "regression-output.log")
