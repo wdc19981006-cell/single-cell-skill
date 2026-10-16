@@ -1,0 +1,19 @@
+{
+  "pre_filter_same_cells": true,
+  "pre_filter_cells": 40915,
+  "raw_cells": 55854,
+  "raw_genes": 26630,
+  "filter_matches_raw_thresholds": true,
+  "max_control_current_stdev_delta": 0,
+  "PCA_spectra_identical_within_1e_8": true,
+  "DF_changed_cells": 2920,
+  "DF_adj_changed_cells": 2700,
+  "common_post_filter_cells": 38054,
+  "current_retained_cells": 39425,
+  "legacy_pc_control_retained_cells": 39383,
+  "all_raw_count_comparisons_exact": true,
+  "counts_comparison_method": "sparse 256-cell blocks; no whole expression densification",
+  "cell_cycle_no_additional_cell_removal": true,
+  "actual_historical_pre_fix_skill_available": false,
+  "regression": "pMT only, unchanged in current and legacy-PC control"
+}

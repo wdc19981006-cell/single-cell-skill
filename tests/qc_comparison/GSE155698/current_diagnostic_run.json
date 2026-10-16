@@ -1,0 +1,9 @@
+{
+  "status": "COMPLETE_QC",
+  "mode": "latest",
+  "seed": 155698,
+  "per_sample_sweep_independent": true,
+  "no_per_sample_umap": true,
+  "exact_post_filter_embedding_subset": true,
+  "merged_pK": "NOT_APPLICABLE: no merged DoubletFinder"
+}

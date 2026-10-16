@@ -1,0 +1,5 @@
+"version","cells","genes","counts_mismatches_to_raw","clean","DF_doublets","DF_adj_doublets"
+"original",39276,26086,0,FALSE,0,0
+"prior_fixed",39425,26630,0,TRUE,149,0
+"current",39425,26630,0,TRUE,149,0
+"legacy_pc_control",39383,26630,0,TRUE,107,0

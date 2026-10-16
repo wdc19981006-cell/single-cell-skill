@@ -1,0 +1,67 @@
+{
+  "raw": {
+    "path": "seurat_raw.rds",
+    "cells": 55854,
+    "genes": 26630,
+    "RNA_layers": "counts",
+    "reductions": {},
+    "metadata": ["orig.ident", "nCount_RNA", "nFeature_RNA", "sample", "database", "tissue", "disease", "source_type", "group", "pMT", "pRP", "pHB"],
+    "common_raw_cells": 55854,
+    "common_raw_genes": 26630,
+    "counts_mismatches": 0,
+    "cells_match_current_cell_qc": false,
+    "DF": {},
+    "DF_adj": {}
+  },
+  "original_pre_doublet": {
+    "path": "seurat.qc.rds",
+    "cells": 40915,
+    "genes": 26086,
+    "RNA_layers": "counts",
+    "reductions": {},
+    "metadata": ["orig.ident", "nCount_RNA", "nFeature_RNA", "sample", "database", "tissue", "disease", "source_type", "group", "pMT", "pRP", "pHB"],
+    "common_raw_cells": 40915,
+    "common_raw_genes": 26086,
+    "counts_mismatches": 0,
+    "cells_match_current_cell_qc": true,
+    "DF": {},
+    "DF_adj": {}
+  },
+  "original_final": {
+    "path": "seurat.all_qc.rds",
+    "cells": 39276,
+    "genes": 26086,
+    "RNA_layers": "counts",
+    "reductions": {},
+    "metadata": ["orig.ident", "nCount_RNA", "nFeature_RNA", "sample", "database", "tissue", "disease", "source_type", "group", "pMT", "pRP", "pHB", "RNA_snn_res.1", "seurat_clusters", "pANN", "DF", "DF_adj"],
+    "common_raw_cells": 39276,
+    "common_raw_genes": 26086,
+    "counts_mismatches": 0,
+    "cells_match_current_cell_qc": false,
+    "DF": {
+      "Singlet": 39276
+    },
+    "DF_adj": {
+      "Singlet": 39276
+    }
+  },
+  "prior_fixed_skill": {
+    "path": "qc/seurat_qc.rds",
+    "cells": 39425,
+    "genes": 26630,
+    "RNA_layers": "counts",
+    "reductions": {},
+    "metadata": ["orig.ident", "nCount_RNA", "nFeature_RNA", "sample", "database", "tissue", "disease", "source_type", "group", "pMT", "pRP", "pHB", "pANN", "DF", "DF_adj", "doublet_status", "S.Score", "G2M.Score", "Phase", "CC.Difference"],
+    "common_raw_cells": 39425,
+    "common_raw_genes": 26630,
+    "counts_mismatches": 0,
+    "cells_match_current_cell_qc": false,
+    "DF": {
+      "Doublet": 149,
+      "Singlet": 39276
+    },
+    "DF_adj": {
+      "Singlet": 39425
+    }
+  }
+}

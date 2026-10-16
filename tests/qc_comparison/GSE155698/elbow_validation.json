@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "elbow_pairs": 21,
+  "PDF_pages_each": 1,
+  "PNG_dimensions": [
+    1800,
+    1500
+  ],
+  "dpi": 300
+}

@@ -1,0 +1,175 @@
+{
+  "status": "PASS",
+  "independent_python_recalculation": true,
+  "variance_denominator": "sum squared SD across computed PCs, not total transcriptome variance",
+  "checks": [
+    {
+      "sample": "GSM4710689",
+      "pc_used": 13,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 13,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710690",
+      "pc_used": 12,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 12,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710691",
+      "pc_used": 16,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 16,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710692",
+      "pc_used": 16,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 16,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710693",
+      "pc_used": 10,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 10,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710694",
+      "pc_used": 11,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 11,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710695",
+      "pc_used": 14,
+      "max_pc": 50,
+      "variance_pick": 41,
+      "drop_pick": 14,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710696",
+      "pc_used": 16,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 16,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710697",
+      "pc_used": 20,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 20,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710698",
+      "pc_used": 22,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 22,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710699",
+      "pc_used": 12,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 12,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710700",
+      "pc_used": 14,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 14,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710701",
+      "pc_used": 17,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 17,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710702",
+      "pc_used": 17,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 17,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710703",
+      "pc_used": 13,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 13,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710704",
+      "pc_used": 12,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 12,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710705",
+      "pc_used": 10,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 10,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710706",
+      "pc_used": 16,
+      "max_pc": 50,
+      "variance_pick": 41,
+      "drop_pick": 16,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710707",
+      "pc_used": 15,
+      "max_pc": 50,
+      "variance_pick": 42,
+      "drop_pick": 15,
+      "status": "PASS"
+    },
+    {
+      "sample": "GSM4710708",
+      "pc_used": 9,
+      "max_pc": 50,
+      "variance_pick": 43,
+      "drop_pick": 9,
+      "status": "PASS"
+    },
+    {
+      "sample": "ALL",
+      "pc_used": 23,
+      "max_pc": 50,
+      "variance_pick": 41,
+      "drop_pick": 23,
+      "status": "PASS"
+    }
+  ]
+}

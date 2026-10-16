@@ -1,0 +1,29 @@
+{
+  "started_at": "2026-10-16T13:24:52.438191+00:00",
+  "mode": "legacy_pc_control",
+  "source_commit": "cec9f452e8fe704c187b2058eefd195987d1a4e9",
+  "input_raw_sha256": "8b97d5f5019bdca4c08319581b9866f0e5c649643b550b0a38494327a4f1fad7",
+  "source": "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698",
+  "protected_files": {
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat_raw.rds": "8b97d5f5019bdca4c08319581b9866f0e5c649643b550b0a38494327a4f1fad7",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat.all_qc.rds": "a35dfd5a7e0c48499437306a77f0c14db05f103a0095ed941b8d1a8dbd64942b",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat.qc.rds": "7129ac9f736df8bf3a730e4035f5c9d76bf858df50d4136e4eed42e6df447b3a",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\seurat_qc.rds": "7459f377b990986ce1cda7dd83dab765aa6796ab0d62b197280db17f6b9645a7",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\qc_report.csv": "a58e494eab680d2a7c06efae9d1dea221f4951a41728e9dd865ed81d40d7a08e",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\qc_decision.json": "b5ab63c3b552d7abceddcce11718787d720bb3c8e784be12449fb1f46b572cc8",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\group_confirmation.json": "d04bc5ac511e4e30882b487ef40f4ad79caa04ff4f05a00825970a8306123078"
+  },
+  "no_discovery_download_build": true,
+  "existing_user_decision_reused": true,
+  "protected_files_after": {
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat_raw.rds": "8b97d5f5019bdca4c08319581b9866f0e5c649643b550b0a38494327a4f1fad7",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat.all_qc.rds": "a35dfd5a7e0c48499437306a77f0c14db05f103a0095ed941b8d1a8dbd64942b",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\seurat.qc.rds": "7129ac9f736df8bf3a730e4035f5c9d76bf858df50d4136e4eed42e6df447b3a",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\seurat_qc.rds": "7459f377b990986ce1cda7dd83dab765aa6796ab0d62b197280db17f6b9645a7",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\qc_report.csv": "a58e494eab680d2a7c06efae9d1dea221f4951a41728e9dd865ed81d40d7a08e",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\qc\\qc_decision.json": "b5ab63c3b552d7abceddcce11718787d720bb3c8e784be12449fb1f46b572cc8",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE155698\\group_confirmation.json": "d04bc5ac511e4e30882b487ef40f4ad79caa04ff4f05a00825970a8306123078"
+  },
+  "historical_files_unchanged": true,
+  "raw_copy_sha256_after": "8b97d5f5019bdca4c08319581b9866f0e5c649643b550b0a38494327a4f1fad7"
+}

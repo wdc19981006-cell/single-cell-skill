@@ -1,0 +1,63 @@
+{
+  "python_tests": {
+    "count": 86,
+    "status": "PASS"
+  },
+  "PCA_regression": {
+    "status": "PASS",
+    "exit_code": 0
+  },
+  "current_and_control_QC": [
+    {
+      "run_id": "20261016T132100-f2c72a8e",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 1306.968,
+      "args": [
+        "D:\\CodexProjects\\single-cell-skill",
+        "D:\\CodexProjects\\single-cell-skill\\.runtime\\pca-validation-GSE155698\\latest",
+        "GSE155698",
+        "D:\\CodexProjects\\single-cell-skill\\.runtime\\pca-validation-GSE155698\\latest\\data\\GSE155698\\diagnostics",
+        "latest"
+      ]
+    },
+    {
+      "run_id": "20261016T132521-4400d56b",
+      "status": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 1383.156,
+      "args": [
+        "D:\\CodexProjects\\single-cell-skill",
+        "D:\\CodexProjects\\single-cell-skill\\.runtime\\pca-validation-GSE155698\\legacy_pc_control",
+        "GSE155698",
+        "D:\\CodexProjects\\single-cell-skill\\.runtime\\pca-validation-GSE155698\\legacy_pc_control\\data\\GSE155698\\diagnostics",
+        "legacy_pc_control"
+      ]
+    }
+  ],
+  "independent_final_validators": [
+    {
+      "run_id": "20261016T134249-06a9050d",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "run_id": "20261016T134826-efc06150",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "independent_spectrum_recalculation": {
+    "status": "PASS",
+    "PCA_objects": 21
+  },
+  "production_QC_Loader_Runtime_unchanged": true,
+  "historical_files_unchanged": true,
+  "current_final_sha256": "7459f377b990986ce1cda7dd83dab765aa6796ab0d62b197280db17f6b9645a7",
+  "prior_fixed_final_sha256": "7459f377b990986ce1cda7dd83dab765aa6796ab0d62b197280db17f6b9645a7",
+  "serialized_final_matches_prior_fixed": true,
+  "DF_adj_nFeature_medians": {
+    "Singlet": 1407.0,
+    "Doublet": 2901.0
+  }
+}
