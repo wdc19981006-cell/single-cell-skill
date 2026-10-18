@@ -11,7 +11,7 @@ One CSV row per stable expression sample; one GSE per manifest. UTF-8, header pr
 | source_type | Tissue, PBMC, Whole_Blood, Bone_Marrow, Ascites, Pleural_Fluid, Organoid, Cell_Line, Cultured_TIL |
 | group | User-confirmed analysis label; never derived automatically from disease |
 
-Required workflow columns: `local_path`, `file_type`, `count_source`, `count_evidence`, `metadata_evidence`. Evidence must identify a public URL/table/record and relevant field/statement; review semantic validity, not just whether a URL is present. Paths are relative to repository root, use forward slashes, have no absolute prefixes or `..`, and stay inside `data/<GSE>/`. Expression and download paths stay inside `raw/`; new `cell_map_path` values stay inside persistent `cell_map/` (legacy in-progress workflows may use temporary `.workflow/`).
+Required workflow columns: `local_path`, `file_type`, `count_source`, `count_evidence`, `metadata_evidence`. Evidence must identify a public URL/table/record and relevant field/statement; review semantic validity, not just whether a URL is present. New paths use results/<GSE>/01_download; existing data/<GSE> receipts retain their original paths. Paths are relative to repository root, use forward slashes, have no absolute prefixes or `..`, and stay inside `results/<GSE>/01_download/`. Expression and download paths stay inside `raw/`; new `cell_map_path` values stay inside persistent `cell_map/` (legacy in-progress workflows may use temporary `.workflow/`).
 
 Optional `patient`, `specimen`, `cohort`, `treatment` require corresponding `<field>_evidence` for each non-NA value. Omit absent columns; partially documented columns may contain NA, reported in run summary. Never infer patient identity from P01, T01, donor3 or filenames. `author_sample` and `sample_description` are report/manifest helper fields, not mandatory cell columns.
 
@@ -22,7 +22,7 @@ The report, approval and manifest use canonical `.workflow/sample_report.csv`, `
 `files_json` is a JSON array inside one CSV cell. Example:
 
 ```json
-[{"url":"https://ftp.ncbi.nlm.nih.gov/.../sample_matrix.mtx.gz","local_path":"data/GSE123/raw/GSM123/matrix.mtx.gz"}]
+[{"url":"https://ftp.ncbi.nlm.nih.gov/.../sample_matrix.mtx.gz","local_path":"results/GSE123/01_download/raw/GSM123/matrix.mtx.gz"}]
 ```
 
 For a trio, put three entries in the same array, with canonical matrix/features/barcodes destinations. For an archive member add `member` with the exact archive member name. Optional `sha256` means the downloaded file/archive SHA256, not extracted-member SHA256. One archive URL is downloaded once. `files_json=[]` permits existing local inputs, which are identified as such in the summary. URLs cannot contain credentials. Downloaded hashes are local integrity/provenance records, not author-signed checksums.
@@ -45,7 +45,7 @@ Multiple biological samples are combined at the raw sparse count-matrix level be
 
 ## Group confirmation
 
-Save the user's reply in `data/<GSE>/.workflow/group_confirmation.json`:
+Save the user's reply in `results/<GSE>/01_download/.workflow/group_confirmation.json`:
 
 ```json
 {"confirmed_by":"user","user_statement":"Literal user grouping instruction","groups":{"GSM123":"UserChosenLabel"}}

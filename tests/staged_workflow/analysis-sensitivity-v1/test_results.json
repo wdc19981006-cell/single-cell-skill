@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "data": "synthetic fractional corrected-counts assay",
+  "nCount_RNA_max_abs_pc_rho": 0.705798678446364,
+  "threshold": 0.5,
+  "rna_total_sensitivity": "COMPLETE",
+  "cell_cycle_sensitivity": "SKIPPED_NO_CLEAR_PC_RISK",
+  "corrected_assay": "decontX",
+  "original_RNA_counts": "PRESERVED_AND_ROUNDTRIP_VALIDATED"
+}

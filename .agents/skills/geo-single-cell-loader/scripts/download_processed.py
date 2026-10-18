@@ -15,7 +15,7 @@ import http.client
 import socket
 from datetime import datetime, timezone
 from pathlib import Path
-from common import ROOT, dataset_paths, local, read_csv, validate_manifest, verify_confirmation, workflow_path
+from common import ROOT, dataset_paths, dataset_relative, local, read_csv, validate_manifest, verify_confirmation, workflow_path
 
 RETRY_DELAYS = (2, 5, 10)
 TRANSIENT_HTTP = {408, 425, 429, 500, 502, 503, 504}
@@ -127,8 +127,9 @@ def extract_member(archive, member, destination):
 
 def assemble_parts(root, gse, destination, parts, by_path):
     """Concatenate verified ordered byte fragments without altering the sources."""
-    target = local(root, destination, f'data/{gse}/raw')
-    sources = [local(root, part, f'data/{gse}/raw') for part in parts]
+    area = dataset_relative(root, gse) + '/raw'
+    target = local(root, destination, area)
+    sources = [local(root, part, area) for part in parts]
     for part, source in zip(parts, sources):
         previous = by_path.get(part)
         if not previous or not source.is_file() or sha256(source) != previous.get('sha256'):
@@ -185,7 +186,7 @@ def run(manifest, root):
     for row in rows:
         for item in json.loads(row.get('files_json') or '[]'): plans[item['local_path']] = item
     for item in plans.values():
-        target = local(root, item['local_path'], f'data/{gse}/raw')
+        target = local(root, item['local_path'], dataset_relative(root, gse) + '/raw')
         old = by_path.get(item['local_path'])
         if item.get('member'):
             if target.exists():
@@ -197,8 +198,8 @@ def run(manifest, root):
                 if item.get('sha256') and old.get('sha256') != item['sha256']: raise ValueError('Checksum mismatch')
                 profile(log, **dict(old, status='REUSED',download_seconds=0,mb_per_second=0,retry=0,sha_seconds=sha_seconds,extract_seconds=0))
                 continue
-            cache_rel = f'data/{gse}/raw/_archives/' + hashlib.sha256(item['url'].encode()).hexdigest() + '.archive'
-            cache = local(root, cache_rel, f'data/{gse}/raw')
+            cache_rel = dataset_relative(root, gse) + '/raw/_archives/' + hashlib.sha256(item['url'].encode()).hexdigest() + '.archive'
+            cache = local(root, cache_rel, dataset_relative(root, gse) + '/raw')
             try:
                 archive_record = download(item['url'], cache, item.get('sha256'), by_path.get(cache_rel), item.get('size'))
             except Exception as error:

@@ -1,0 +1,38 @@
+{
+  "seurat_raw.rds": {
+    "bytes": 103988014,
+    "sha256": "f5942099b2730190bf5bc3be1e255c6e82a1f8e7614607d7aca8173a59dd7571"
+  },
+  "group_confirmation.json": {
+    "bytes": 191,
+    "sha256": "df18195d168debf785aa3047f92a41bc4227ff4072b2e8b26fefc8da39fc1521"
+  },
+  "sample_info.txt": {
+    "bytes": 3938,
+    "sha256": "ce855547ebcc0b46a44876046354c30671d2e9ebefc14cb732d255dfca3422e7"
+  },
+  "raw\\GSM9858050\\barcodes.tsv.gz": {
+    "bytes": 40194,
+    "sha256": "8aafc8636a987817544a59d2d41f4ecfd025b3f6435dd955ef55431b90b7f98b"
+  },
+  "raw\\GSM9858050\\features.tsv.gz": {
+    "bytes": 260004,
+    "sha256": "fc93e9e7a4cabdd30d07140c467dc7b820af7954e3e98de27ba57849a9044b57"
+  },
+  "raw\\GSM9858050\\matrix.mtx.gz": {
+    "bytes": 75997551,
+    "sha256": "fde4aeff447612ffe5eedf396596b14157d0a26af29e1804982ae1e7c4c0642c"
+  },
+  "raw\\GSM9858051\\barcodes.tsv.gz": {
+    "bytes": 34220,
+    "sha256": "073f0242958375b67ce72e710cb3059ef058f71ff100ec903951615ed69aa653"
+  },
+  "raw\\GSM9858051\\features.tsv.gz": {
+    "bytes": 260004,
+    "sha256": "fc93e9e7a4cabdd30d07140c467dc7b820af7954e3e98de27ba57849a9044b57"
+  },
+  "raw\\GSM9858051\\matrix.mtx.gz": {
+    "bytes": 61273916,
+    "sha256": "d104022438876652e9a92d6802a89b797256df571021480c86e015857bb61397"
+  }
+}

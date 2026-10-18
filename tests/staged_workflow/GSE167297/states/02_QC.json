@@ -1,0 +1,14 @@
+{
+  "r_health": "PASS",
+  "raw_sha256": "ab7c98333f65e3f42ff79f0b138b68dcc8720110e7cb1b0995534a918d9601b2",
+  "updated_at": "2026-10-18T14:31:11.490588+00:00",
+  "qc1": "COMPLETE_QC1",
+  "qc1_sha256": "767e0caefc475715ad6947dc20fd81787c3e137897519a6e32728212267fcb92",
+  "error": null,
+  "raw_sha256_after": "ab7c98333f65e3f42ff79f0b138b68dcc8720110e7cb1b0995534a918d9601b2",
+  "qc2": "COMPLETE_QC",
+  "qc": "COMPLETE_QC3",
+  "qc2_sha256": "fc92f70a3e374f593d8bc80fc29a4bfd47b935094711a9d78ec75b6d98f770c5",
+  "qc3": "COMPLETE_QC3",
+  "qc3_sha256": "d5294050f59b1e1198765da8222cdf4fe2bc8abe0403133cce2c4db9a0db371c"
+}

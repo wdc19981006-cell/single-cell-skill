@@ -1,0 +1,42 @@
+step: qc2
+input: D:/CodexProjects/single-cell-skill/.runtime/staged-full-20261018/results/GSE167297/02_QC/01_basic_QC/seurat_QC-1.rds
+input_md5: 7a17ece7edfbf810cfd38665cdb95821
+output: D:/CodexProjects/single-cell-skill/.runtime/staged-full-20261018/results/GSE167297/02_QC/02_doublet_cellcycle/seurat_QC-2.rds
+parameters:
+  species: human
+  sample_column: sample
+  cell_qc:
+    nFeature_min: 200
+    nFeature_max: 4000
+    nCount_min: 500
+    nCount_max: 30000
+    pMT_max: 25
+    pHB_max: 1
+    pRP_max: 100
+    max_predicted_qc_removal_fraction: 0.15
+  doublet:
+    enabled: yes
+    min_cells: 100
+    max_pcs: 50
+    pc_cumulative_variance: 90
+    pc_individual_variance: 5
+    pc_elbow_drop: 0.1
+    clustering_resolution: 1
+    pN: 0.25
+    expected_rate: 0.04
+    homotypic_adjustment: yes
+    final_filter: DF_adj
+    regress: pMT
+  cell_cycle:
+    enabled: yes
+    score_only: yes
+    set_ident: no
+    regression: none
+  plots:
+    save_before_qc: yes
+    save_after_qc: yes
+    save_doublet_umap: yes
+    save_doublet_vlnplot: yes
+    save_singlet_dimplot: yes
+    save_cell_cycle_phase: yes
+    save_cell_cycle_score: yes

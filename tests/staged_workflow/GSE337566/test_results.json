@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "dataset": "GSE337566",
+  "runtime": "R 4.5.0",
+  "new_discovery": false,
+  "new_download": false,
+  "new_build": false,
+  "exit_code": 0,
+  "duration_seconds": 12.703,
+  "protected_unchanged": true,
+  "protected_files": 9,
+  "samples": 2,
+  "cells": 14289,
+  "summary": [
+    {
+      "database": "GSE337566",
+      "sample": "GSM9858050",
+      "group": "Control",
+      "cells": "7714",
+      "genes_detected": "21377",
+      "object_features": "21506",
+      "total_counts": "78137664",
+      "file_type": "10x_mtx",
+      "local_path": "data/GSE337566/raw/GSM9858050",
+      "count_source": "counts",
+      "structure": "dgCMatrix",
+      "integrity": "validated sparse finite nonnegative integer RNA counts; confirmed metadata and cell alignment"
+    },
+    {
+      "database": "GSE337566",
+      "sample": "GSM9858051",
+      "group": "Diabetes",
+      "cells": "6575",
+      "genes_detected": "21242",
+      "object_features": "21506",
+      "total_counts": "60495705",
+      "file_type": "10x_mtx",
+      "local_path": "data/GSE337566/raw/GSM9858051",
+      "count_source": "counts",
+      "structure": "dgCMatrix",
+      "integrity": "validated sparse finite nonnegative integer RNA counts; confirmed metadata and cell alignment"
+    }
+  ],
+  "report_pdf_pages": 2,
+  "outputs": [
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE337566\\metadata.csv",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE337566\\download_summary.csv",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE337566\\download_report.pdf",
+    "D:\\CodexProjects\\single-cell-skill\\data\\GSE337566\\download.log"
+  ]
+}

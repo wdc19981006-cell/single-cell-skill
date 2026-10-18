@@ -1,0 +1,121 @@
+R45_PACKAGE	Seurat	5.4.0
+R45_PACKAGE	SeuratObject	5.4.0
+R45_PACKAGE	Matrix	1.7.3
+R45_PACKAGE	jsonlite	2.0.0
+R45_PACKAGE	yaml	2.3.12
+R45_PACKAGE	ggplot2	4.0.2
+R45_PACKAGE	patchwork	1.3.2
+R45_VERSION	R version 4.5.0 (2025-04-11 ucrt)
+R45_SHORT_VERSION	4.5.0
+R45_HOME	D:/R/R-4.5.0
+R45_LIBRARIES	D:/R/R-4.5.0/library
+R45_ROUTE	base
+R45_HEALTH_PASS
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Validated output: D:/CodexProjects/single-cell-skill/.runtime/download-layout-31588e7843/results/GSE999999999/01_download/seurat_raw.rds
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Existing raw artifact validated read-only: 4 cells; 250 genes
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Stage-one artifacts generated or verified: D:/CodexProjects/single-cell-skill/.runtime/download-layout-31588e7843/results/GSE999999999/01_download
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Stage-one artifacts generated or verified: D:/CodexProjects/single-cell-skill/.runtime/download-layout-31588e7843/results/GSE999999999/01_download
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+
+Synthetic1
+         4
+
+Fixture
+      4
+
+GSE999999999
+           4
+Error in immutable_download_csv(metadata, file.path(out, "metadata.csv")) :
+  Existing download artifact differs; refusing overwrite: D:/CodexProjects/single-cell-skill/.runtime/download-layout-31588e7843/results/GSE999999999/01_download/metadata.csv
+Calls: write_download_outputs -> immutable_download_csv
+R_SCRIPT_ERROR: stage=download_layout_report_download.R script=D:\CodexProjects\single-cell-skill\.agents\skills\geo-single-cell-loader\scripts\report_download.R exit=1

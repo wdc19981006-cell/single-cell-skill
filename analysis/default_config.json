@@ -1,0 +1,21 @@
+{
+  "assay": "RNA",
+  "seed": 42,
+  "nfeatures": 2000,
+  "max_pcs": 50,
+  "pc_cumulative_variance": 90,
+  "pc_individual_variance": 5,
+  "pc_elbow_drop": 0.1,
+  "risk_correlation": 0.5,
+  "sensitivity": [],
+  "harmony": {
+    "enabled": true,
+    "batch_field": null,
+    "technical_fields": [],
+    "allow_sample": false,
+    "confounding_acknowledgement": null
+  },
+  "markers": ["PTPRC", "EPCAM", "COL1A1", "PECAM1", "CD3D", "MS4A1", "LYZ"],
+  "resolutions": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2],
+  "cluster_reduction": "auto"
+}

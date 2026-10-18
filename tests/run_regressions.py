@@ -36,7 +36,8 @@ def main():
                     stage="direct_qc_entrypoint", cwd=fixture, env=env)
         except RRunError as error:
             assert "sys.frame(1)" not in error.output
-            assert "FAILED_INPUT" in error.output or "QC precheck stopped" in error.output
+            assert any(message in error.output for message in
+                       ("FAILED_INPUT", "QC precheck stopped", "QC prerequisite missing"))
         else:
             raise AssertionError(f"{name} should stop for a missing raw fixture")
         results.append(dict(test="direct_" + name, status="PASS"))
@@ -67,11 +68,14 @@ def main():
                             duration_seconds=result.record.get("duration_seconds")))
         (RUNTIME_LOG / "regressions.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
         print("PASS " + name, flush=True)
-    qc_fixture = Path((fixture / "data/qc_fixture_path.txt").read_text().strip())
+    qc_fixture = Path((fixture / ".runtime/qc_stages_fixture_path.txt").read_text().strip())
     spec = importlib.util.spec_from_file_location("qc_workflow", ROOT / "qc/run_workflow.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    assert module.run("GSE999999997", qc_fixture) == "COMPLETE_QC"
+    qc_final = qc_fixture / "results/GSE999999991/02_QC/03_ambient_RNA/seurat_QC-3.rds"
+    qc_before = digest(qc_final)
+    assert module.run("GSE999999991", qc_fixture) == "COMPLETE_QC3"
+    assert digest(qc_final) == qc_before
     results.append(dict(test="QC_existing_artifact_recovery", status="PASS"))
     (RUNTIME_LOG / "regressions.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     print("PASS QC existing-artifact recovery", flush=True)

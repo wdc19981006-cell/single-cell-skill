@@ -1,27 +1,26 @@
+# Read-only validation: never rebuilds or replaces an RDS.
 args <- commandArgs(trailingOnly=TRUE)
 script <- sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
-source(file.path(dirname(normalizePath(script)),"qc_utils.R"))
-if (length(args)!=2L) stop("Usage: run_r45.py qc/validate_qc.R ROOT GSE")
-paths <- qc_paths(args[1],args[2])
-object <- readRDS(paths$final)
-counts <- qc_validate_input(object,args[2])
-if (!identical(names(object@assays),"RNA") || !identical(SeuratObject::Layers(object[["RNA"]]),"counts")) stop("QC object must contain raw RNA counts only")
-required <- c("pMT","pRP","pHB","S.Score","G2M.Score","Phase","CC.Difference","pANN","DF","DF_adj","doublet_status")
-if (!all(required %in% names(object@meta.data))) stop("QC metadata incomplete")
-if (any(!object$DF_adj %in% c("Singlet","NotEvaluated"))) stop("Unexpected final doublet calls")
-if (any(object$DF_adj=="NotEvaluated" & object$doublet_status!="SKIPPED_LOW_CELL")) stop("Unassessed cells lack skip marker")
-if (length(object@reductions) || length(object@graphs) || length(object@neighbors)) stop("QC object retains temporary analysis state")
-report <- read.csv(paths$report,encoding="UTF-8",stringsAsFactors=FALSE)
+source(file.path(dirname(normalizePath(script)),"run_qc.R"))
+if(!length(args) %in% 2:4) stop("Usage: run_r45.py qc/validate_qc.R ROOT GSE [qc1|qc2|qc3|legacy] [INPUT]")
+base <- qc_paths(args[1],args[2]); step <- if(length(args)>2L) args[3] else "qc2"
+if(step=="legacy") {
+  object <- readRDS(base$legacy_final)
+  qc_stage_validate(object,"qc2",args[2],legacy=TRUE)
+  path <- file.path(dirname(base$legacy_final),"qc_report.csv")
+} else {
+  paths <- qc_stage_paths(base,step)
+  object <- readRDS(paths$final)
+  input <- if(length(args)>3L) args[4] else object@misc$qc_pipeline[[step]]$input
+  qc_stage_validate(object,step,args[2],input,paths)
+  path <- paths$report
+}
+report <- utils::read.csv(path,stringsAsFactors=FALSE)
 status <- tail(report$value[report$section=="RUN" & report$metric=="status"],1)
-expected <- if (any(object$DF_adj=="NotEvaluated")) "QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS" else "COMPLETE_QC"
-if (!identical(status,expected)) stop("QC report and artifact disagree")
-for (metric in c("final_cells","final_genes")) {
+if(!status %in% c("COMPLETE_QC1","COMPLETE_QC","QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS","COMPLETE_QC3")) stop("QC report incomplete")
+for(metric in c("final_cells","final_genes")) {
   value <- tail(report$value[report$section=="RUN" & report$metric==metric],1)
   dimension <- if(metric=="final_cells") ncol(object) else nrow(object)
-  if (length(value)!=1L || as.integer(value)!=dimension) stop("QC report dimensions disagree")
+  if(length(value)!=1L || as.integer(value)!=dimension) stop("QC report dimensions disagree")
 }
-plots <- as.vector(outer(c("before_QC","after_QC","doublet_umap","doublet_vlnplot",
-  "singlet_dimplot","cell_cycle_phase","cell_cycle_score"),c(".pdf",".png"),paste0))
-files <- file.path(paths$qc,plots)
-if (any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("QC PDF/PNG outputs incomplete")
-cat("Read-only QC artifact validation:",expected,"\n")
+cat("Read-only QC artifact validation:",step,status,"\n")

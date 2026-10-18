@@ -4,9 +4,10 @@ script <- sub("^--file=", "", commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(script)),"seurat_common.R"))
 if (length(argv) != 2L) stop("Usage: run_r45.py build_seurat.R REPOSITORY_ROOT MANIFEST_RELATIVE_PATH")
 root <- normalizePath(argv[1],winslash="/",mustWork=TRUE)
-if (!grepl("^data/GSE[0-9]+/\\.workflow/[^/]+\\.csv$",argv[2])) stop("Manifest must be under data/<GSE>/.workflow/")
-gse <- strsplit(argv[2],"/",fixed=TRUE)[[1]][2]
-out <- file.path(root,"data",gse)
+base <- manifest_dataset(argv[2])
+gse <- strsplit(base,"/",fixed=TRUE)[[1]][2]
+if (!identical(base,dataset_relative(root,gse))) stop("Manifest is outside the active dataset download root")
+out <- file.path(root,base)
 if (dir.exists(out) && !identical(tolower(normalizePath(out,winslash="/")),tolower(out))) stop("Dataset directory redirects outside its declared location")
 workflow <- file.path(out,".workflow")
 final <- file.path(out,"seurat_raw.rds")
@@ -17,7 +18,7 @@ fmt_seconds <- function(x) formatC(x,format="f",digits=3)
 total_started <- proc.time()[["elapsed"]]
 tryCatch({
 manifest_started <- proc.time()[["elapsed"]]
-manifest_path <- repo_path(root,argv[2],paste0("data/",gse,"/.workflow"))
+manifest_path <- repo_path(root,argv[2],paste0(base,"/.workflow"))
 m <- read_manifest(manifest_path,root)
 manifest_read_seconds <- seconds_since(manifest_started)
 need(c("Seurat","Matrix"))
@@ -105,7 +106,7 @@ withCallingHandlers({
     paste("create_seurat_seconds:",fmt_seconds(create_seurat_seconds)),paste("metadata_mapping_seconds:",fmt_seconds(metadata_mapping_seconds)),
     paste("validation_seconds:",fmt_seconds(validation_seconds)),paste("serialization_seconds:",fmt_seconds(serialization_seconds)),
     paste("total_build_seconds:",fmt_seconds(total_build_seconds)),
-    paste("Manifest:",argv[2]),paste("Manifest MD5:",unname(tools::md5sum(manifest_path))),paste("Output:",file.path("data",gse,"seurat_raw.rds")),
+    paste("Manifest:",argv[2]),paste("Manifest MD5:",unname(tools::md5sum(manifest_path))),paste("Output:",paste0(base,"/seurat_raw.rds")),
     "Download provenance (timestamps and SHA256):")
   download_log <- file.path(workflow,"download.json")
   summary <- c(summary,if(file.exists(download_log)) readLines(download_log,warn=FALSE) else "Local inputs: download date unavailable; not downloaded by this run.","Warnings:",if(length(warnings_seen)) unique(warnings_seen) else "None",capture.output(sessionInfo()))

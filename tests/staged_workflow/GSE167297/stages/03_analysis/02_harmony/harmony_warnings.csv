@@ -1,0 +1,3 @@
+"category","severity","message","recommendation"
+"BIOLOGICAL_TRADEOFF","WARNING","Harmony was not run: NO_CONFIRMED_TECHNICAL_BATCH","Review sample/technical metadata and biological design; use unintegrated PCA unless an explicit documented comparison is justified"
+"MISSING_DIAGNOSTIC","WARNING","Requested marker genes absent: PECAM1","Configure relevant marker symbols for the organism and tissue"

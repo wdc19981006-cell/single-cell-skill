@@ -136,16 +136,30 @@ qc_run_doublet_sample <- function(object,sample,cfg,report,api) {
 
 qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doublet_api()) {
   object <- SeuratObject::JoinLayers(object)
-  parts <- Seurat::SplitObject(object,split.by="sample")
+  object <- qc_capture_libraries(object)
+  for(library in unique(object$library_id)) {
+    selected <- object$library_id==library
+    source <- paste(unique(object$capture_mapping_source[selected]),collapse=";")
+    qc_report_add(report,"CAPTURE_LIBRARY",library,"mapping_source",source,
+      status=if(any(object$capture_mapping_source[selected]=="legacy_sample_mapping_unverified")) "CAPTURE_MAPPING_WARNING" else "PASS",
+      note=paste("biological_samples=",paste(unique(object$sample[selected]),collapse=";"),
+        "; review original capture manifest when independent library provenance is absent",sep=""))
+  }
+  parts <- Seurat::SplitObject(object,split.by="library_id")
   kept <- decision$kept_low_cell_samples %||% character()
   for (sample in names(parts)) {
-    if (sample %in% kept) {
+    biological_samples <- unique(as.character(parts[[sample]]$sample))
+    if(any(biological_samples %in% kept) && !all(biological_samples %in% kept))
+      stop("AMBIGUOUS_CAPTURE_LIBRARY: partially skipped biological samples share library ",sample)
+    if (all(biological_samples %in% kept)) {
       parts[[sample]]$pANN <- rep(NA_real_,ncol(parts[[sample]]))
       parts[[sample]]$DF <- "NotEvaluated"
       parts[[sample]]$DF_adj <- "NotEvaluated"
       parts[[sample]]$doublet_status <- "SKIPPED_LOW_CELL"
       qc_report_add(report,"DOUBLET",sample,"unevaluated_cells",ncol(parts[[sample]]),status="USER_CONFIRMED_SKIP",note=decision$user_statement)
     } else {
+      if(ncol(parts[[sample]])<cfg$doublet$min_cells)
+        stop("LOW_CELL_CAPTURE_LIBRARY: ",sample," has ",ncol(parts[[sample]])," cells; explicit user decision required")
       parts[[sample]] <- qc_run_doublet_sample(parts[[sample]],sample,cfg,report,api)
     }
   }
@@ -162,6 +176,18 @@ qc_run_doublets <- function(object,cfg,decision,paths,report,api=qc_default_doub
   qc_plot_doublets(map,paths,report)
   qc_report_add(report,"RUN",metric="doublet_umap_before_filter",value="doublet_umap.pdf; doublet_umap.png",status="PASS")
   metadata <- map@meta.data
+  calls <- data.frame(cell_id=rownames(metadata),metadata[,intersect(c("sample","group","library_id","pANN","DF","DF_adj","doublet_status"),names(metadata)),drop=FALSE],row.names=NULL)
+  utils::write.csv(calls,file.path(paths$qc,"doublet_cells_all.csv"),row.names=FALSE,na="")
+  summary <- do.call(rbind,lapply(unique(as.character(metadata$sample)),function(sample) {
+    selected <- metadata$sample==sample
+    data.frame(sample=sample,library_ids=paste(unique(metadata$library_id[selected]),collapse=";"),
+      input_cells=sum(selected),DF_doublets=sum(metadata$DF[selected]=="Doublet"),
+      DF_adj_doublets=sum(metadata$DF_adj[selected]=="Doublet"),
+      DF_fraction=mean(metadata$DF[selected]=="Doublet"),DF_adj_fraction=mean(metadata$DF_adj[selected]=="Doublet"),
+      DF_adjustment_disagreements=sum(metadata$DF[selected]!=metadata$DF_adj[selected]),
+      unevaluated_cells=sum(metadata$DF_adj[selected]=="NotEvaluated"))
+  }))
+  utils::write.csv(summary,file.path(paths$qc,"doublet_summary.csv"),row.names=FALSE)
   accepted <- metadata$DF_adj=="Singlet" | (metadata$DF_adj=="NotEvaluated" & metadata$sample %in% kept)
   if(!any(accepted)) stop("No cells remain after DF_adj filtering")
   original <- qc_counts(raw)

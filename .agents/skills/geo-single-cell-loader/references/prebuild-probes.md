@@ -53,7 +53,7 @@ A candidate map is a small, publicly sourced CSV under
   ],
   "candidate_maps": [
     {"source_type":"geo_supplementary","source_url":"https://example.org/cells.csv",
-     "local_path":"data/GSE123/.workflow/mapping_candidates/cells.csv",
+     "local_path":"results/GSE123/01_download/.workflow/mapping_candidates/cells.csv",
      "cell_column":"cell","sample_column":"sample"}
   ]
 }

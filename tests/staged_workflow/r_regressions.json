@@ -1,0 +1,83 @@
+[
+  {
+    "test": "direct_qc_precheck.R",
+    "status": "PASS"
+  },
+  {
+    "test": "direct_run_qc.R",
+    "status": "PASS"
+  },
+  {
+    "test": "synthetic_E2E",
+    "status": "PASS"
+  },
+  {
+    "test": "existing_raw_artifact_recovery",
+    "status": "PASS",
+    "sha256": "2a4cd0b3d2482aaea6008360f90e77f9ca82f12339c2cbdacc71389db8bae238"
+  },
+  {
+    "test": "test_10x_literal_na.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 5.859
+  },
+  {
+    "test": "test_final_object.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 4.969
+  },
+  {
+    "test": "test_global_min_cells.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 7.094
+  },
+  {
+    "test": "test_pooled_inputs.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 3.796
+  },
+  {
+    "test": "test_seurat.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 22.5
+  },
+  {
+    "test": "test_stream_text.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 6.016
+  },
+  {
+    "test": "test_utf8_manifest.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 2.531
+  },
+  {
+    "test": "test_qc_pca.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 9.75
+  },
+  {
+    "test": "test_qc.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 63.75
+  },
+  {
+    "test": "test_qc_real_df.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "duration_seconds": 12.281
+  },
+  {
+    "test": "QC_existing_artifact_recovery",
+    "status": "PASS"
+  }
+]

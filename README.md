@@ -1,4 +1,40 @@
-# GEO single-cell loader Skill
+# Single-cell workflow Skills
+
+项目使用现有 **R 4.5.0**，分为下载、三步 QC、正式分析三个独立阶段。固定 R 脚本负责运算，Skill 负责调用、解释和需要用户判断的决定。新任务采用以下布局；历史 `data/<GSE>/` 原地兼容，已有确认回执不改写，原始数据和有效 RDS 不覆盖。
+
+```text
+results/<GSE>/
+├── 01_download/               raw、seurat_raw.rds、metadata、下载统计/日志/PDF
+├── 02_QC/
+│   ├── 01_basic_QC/           seurat_QC-1.rds、细胞/基因过滤记录、前后图、配置/日志
+│   ├── 02_doublet_cellcycle/  seurat_QC-2.rds、DF/DF_adj、周期评分、图表/配置/日志
+│   └── 03_ambient_RNA/        seurat_QC-3.rds、decontX assay、污染评估/比较
+└── 03_analysis/
+    ├── seurat_pca.rds
+    ├── seurat_harmony.rds     仅在设计检查允许且实际运行 Harmony 时生成
+    ├── seurat_analysis.rds    用户选定已审阅分辨率后生成
+    ├── 01_pca_regression/
+    ├── 02_harmony/
+    ├── 03_clustering/
+    └── 99_workflow_audit/
+```
+
+已有数据可直接请求“对 GSE… 进行质控”；已有 QC 对象可请求“对 GSE… 做 PCA、Harmony 设计评估和聚类审阅”。技术人员独立启动示例（Git Bash）：
+
+```bash
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/qc/run_workflow.py GSE123 --precheck
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/qc/run_workflow.py GSE123 --step all
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/qc/run_workflow.py GSE123 --step qc3 --input D:/path/seurat_QC-2.rds
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/analysis/run_workflow.py GSE123 --input D:/path/seurat_QC-3.rds
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/analysis/run_workflow.py GSE123 --step finalize --resolution-decision D:/path/decision.json
+/c/Python312/python.exe D:/CodexProjects/single-cell-skill/workflow_audit/run_audit.py GSE123
+```
+
+默认阈值保持不变；QC-1 新增保留细胞中表达数 >3 的基因过滤，并重算当前 counts 对应的 nCount/nFeature。QC-2 按实际 capture library 执行 DoubletFinder，只按 `DF_adj` 去双细胞，细胞周期只评分。QC-3 不按固定污染阈值删除细胞，也不覆盖 RNA counts。正式分析默认用 RNA 和 pMT 回归，DecontX assay、额外回归和校正字段需要明确配置。Harmony 先检查设计；无可靠批次或混杂时保留未整合结果，不把 group 当校正变量。分辨率扫描复用同一 UMAP，最终标签需用户明确选择。
+
+科学审计读取既有统计和警告，不无条件重跑分析；缺失证据明确列出，已有报告在证据变化后版本化保存。它与下载阶段私有仓库的十文件审计分开。包缺失只停止相关步骤；不安装包、不升级 R。
+
+实现细节和本次真实验证见 [三阶段升级记录](docs/staged-workflow-validation.md)。以下说明保留下载器的输入结构、确认和审计契约。
 
 在 Codex 中打开 `single-cell-skill` 项目根目录，然后直接输入：
 
@@ -13,7 +49,7 @@
 3. 告诉用户“group 尚未创建，请确认分组方式。”确认前不批量下载表达矩阵。
 4. 用户确认后，保存分组记录、生成并校验 manifest、自动下载源表达文件。
 5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
-6. 全部结果保存在 `data/<GSE>/`。Loader 以 `COMPLETE_RAW` 结束并询问是否继续 QC；未获用户确认不会自动质控。
+6. 新下载结果保存在 `results/<GSE>/01_download/`；历史 `data/<GSE>/` 原地兼容。Loader 以 `COMPLETE_RAW` 结束并询问是否继续 QC；未获用户确认不会自动质控。
 
 ## GEO MCP-first Stage A
 
@@ -45,17 +81,13 @@ manifest 中多个 sample 可以共享一个 pooled expression matrix，但必�
 
 Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后形成 genes × cells 的 raw integer sparse counts。所有 input 完成 feature reconciliation 后，只调用一次 `CreateSeuratObject()`。
 
-**Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，最终均写为 `data/<GSE>/seurat_raw.rds`：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
+**Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，新任务最终写为 `results/<GSE>/01_download/seurat_raw.rds`（历史目录不迁移）：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
 
 ## 独立单细胞 QC
 
-已有 `seurat_raw.rds` 时，可请求“对 GSE… 进行质控”。`single-cell-qc` 先执行 precheck；若低细胞样本、默认阈值冲突或物种/基因命名不确定，状态为 `NEEDS_USER_DECISION`，必须由用户明确选择后把原话和决定持久化为 `data/<GSE>/qc/qc_decision.json`。低细胞样本可由用户选择删除、保留但不运行 DoubletFinder，或修改最低细胞阈值；保留未检测样本时最终状态为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`，不会把它们误标成 Singlet。
+已有原始 RDS 直接调用 `qc/run_workflow.py`，不重复下载。先 precheck；低细胞样本、物种/阈值冲突和预计删除比例 >15% 等情况需用户决定。持久化真实原话和实际受影响 sample ID，之后复用已有决定。默认包括 QC-1/2/3；`--step` 支持独立恢复，`--input` 可复用已有步骤输入。低细胞样本经用户同意保留但跳过 DF 时标记 NotEvaluated，不冒称 Singlet。
 
-固定 R 流程仅进行基础细胞 QC、逐 sample 的两次 DoubletFinder（含自动 pK 与同型调整）、合并后的 doublet UMAP，以及 cell-cycle scoring；不做整合、注释或细胞周期回归。输出为 `data/<GSE>/qc/seurat_qc.rds`、一份 `qc_report.csv` 和六组 PDF+PNG，原始 `seurat_raw.rds` 不覆盖。所有正式图通过 `qc/plot_utils.R` 的 `save_sc_plot()` 保存；UMAP 使用固定纵横比、共享坐标范围和动态点大小。最终 QC 对象保留 raw RNA counts、原 metadata 和 QC 指标，不继承临时 PCA、UMAP、聚类或 normalized data。
-
-Loader 完成并验证 `seurat_raw.rds` 后会报告 GSE、样本、cells、genes、group 和文件位置，然后询问是否继续 QC；只有用户同意才转入独立的 `single-cell-qc` Skill。日后也可直接说“对 GSE156625 进行质控”：QC 复用现有原始对象，不重新执行 GEO 发现、下载或构建。找不到原始 RDS 时会停止并提示先完成 Loader。普通 QC 完成状态为 `COMPLETE_QC`；经用户确认保留未检测 DoubletFinder 的低细胞样本时为 `QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS`。
-
-QC 使用 `qc/run_workflow.py`，依赖检查、precheck、运行与恢复均通过项目 R45 Runtime。`qc/references/01_Seurat_1.R` 仅供追溯分析思想，不作为生产脚本运行。
+三步结果、阈值、DecontX counts 保留方式见文首及 [QC Skill](.agents/skills/single-cell-qc/SKILL.md)。下载完成仍需用户同意进入 QC；后续分析另由 [正式分析 Skill](.agents/skills/single-cell-analysis/SKILL.md) 调用。所有图使用 `qc/plot_utils.R` 的统一尺寸、主题、PDF 与 300 DPI PNG，复用相同 embedding 的坐标。
 
 ## R Runtime
 
@@ -63,7 +95,7 @@ QC 使用 `qc/run_workflow.py`，依赖检查、precheck、运行与恢复均通
 
 启动器固定 R 和 library，只在子进程设置 profile、`CLI_NO_THREAD=1` 和 `LC_ALL=C`。分析期间使用真实架构，仅退出 cleanup 阶段选择已验证的 cli workaround。正常 R 错误保留原始非零退出码；139 / Windows access violation 记录为 `R_NATIVE_CRASH`，即使输出 PASS 也不会被视为成功。没有 R 环境 fallback，不安装、升级或删除包，不修改系统设置。
 
-`--healthcheck` 输出 `.runtime/r45/health.json`；`--route qc|text|10x_h5|h5ad_native` 只要求对应的额外包。每个独立 workflow 至少检查一次。每次 R 调用的环境、阶段、脚本、stdout/stderr、退出码和时长写入忽略的 `.runtime/r45/`。临时验证使用 `--expr "sessionInfo()"`。旧 `qc/r450_rscript.sh` 保留为兼容入口。
+`--healthcheck` 输出 `.runtime/r45/health.json`；`--route qc1|qc|ambient|analysis_pca|harmony|clustering|text|10x_h5|h5ad_native` 只要求对应的额外包。每个独立 workflow 至少检查一次。每次 R 调用的环境、阶段、脚本、stdout/stderr、退出码和时长写入忽略的 `.runtime/r45/`。临时验证使用 `--expr "sessionInfo()"`。旧 `qc/r450_rscript.sh` 保留为兼容入口。
 
 下载完成、原始对象完成、QC 完成分别记录为 `DOWNLOAD_COMPLETE`、`COMPLETE_RAW`、`COMPLETE_QC`。中断恢复先校验已有 bytes/provenance 或最终 RDS；不覆盖 final、不重复构建已完成大矩阵。`.workflow/state.json` 在审计清理前记录 checkpoint，原始 manifest/receipt 和状态随十文件审计保存；清理后可通过 `audit_run.py resume GSE` 恢复。已有 QC final 使用独立验证恢复。详见 [Runtime 说明](runtime/r45/README.md) 与 [历史退出问题记录](docs/r450-cli-exit-139.md)。
 
@@ -77,33 +109,9 @@ QC 使用 `qc/run_workflow.py`，依赖检查、precheck、运行与恢复均通
 
 ## 一个 GSE，一个目录
 
-```text
-single-cell-skill/
-├── .agents/skills/geo-single-cell-loader/
-├── data/
-│   ├── .gitkeep
-│   └── GSE231993/
-│       ├── raw/
-│       ├── seurat_raw.rds
-│       ├── sample_info.txt
-│       ├── group_confirmation.json
-│       └── cell_map/             # 仅在重建对象需要时
-├── tests/
-├── README.md
-└── .gitignore
-```
+新目录树见文首。第一阶段保留源文件 `raw/`、`seurat_raw.rds`、`sample_info.txt`、`group_confirmation.json`、必要的 `cell_map/`，以及 `metadata.csv`、`download_summary.csv`、`download_report.pdf`、`download.log`。这里 raw 表示未经本流程修改的下载源表达文件，不一定是 FASTQ。
 
-运行完成后关注这些本地文件：
-
-| 内容 | 用途 |
-|---|---|
-| `raw/` | 从 GEO 下载且未经本 Skill 修改的源 expression 文件。这里的 raw 不一定表示测序 FASTQ raw reads；GEO 的 processed counts 也放在这里。10x 三联/H5 按样本存放，pooled H5AD 可以共用一个源文件。 |
-| `seurat_raw.rds` | 仅从明确的 counts 构建并验证的 Seurat 对象。已有文件不会静默覆盖。 |
-| `sample_info.txt` | UTF-8 纯文本说明，记录研究、样本、用户分组、运行状态及最终统计。 |
-| `group_confirmation.json` | 用户确认的精确分组映射。 |
-| `cell_map/` | 仅在 pooled 矩阵或独立映射文件重建对象时保留。 |
-
-`.workflow/` 只在运行期间暂存发现、确认回执、manifest、下载来源和审计文件。每次真实 GSE 运行结束会将 10 个审计文件推送到独立私有仓库 [single-cell-skill-audit](https://github.com/wdc19981006-cell/single-cell-skill-audit) 的 `<GSE>/<run-id>/`；上传成功后清理本地临时文件。失败或中断也上传；上传失败则保留临时文件以便重试。表达矩阵、RDS、H5/H5AD 不进入审计仓库。格式转换使用系统 temporary directory 并清理。Git 忽略 `data/*`，只保留 `data/.gitkeep`；运行数据和 TXT 默认只保存在本地。用户明确要求分享时，可将数据包上传到本仓库的 Releases，数据不进入 Git 历史。
+`.workflow/` 暂存发现、回执、manifest、下载来源和运行证据。真实下载/构建结束后将十个指定文本审计文件推送到 [single-cell-skill-audit](https://github.com/wdc19981006-cell/single-cell-skill-audit) 的 `<GSE>/<run-id>/`；成功后只清理临时工作目录，保留阶段结果。失败或中断同样上传；上传失败则保留临时文件。矩阵和 RDS 不进入审计仓库。科学审计 PDF/CSV 保留在本地 `03_analysis/99_workflow_audit/`。Git 忽略 results 和 data 下运行数据；历史数据包保持原布局。
 
 ## 数据集运行示例
 
@@ -132,7 +140,7 @@ STATUS: WAITING_FOR_GROUP_CONFIRMATION
 
 文件包括研究标题/说明、测序类型、组织、候选 processed 格式、总样本数，以及逐样本属性。尚未由证据确定的内容明确标注；整套资料没有的 optional 字段不会显示大量 NA。公开事实经 Skill 审阅后同步更新 TXT。
 
-确认分组后状态为 `GROUP_CONFIRMED`，逐样本增加 group，并增加 GROUP SUMMARY。创建、序列化并验证原始对象成功后状态为 `COMPLETE_RAW`，附加 PROCESSING SUMMARY：总样本/细胞/基因数、sample/group 细胞数、输出位置、实际读取格式和 reader、counts source、Seurat 版本、创建时间和 warnings。QC 的状态独立记录在 `qc/qc_report.csv`，不会把 Loader 状态改成 QC 完成。
+确认分组后状态为 `GROUP_CONFIRMED`，逐样本增加 group，并增加 GROUP SUMMARY。创建、序列化并验证原始对象成功后状态为 `COMPLETE_RAW`，附加 PROCESSING SUMMARY：总样本/细胞/基因数、sample/group 细胞数、输出位置、实际读取格式和 reader、counts source、Seurat 版本、创建时间和 warnings。QC 的状态独立记录在 `02_QC/` 及步骤报告中，不会把 Loader 状态改成 QC 完成。
 
 构建失败时尽可能写入 `BUILD_FAILED` 和 `Failure:` 原因，保留已经下载的数据。确认前仍保持等待状态。部分开发检索保存在 `.workflow/development/`，不能覆盖完整报告，也不能用于后续分组确认。
 
@@ -158,7 +166,7 @@ manifest 是 metadata 和文件映射的唯一真源。最终 metadata 必须包
 ROOT=D:/CodexProjects/single-cell-skill
 PY=/c/Python312/python.exe
 SCRIPTS="$ROOT/.agents/skills/geo-single-cell-loader/scripts"
-WORKFLOW="$ROOT/data/GSE231993/.workflow"
+WORKFLOW="$ROOT/results/GSE231993/01_download/.workflow"
 "$PY" "$SCRIPTS/audit_run.py" start GSE231993
 "$PY" "$ROOT/runtime/r45/run_r45.py" --healthcheck
 # 仅在真实 geo MCP 调用失败时使用，并记录实际原因：

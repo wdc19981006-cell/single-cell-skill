@@ -1,0 +1,6 @@
+"metric","value"
+"cells","22420"
+"representation","pca"
+"pc_used","21"
+"candidate_resolutions","0.1;0.2;0.3;0.4;0.5;0.6;0.8;1;1.2"
+"status","NEEDS_RESOLUTION_SELECTION"

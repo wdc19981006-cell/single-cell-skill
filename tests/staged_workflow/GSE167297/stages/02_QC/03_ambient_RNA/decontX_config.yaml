@@ -1,0 +1,10 @@
+method: celda::decontX
+input_assay: RNA
+input_layer: counts
+output_assay: decontX
+output_layer: counts
+batch: library_id
+seed: 42
+cell_removal: none
+default_analysis_assay: RNA
+package_version: 1.26.0

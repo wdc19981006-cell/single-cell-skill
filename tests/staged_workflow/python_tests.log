@@ -1,0 +1,32 @@
+...........................................................................................................Audit: synthetic-audit-url
+C:\Users\22241\AppData\Local\Temp\tmpb1cl0clo\data\GSE999999999\.workflow\download.json
+C:\Users\22241\AppData\Local\Temp\tmpb1cl0clo\data\GSE999999999\.workflow\download.json
+Audit: audit
+Audit: audit
+HANDOFF_WARNING: [Errno 2] No such file or directory: 'C:\\Users\\22241\\AppData\\Local\\Temp\\tmpmmi9gwk3\\data\\GSE999999999\\sample_info.txt'; validated raw object remains COMPLETE_RAW
+Audit: https://example.org/audit
+{"gse": "GSE999999999", "title": null, "total_samples": 2, "inspected_samples": 1, "files": [], "note": "group 尚未创建，请确认分组方式。Blank biological fields require evidence review, never infer group."}
+C:\Users\22241\AppData\Local\Temp\tmprhxryph3\data\GSE999999999\.workflow\download.json
+C:\Users\22241\AppData\Local\Temp\tmprhxryph3\data\GSE999999999\.workflow\download.json
+Audit: audit
+Audit: audit
+{"gse": "GSE999999999", "title": ["Synthetic study"], "total_samples": 2, "inspected_samples": 2, "files": [{"scope": "GSM2", "url": "https://example.org/GSM2_matrix.mtx.gz", "format": "10x_mtx_candidate"}, {"scope": "GSM1", "url": "https://example.org/GSM1_matrix.mtx.gz", "format": "10x_mtx_candidate"}], "note": "group 尚未创建，请确认分组方式。Blank biological fields require evidence review, never infer group."}
+Audit: https://example.org/audit
+C:\Users\22241\AppData\Local\Temp\tmp7_gktn5l\data\GSE999999999\.workflow\download.json
+C:\Users\22241\AppData\Local\Temp\tmpl8ykmj98\data\GSE999999999\.workflow\download.json
+C:\Users\22241\AppData\Local\Temp\tmpl8ykmj98\data\GSE999999999\.workflow\download.json
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+Pre-build text, 10x structure, and pooled mapping checks passed
+{"genes": 2, "cells": 2, "nonzero": 2, "reader": "NumPy streaming comma-delimited counts"}
+..{"genes": 1, "cells": 1, "nonzero": 1, "reader": "NumPy streaming tab-delimited counts"}
+...........
+----------------------------------------------------------------------
+Ran 120 tests in 5.254s
+
+OK

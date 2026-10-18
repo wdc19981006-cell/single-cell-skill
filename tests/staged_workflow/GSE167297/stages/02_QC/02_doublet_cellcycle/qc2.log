@@ -1,0 +1,5617 @@
+2026-10-18T19:32:53+0800 START input D:/CodexProjects/single-cell-skill/.runtime/staged-full-20261018/results/GSE167297/02_QC/01_basic_QC/seurat_QC-1.rds
+2026-10-18T19:41:10+0800 COMPLETE COMPLETE_QC cells 22420 genes 20555
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 145 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 565 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 638 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 427 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 722 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 408 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 1293 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 1014 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 156 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 873 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.005..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 697 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 294 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 162 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.01..."
+[1] "pK = 0.02..."
+[1] "pK = 0.03..."
+[1] "pK = 0.04..."
+[1] "pK = 0.05..."
+[1] "pK = 0.06..."
+[1] "pK = 0.07..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 355 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+QC run: COMPLETE_QC
+Loading required namespace: SeuratObject
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |===================================                                   |  50%
+  |
+  |======================================================================| 100%
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at -2.3375
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.30103
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  4.6378e-15
+4: package 'future' was built under R version 4.5.3
+5: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at -2.3692
+6: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.30103
+7: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  7.6863e-15
+8: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at -2.3865
+9: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.30103
+10: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  1.1177e-14
+Error: object 'gse' not found
+R_SCRIPT_ERROR: stage=qc2 script=D:\CodexProjects\single-cell-skill\qc\run_qc.R exit=1
+R45_PACKAGE	Seurat	5.4.0
+R45_PACKAGE	SeuratObject	5.4.0
+R45_PACKAGE	Matrix	1.7.3
+R45_PACKAGE	jsonlite	2.0.0
+R45_PACKAGE	yaml	2.3.12
+R45_PACKAGE	ggplot2	4.0.2
+R45_PACKAGE	patchwork	1.3.2
+R45_PACKAGE	DoubletFinder	2.0.6
+R45_VERSION	R version 4.5.0 (2025-04-11 ucrt)
+R45_SHORT_VERSION	4.5.0
+R45_HOME	D:/R/R-4.5.0
+R45_LIBRARIES	D:/R/R-4.5.0/library
+R45_ROUTE	qc
+R45_HEALTH_PASS
+Read-only QC artifact validation: qc2 COMPLETE_QC
+Loading required namespace: SeuratObject

@@ -1,0 +1,8 @@
+"metric","value","note"
+"max_pc","50","Selection uses standard-deviation share; variance explained is diagnostic only"
+"pc_used","21","Selection uses standard-deviation share; variance explained is diagnostic only"
+"variance_pick","41","Selection uses standard-deviation share; variance explained is diagnostic only"
+"drop_pick","21","Selection uses standard-deviation share; variance explained is diagnostic only"
+"selection_method","reference_sd_min_cumulative_last_drop","Selection uses standard-deviation share; variance explained is diagnostic only"
+"selected_pc_cumulative_sd_share","62.7826534861819","Selection uses standard-deviation share; variance explained is diagnostic only"
+"selected_pc_cumulative_variance","82.8945989873222","Selection uses standard-deviation share; variance explained is diagnostic only"

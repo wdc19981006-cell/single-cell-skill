@@ -1,0 +1,12 @@
+configuration:
+  enabled: yes
+  batch_field: ~
+  technical_fields: []
+  allow_sample: no
+  confounding_acknowledgement: ~
+selected_field: ~
+decision: NO_CONFIRMED_TECHNICAL_BATCH
+group_confounded: .na
+expression_assay: RNA
+pc_used: 21
+seed: 42

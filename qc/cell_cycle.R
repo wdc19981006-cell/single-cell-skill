@@ -5,7 +5,13 @@ qc_score_cycle <- function(object,paths,report) {
   qc_report_add(report,"CELL_CYCLE",metric="S_features_matched",value=length(features$s))
   qc_report_add(report,"CELL_CYCLE",metric="G2M_features_matched",value=length(features$g2m))
   normalized <- Seurat::NormalizeData(object,verbose=FALSE)
-  scored <- Seurat::CellCycleScoring(normalized,s.features=features$s,g2m.features=features$g2m,set.ident=FALSE)
+  # Seurat defaults to the smaller phase gene-set size. For a small feature
+  # universe that can exceed an AddModuleScore expression bin (24 bins).
+  default_ctrl <- min(length(features$s),length(features$g2m))
+  ctrl <- min(default_ctrl,max(1L,floor(nrow(normalized)/24L)-1L))
+  qc_report_add(report,"CELL_CYCLE",metric="control_genes_per_bin",value=ctrl,
+    note=if(ctrl<default_ctrl) "Bounded by feature universe to prevent sampling more controls than an expression bin contains" else "Reference Seurat default retained")
+  scored <- Seurat::CellCycleScoring(normalized,s.features=features$s,g2m.features=features$g2m,set.ident=FALSE,ctrl=ctrl)
   scored$CC.Difference <- scored$S.Score-scored$G2M.Score
   # This object is for spatial diagnostics only; the final object below is
   # reconstructed from the untouched raw counts and scored metadata.
@@ -13,6 +19,12 @@ qc_score_cycle <- function(object,paths,report) {
   qc_plot_cycle(plot_object,paths,report)
   rm(plot_object); gc()
   for (phase in c("G1","S","G2M")) qc_report_add(report,"CELL_CYCLE",metric=paste0(phase,"_cells"),value=sum(scored$Phase==phase))
+  phase_summary <- as.data.frame(table(sample=as.character(scored$sample),Phase=as.character(scored$Phase)),stringsAsFactors=FALSE)
+  names(phase_summary)[3] <- "cells"
+  phase_summary$fraction <- phase_summary$cells/as.numeric(table(as.character(scored$sample))[phase_summary$sample])
+  utils::write.csv(phase_summary,file.path(paths$qc,"cell_cycle_summary.csv"),row.names=FALSE)
+  utils::write.csv(data.frame(cell_id=colnames(scored),scored@meta.data[,c("sample","S.Score","G2M.Score","Phase","CC.Difference")],row.names=NULL),
+    file.path(paths$qc,"cell_cycle_cells.csv"),row.names=FALSE)
   # Rebuild from raw counts to remove the temporary normalized data layer and any analysis state.
   counts <- qc_counts(object)
   metadata <- scored@meta.data[colnames(counts),,drop=FALSE]

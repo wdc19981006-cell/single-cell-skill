@@ -1,0 +1,9 @@
+{
+  "nfeatures": 200,
+  "max_pcs": 12,
+  "harmony": {
+    "technical_fields": "batch"
+  },
+  "markers": ["g1", "g50", "g100", "absent_marker"],
+  "resolutions": [0.2, 0.6, 1]
+}

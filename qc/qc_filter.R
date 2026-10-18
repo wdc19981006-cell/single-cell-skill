@@ -11,6 +11,14 @@ qc_filter_cells <- function(object,cfg,report) {
   if(!any(keep)) stop("Cell QC removed every cell; review thresholds")
   remaining <- table(as.character(meta$sample[keep]))
   if(!setequal(names(remaining),unique(as.character(meta$sample)))) stop("Cell QC emptied one or more samples; requires user decision")
-  # Subset columns only; do not apply a second min.cells gene filter.
-  object[,rownames(meta)[keep]]
+  filtered <- object[,rownames(meta)[keep]]
+  counts <- qc_counts(filtered)
+  expressed <- Matrix::rowSums(counts>0)
+  genes <- expressed>3L
+  if(!any(genes)) stop("Gene QC removed every gene; review counts and retained-cell coverage")
+  qc_report_add(report,"GENE_QC",metric="input_genes",value=nrow(object))
+  qc_report_add(report,"GENE_QC",metric="retained_genes",value=sum(genes))
+  qc_report_add(report,"GENE_QC",metric="removed_genes",value=sum(!genes))
+  qc_report_add(report,"GENE_QC",metric="rule",value="Matrix::rowSums(counts > 0) > 3")
+  qc_refresh_metrics(filtered[rownames(counts)[genes],],preserve=TRUE)
 }

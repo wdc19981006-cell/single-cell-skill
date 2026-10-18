@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from common import ROOT, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
+from common import ROOT, dataset_paths, dataset_relative, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
 from pooled_mapping_probe import check_pooled
 from tenx_structure_probe import probe_10x_trio
 from text_schema_probe import probe_text
@@ -17,7 +17,7 @@ def run(manifest, root):
         raise ValueError('Empty manifest')
     gse = rows[0]['database']
     workflow_path(root, manifest, gse)
-    workflow = local(root, f'data/{gse}/.workflow', f'data/{gse}')
+    workflow = dataset_paths(root, gse)['workflow']
     receipt = verify_confirmation(manifest)
     validate_manifest(rows, root, allow_pending_probes=True)
     text_results = []
@@ -86,7 +86,7 @@ def run(manifest, root):
         if len(shared) <= 1 or not all(missing(row.get('cell_map_path')) for row in shared):
             continue
         cell_map = check_pooled(shared, root, workflow)
-        md5 = digest(local(root, cell_map, f'data/{gse}/.workflow'))
+        md5 = digest(local(root, cell_map, dataset_relative(root, gse) + '/.workflow'))
         for row in shared:
             row['cell_map_path'] = cell_map
             row['cell_map_md5'] = md5

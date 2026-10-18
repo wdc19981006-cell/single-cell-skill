@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 from urllib.parse import urlparse
 
-from common import local
+from common import dataset_relative, local
 
 SUFFIX = re.compile(r'[-_](\d+)$')
 REQUIRED_SOURCES = {'geo_supplementary', 'publication_supplement', 'author_repository'}
@@ -16,7 +16,7 @@ REQUIRED_SOURCES = {'geo_supplementary', 'publication_supplement', 'author_repos
 
 def _barcodes(row, root):
     gse = row['database']
-    path = local(root, row['local_path'], f'data/{gse}/raw')
+    path = local(root, row['local_path'], dataset_relative(root, gse) + '/raw')
     kind = row['file_type']
     if kind == '10x_h5':
         import h5py
@@ -128,7 +128,7 @@ def check_pooled(rows, root, workflow):
                            check.get('url') == candidate['source_url'] for check in checks):
                     raise ValueError('Candidate map source is absent from reviewed source checks')
                 relative = candidate['local_path']
-                path = local(root, relative, f'data/{gse}/.workflow')
+                path = local(root, relative, dataset_relative(root, gse) + '/.workflow')
                 mapping = _candidate_rows(path)
                 cell_key = candidate.get('cell_column', 'cell')
                 sample_key = candidate.get('sample_column', 'sample')
@@ -151,7 +151,7 @@ def check_pooled(rows, root, workflow):
                     writer.writeheader()
                     writer.writerows({'cell': cell, 'sample': sample}
                                      for cell, sample in zip(mapped_cells, mapped_samples))
-                result.update(status='VERIFIED', cell_map_path=f'data/{gse}/.workflow/{canonical.name}',
+                result.update(status='VERIFIED', cell_map_path=dataset_relative(root, gse) + '/.workflow/' + canonical.name,
                               mapping_source=candidate['source_url'],
                               excluded_samples=sorted(mapped_set - selected_samples),
                               excluded_cells=sum(sample not in selected_samples for sample in mapped_samples))

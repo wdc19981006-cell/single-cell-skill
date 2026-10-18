@@ -309,7 +309,7 @@ def finalize(gse, root=ROOT, status="success", reason=""):
         git("push", "origin", "HEAD", cwd=checkout)
         # A successful push is the deletion boundary. Keep all files if upload fails.
         resolved = workflow.resolve()
-        expected = (root.resolve() / "data" / gse / ".workflow").resolve()
+        expected = paths["dataset"] / ".workflow"
         if resolved != expected or not resolved.is_relative_to(root.resolve()):
             raise ValueError("Refusing to remove workflow outside the repository")
         shutil.rmtree(resolved)

@@ -1,7 +1,9 @@
 args <- commandArgs(trailingOnly=TRUE)
-if (length(args) > 1L) stop("Usage: healthcheck.R [base|qc|text|10x_h5|h5ad_native]")
+if (length(args) > 1L) stop("Usage: healthcheck.R [route]")
 route <- if (length(args)) args[1] else "base"
-routes <- list(base=character(), qc="DoubletFinder", text="data.table",
+routes <- list(base=character(), qc1=character(), qc="DoubletFinder", text="data.table",
+               ambient=c("celda", "SingleCellExperiment", "SummarizedExperiment"),
+               analysis_pca=character(), harmony="harmony", clustering="clustree",
                `10x_h5`="hdf5r",
                h5ad_native=c("zellkonverter", "SingleCellExperiment", "SummarizedExperiment"))
 if (!route %in% names(routes)) stop("Unknown healthcheck route: ", route)

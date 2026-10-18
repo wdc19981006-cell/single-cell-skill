@@ -6,9 +6,14 @@ Start the audit before discovery and use `run_confirmed.py` for confirmed
 download/build/validation. Push success, failure and catchable interruption
 audits to `wdc19981006-cell/single-cell-skill-audit/<GSE>/<run-id>/`.
 The audit repository contains only the ten specified text/JSON/CSV files.
-After successful upload, keep locally only raw inputs, the final RDS when
-built, sample_info.txt, group_confirmation.json, and cell maps needed to
-reconstruct the object. Retain temporary workflow files if upload fails.
+After successful upload, remove only temporary download `.workflow` files.
+Retain raw inputs, the final RDS, sample_info.txt, group_confirmation.json,
+cell maps, and the stage-local metadata, summaries, reports and logs.
+Retain temporary workflow files if upload fails. New datasets use
+`results/<GSE>/01_download`; existing `data/<GSE>` remains readable in place.
+QC writes `results/<GSE>/02_QC/{01_basic_QC,02_doublet_cellcycle,03_ambient_RNA}`;
+formal analysis and its diagnostic audit write `results/<GSE>/03_analysis`.
+The local scientific audit is distinct from the ten-file download audit.
 
 During a real run, record issues and avoid broad restructuring. Subsequent
 fixes must target a data-structure type, include a regression test, preserve

@@ -3,7 +3,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from common import ROOT, dataset_paths, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
+from common import ROOT, dataset_paths, dataset_relative, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
 from sample_info import render
 
 def confirm(report, confirmation, output, root):
@@ -46,7 +46,7 @@ def confirm(report, confirmation, output, root):
     for row in rows:
         row['group'] = groups[row['sample']]
         if not missing(row.get('cell_map_path')):
-            area = 'data/' + row['database']
+            area = dataset_relative(root, row['database'])
             permitted = area + ('/cell_map' if row['cell_map_path'].startswith(area + '/cell_map/') else '/.workflow')
             cellmap = local(root,row['cell_map_path'],permitted)
             if cellmap not in cell_map_digests:

@@ -124,7 +124,7 @@ def main():
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--expr", "-e")
     mode.add_argument("--healthcheck", action="store_true")
-    parser.add_argument("--route", choices=("base", "qc", "text", "10x_h5", "h5ad_native"), default="base")
+    parser.add_argument("--route", choices=("base", "qc1", "qc", "ambient", "analysis_pca", "harmony", "clustering", "text", "10x_h5", "h5ad_native"), default="base")
     parser.add_argument("--stage", default="adhoc")
     parser.add_argument("--record", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("script", nargs="?")

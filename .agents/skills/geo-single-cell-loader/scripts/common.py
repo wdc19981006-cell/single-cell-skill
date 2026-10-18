@@ -249,7 +249,7 @@ def validate_manifest(rows, root, allow_pending_probes=False):
         seen.add(sample)
         if not re.fullmatch(r'GSE\d+', row['database']): raise ValueError('Invalid GSE')
         databases.add(row['database'])
-        area = 'data/' + row['database']
+        area = dataset_relative(root, row['database'])
         local(root, row['local_path'], area + '/raw')
         if row['file_type'] not in ('10x_mtx', '10x_h5', 'h5ad', 'text', 'rds'): raise ValueError('Unsupported file_type')
         if row['file_type'] == 'h5ad' and not row['local_path'].lower().endswith(('.h5ad', '.h5ad.gz')): raise ValueError('H5AD extension mismatch')
@@ -322,15 +322,33 @@ def verify_confirmation(path):
         raise ValueError('Confirmed selected samples differ from manifest')
     return value
 
-def dataset_paths(root, gse):
+def dataset_relative(root, gse):
+    """Use the canonical stage for new runs; resume legacy datasets in place.
+
+    A confirmed manifest is never rewritten to migrate paths. Two download
+    roots are ambiguous and require an explicit review, rather than selecting
+    one and possibly overwriting an existing artifact.
+    """
     if not re.fullmatch(r'GSE\d+', gse):
         raise ValueError('Expected GSE accession')
-    base = local(root, 'data/' + gse, 'data')
-    return dict(dataset=base, raw=local(root, f'data/{gse}/raw', f'data/{gse}'),
-                workflow=local(root, f'data/{gse}/.workflow', f'data/{gse}'),
-                final=local(root, f'data/{gse}/seurat_raw.rds', f'data/{gse}'),
-                info=local(root, f'data/{gse}/sample_info.txt', f'data/{gse}'))
+    root = Path(root).resolve()
+    legacy = f'data/{gse}'
+    canonical = f'results/{gse}/01_download'
+    old = local(root, legacy, 'data')
+    new = local(root, canonical, f'results/{gse}')
+    if old.exists() and new.exists():
+        raise ValueError('Both legacy and canonical download roots exist; review explicitly before continuing')
+    return legacy if old.exists() else canonical
+
+def dataset_paths(root, gse):
+    area = dataset_relative(root, gse)
+    parent = area.rsplit('/', 1)[0]
+    base = local(root, area, parent)
+    return dict(dataset=base, raw=local(root, area + '/raw', area),
+                workflow=local(root, area + '/.workflow', area),
+                final=local(root, area + '/seurat_raw.rds', area),
+                info=local(root, area + '/sample_info.txt', area))
 
 def workflow_path(root, path, gse):
     relative = Path(path).resolve().relative_to(root.resolve()).as_posix()
-    return local(root, relative, f'data/{gse}/.workflow')
+    return local(root, relative, dataset_relative(root, gse) + '/.workflow')

@@ -1,0 +1,11 @@
+
+COMMAND ["C:\\Python312\\python.exe", "D:\\CodexProjects\\single-cell-skill\\qc\\run_workflow.py", "GSE167297", "--root", "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018", "--step", "qc3"]
+COMPLETE_QC3
+
+COMMAND ["C:\\Python312\\python.exe", "D:\\CodexProjects\\single-cell-skill\\analysis\\run_workflow.py", "GSE167297", "--root", "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018"]
+NEEDS_RESOLUTION_SELECTION
+PASS real-cohort object invariants: 17
+Loading required namespace: SeuratObject
+
+COMMAND ["C:\\Python312\\python.exe", "D:\\CodexProjects\\single-cell-skill\\qc\\run_workflow.py", "GSE167297", "--root", "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018", "--step", "qc3"]
+COMPLETE_QC3

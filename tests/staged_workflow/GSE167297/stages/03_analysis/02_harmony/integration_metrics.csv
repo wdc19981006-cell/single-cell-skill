@@ -1,0 +1,4 @@
+"representation","metric","field","value","cells","note"
+"unintegrated","neighbor_same_label_fraction","sample",0.363015165031222,22420,"Descriptive kNN diagnostic; mixing alone does not establish integration quality"
+"unintegrated","neighbor_same_label_fraction","group",0.595205173951829,22420,"Descriptive kNN diagnostic; mixing alone does not establish integration quality"
+"unintegrated","neighbor_same_label_fraction","library_id",0.363015165031222,22420,"Descriptive kNN diagnostic; mixing alone does not establish integration quality"

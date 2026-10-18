@@ -1,0 +1,41 @@
+{
+  "identity": "f0221e1409cf8897d79704d738e699a3e3261cd305afea07b2eb9da93a6fd564",
+  "inputs": {
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\01_basic_QC\\gene_filter_summary.csv": "e015f5c0890616812db657dd6379e3efbfb0f2cc27607f013ad63f7526ae4e68",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\01_basic_QC\\qc_report.csv": "1dce635862e20d6627379f89efe6ff8cbe382f8c31e8c6e2515a7e6076a3310b",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\01_basic_QC\\sample_QC_summary.csv": "0d75d50a607e6693f48c8ad098fd99f878ac3afe94672d04556d4c89c686c5b6",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\02_doublet_cellcycle\\capture_provenance_review.csv": "99eb74720479080de4e20c37c499ba69b9dd26f2db18d4904d5a955a2bf34990",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\02_doublet_cellcycle\\cell_cycle_summary.csv": "2489d9fb4e2b80bc2f9eda5bd161b4dd7d51ab7b030ee1596b0f5e17330da3d1",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\02_doublet_cellcycle\\doublet_summary.csv": "4179fd474a871a722e968d1535518ec590094d190b51c86f75c03e09decf5829",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\02_doublet_cellcycle\\qc_report.csv": "85baebea3ba3b74e6e63400996c390b2f35518da8d5e9425e8a439213e0f053c",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\03_ambient_RNA\\contamination_by_sample.csv": "0a87d0dfb44ea144334ff27ecc7998327617fd5f0388e70b4cee0542b8d7c227",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\03_ambient_RNA\\decontX_summary.csv": "63244d388edcc21f746dfff20b3fa136da82b2cac333dd295ffcc375da6a4971",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\03_ambient_RNA\\qc_report.csv": "8f18952a536750292cfe6cfb95a0a127030660fc1703d428a440dad34c0dd6d7",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\01_pca_regression\\pca_selection.csv": "79d9d524774938cafc68592bf6e4f2956f10f3c7b66a101365455f91b165756f",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\01_pca_regression\\pca_summary.csv": "084f2c607d09e93d9260bd42b76de9b9f9faced797b2b645d65a7abbbf89de10",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\01_pca_regression\\pca_warnings.csv": "a135000ba5054ad6264bc83d4924ed318b1e5712a66752fbfc5119643a7653bb",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\01_pca_regression\\regression_diagnostics.csv": "410260e8533bacf3fa5629b201aab3e92a5d72615c138d32ef0da6a08aaf54e2",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\batch_design_check.csv": "420443bf2a4cc3a8cce63bcf5672e123e2500070dbbe4ccd8df8b193d94a3b60",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\harmony_summary.csv": "eb4183d43c30d8d621f8b2c41ff7286b653b87beeecfad493e3f024edf9d910a",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\harmony_warnings.csv": "251ef00898bfc1c59366f5f29a4da7e1756c23030ee156a5d23b29a9418a7308",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\integration_metrics.csv": "d24f5e15863ac6ef557f9b4c00573cd5691b4a472a386691795f7a0a85ceb8df",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\marker_comparison.csv": "7d3281a2cfb78361b08b3cd8744a07925e87a38ad13f1aea183b2e000ef1a1a0",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\02_harmony\\sample_design.csv": "bc1ca0172fd80ecd93173ccf82ba0523789ee1533c1fe29e13493cd306e6631a",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_composition.csv": "7c1b19e75837ca7f48e9d769d347e32b6447a1b49edd9db6765f32031d817e4f",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_metrics.csv": "6d0a7bbcde86f6675bd6b03e674e9a899e9259ae39efde59d2ed633f821c0937",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_regression_diagnostics.csv": "7e3e223b0649818b73ffa725ab65af601bce4e44f741e2f765d14d35c3da3a85",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_review_summary.csv": "13b233522d8ea9235ddaf45fcfa845ea572a15875ef81e3eaca505c3785c3575",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_review_warnings.csv": "607d461c19ad5035153282dd8b0e3fbf70a7a7f23dd751e61f0bdd5f8dadc3ef",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\cluster_summary.csv": "ed0f963c7bc1d31785fe588c7c55dc977288aa0c6852fda186c6e91a1b2d874a",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\03_clustering\\resolution_stability.csv": "024e226e0d8b6264a8be048f13b81664922eecffd1051339708f797aa76b1721",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\02_QC\\.workflow\\state.json": "253c9c548f0864b23010e9ddbc2cfd2257188572b357398909da6f0c103ec67e",
+    "D:\\CodexProjects\\single-cell-skill\\.runtime\\staged-full-20261018\\results\\GSE167297\\03_analysis\\.workflow\\state.json": "366273c03b949234a0fda50ccc95e5bcecef13fbf94b2c8af61b5b6674b6c9a8"
+  },
+  "outputs": {
+    "workflow_audit.csv": "cf0f8dd9800769544b27b00fc961430a8dca731ae8d13e083b65c3b9fe5303b5",
+    "workflow_warnings.csv": "548a9bdd038ddf9737df0a7bff2b47293d44557bb0bc8c88baf20004c0e085e8",
+    "workflow_audit.pdf": "f3be944b34db1426b6e2a6a39c263f96371e9151adaca564d58de416fc1458b5",
+    "audit.log": "3e6b80557b14c8455aa8ab7a97c4401eab27f7c5b7f872a335995bf5f449c54f"
+  },
+  "created_at": "2026-10-18T14:34:05.481883+00:00"
+}

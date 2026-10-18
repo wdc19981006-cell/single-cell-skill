@@ -1,6 +1,7 @@
 sc_plot_dimensions <- function(type) {
-  sizes <- list(umap_single=c(6,5), umap_2panel=c(11,5), umap_3panel=c(16,5),
-                violin=c(10,6), qc_violin=c(20,8), large_sample_violin=c(20,8), feature_3panel=c(15,5))
+  sizes <- list(umap_single=c(5.5,5.5),umap_2panel=c(11,5.5),umap_3panel=c(16,5.5),
+                violin=c(10,6),qc_violin=c(12,8),large_sample_violin=c(20,8),feature_3panel=c(16,5.5),
+                diagnostics=c(8,6),clustering_grid=c(16,16))
   size <- sizes[[type]]
   if (is.null(size)) stop("Unknown single-cell plot type: ",type)
   setNames(size,c("width","height"))
@@ -16,7 +17,9 @@ theme_sc <- function() {
     plot.title=ggplot2::element_text(size=13),
     axis.title=ggplot2::element_text(size=10),
     legend.title=ggplot2::element_text(size=10),
-    legend.text=ggplot2::element_text(size=9))
+    legend.text=ggplot2::element_text(size=9),
+    text=ggplot2::element_text(family="sans"),
+    plot.margin=ggplot2::margin(8,8,8,8))
 }
 
 theme_sc_umap <- function() {
@@ -52,7 +55,7 @@ sc_umap_panel <- function(frame,field,limits,n_samples,sample_colors=sc_sample_c
   points <- frame
   if (field!="sample") points <- points[order(points[[field]]=="Doublet"),,drop=FALSE]
   panel <- ggplot2::ggplot(points,ggplot2::aes(x=x,y=y,color=.data[[field]])) +
-    ggplot2::geom_point(size=0.2) +
+    ggplot2::geom_point(size=get_umap_point_size(nrow(frame))) +
     ggplot2::labs(title=field,color=field,x="UMAP_1",y="UMAP_2") +
     ggplot2::coord_fixed(xlim=limits$x,ylim=limits$y,expand=FALSE) + theme_sc_umap() +
     ggplot2::theme(panel.border=ggplot2::element_blank(),
@@ -68,7 +71,7 @@ save_sc_plot <- function(plot,name,type,output_dir,n_cells=NULL,n_samples=NULL,r
   if (!dir.exists(output_dir)) stop("Plot output directory is missing")
   size <- sc_plot_dimensions(type)
   if(type %in% c("qc_violin","large_sample_violin") && !is.null(n_samples))
-    size[["width"]] <- max(20,0.6*n_samples)
+    size[["width"]] <- max(12,0.6*n_samples)
   if(type %in% c("umap_2panel","umap_3panel") && !is.null(n_samples) && n_samples>10L)
     size[["height"]] <- size[["height"]]+1+0.22*ceiling(n_samples/min(10L,ceiling(n_samples/4)))
   if(type=="umap_2panel" && !is.null(n_samples) && n_samples>25L)
@@ -88,7 +91,7 @@ sc_metrics_plot <- function(object,sample_colors) {
   metrics <- c("pMT","pRP","pHB","nFeature_RNA","nCount_RNA")
   object$sample <- factor(as.character(object$sample),levels=names(sample_colors))
   Seurat::VlnPlot(object,group.by="sample",features=metrics,pt.size=0,ncol=3,
-                  cols=sample_colors) & Seurat::NoLegend() &
+                  cols=sample_colors) & theme_sc() & Seurat::NoLegend() &
     ggplot2::theme(plot.title=ggplot2::element_text(hjust=0.5,size=16,face="bold"),
       axis.text.x=ggplot2::element_text(angle=50,size=8,vjust=1,hjust=1))
 }

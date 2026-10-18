@@ -6,7 +6,8 @@ and `LC_ALL=C`. It records stdout, stderr, exit code and environment in ignored
 `.runtime/r45/runs/` files. Native crashes remain failures.
 
 Use `/c/Python312/python.exe D:/CodexProjects/single-cell-skill/runtime/r45/run_r45.py --healthcheck` before a raw
-build, or add `--route qc`, `text`, `10x_h5`, or `h5ad_native` to check only the
+build, or add `--route qc1`, `qc`, `ambient`, `analysis_pca`, `harmony`,
+`clustering`, `text`, `10x_h5`, or `h5ad_native` to check only the
 extra dependencies for that route. `--expr "sessionInfo()"` is available for
 one-off diagnostics. Python workflow code imports `runtime.py::run_r45`.
 
@@ -20,8 +21,9 @@ changed. `--vanilla` and `--no-init-file` are rejected.
 
 `health.json` is written from actual R output after the process exits. Core
 packages are required for every R workflow; optional dependencies are checked
-only for the requested route. Raw workflows and `qc/run_workflow.py` each run
-one health check, rather than trusting a stale PASS from another process.
+only for the requested route. Raw workflows and each independent QC/analysis
+step check their dependencies rather than trusting a stale PASS. Optional
+DecontX, Harmony and clustree checks do not block completed predecessor steps.
 
 Each run has a unique JSON record and stdout/stderr files. The initial record
 is written before R starts, then updated with its original exit code and

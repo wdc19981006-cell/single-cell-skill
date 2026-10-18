@@ -4,7 +4,7 @@ from __future__ import annotations
 import gzip
 from collections import Counter
 
-from common import local
+from common import dataset_relative, local
 
 
 def _open_text(path):
@@ -47,7 +47,7 @@ def _blank(value):
 
 
 def probe_10x_trio(row, root):
-    directory = local(root, row['local_path'], f"data/{row['database']}/raw")
+    directory = local(root, row['local_path'], dataset_relative(root, row['database']) + '/raw')
     if not directory.is_dir():
         raise ValueError('10x trio local_path must be a directory')
     matrix_path = _one(directory, ('matrix.mtx',), 'matrix')

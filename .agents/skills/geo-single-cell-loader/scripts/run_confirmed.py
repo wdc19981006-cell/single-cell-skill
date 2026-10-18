@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from audit_run import finalize, restore_provenance, restore_workflow, run_id
-from common import ROOT, dataset_paths, read_csv
+from common import ROOT, dataset_paths, local, read_csv
 from stage_a_policy import UnsupportedModality, assess_single_cell_modality
 
 SCRIPTS = Path(__file__).resolve().parent
@@ -51,8 +51,8 @@ def raw_handoff(gse, paths):
         f"Cells: {value('Total cells:')}",
         f"Genes: {value('Total genes:')}",
         "Groups (cells): " + "; ".join(f"{group}={cells}" for group, cells in groups.items()),
-        f"Raw expression: data/{gse}/raw/",
-        f"Raw Seurat: data/{gse}/seurat_raw.rds",
+        f"Raw expression: {paths['raw'].as_posix()}/",
+        f"Raw Seurat: {paths['final'].as_posix()}",
         "原始 Seurat 数据已经构建并验证完成。是否继续进行 QC（细胞质量过滤、DoubletFinder、细胞周期评分）？",
     ))
 
@@ -159,7 +159,9 @@ def run(gse, root=ROOT):
     if not (workflow / "audit_run.json").exists():
         raise ValueError("Start this real GSE run with audit_run.py start before Stage A; existing workflow files require review")
     run_id(workflow)
-    manifest = f"data/{gse}/.workflow/sample_manifest.csv"
+    manifest = (workflow / 'sample_manifest.csv').relative_to(root).as_posix()
+    execution_log = workflow / "execution.log"
+    execution_offset = execution_log.stat().st_size if execution_log.is_file() else 0
     status, reason = "success", ""
     handoff = None
     independent_validation_seconds = None
@@ -201,7 +203,7 @@ def run(gse, root=ROOT):
                 checkpoint(workflow, raw_build="COMPLETE")
             stage = "validation"
             independent_validation_seconds = execute_r("validation", SCRIPTS / "validate_seurat.R",
-                                                       [str(root), manifest, f"data/{gse}/seurat_raw.rds", "--record-completion"], log, root)
+                                                       [str(root), manifest, paths['final'].relative_to(root).as_posix(), "--record-completion"], log, root)
             checkpoint(workflow, raw_validation="COMPLETE", raw_build="COMPLETE_RAW", group="CONFIRMED", error=None)
     except KeyboardInterrupt:
         status, reason = "interrupted", "User or process interruption"
@@ -245,6 +247,23 @@ def run(gse, root=ROOT):
             handoff = f"HANDOFF_WARNING: {error}; validated raw object remains COMPLETE_RAW"
             with (workflow / "execution.log").open("a", encoding="utf-8") as log:
                 log.write(handoff + "\n")
+    # Keep the user's full stage log beside the validated object. The private
+    # audit still contains exactly its existing ten files.
+    if execution_log.is_file():
+        try:
+            dataset_area = paths["dataset"].relative_to(root).as_posix()
+            stage_log_path = local(root, dataset_area + "/download.log", dataset_area)
+            with stage_log_path.open("a", encoding="utf-8") as stage_log, execution_log.open("rb") as source_log:
+                source_log.seek(execution_offset)
+                stage_log.write("\n" + source_log.read().decode("utf-8"))
+        except Exception as error:
+            # Reporting failures must still publish the failure audit and keep
+            # all raw/RDS artifacts; never lose the audit at this late boundary.
+            status = "failure" if status == "success" else status
+            reason = (reason + "; " if reason else "") + f"Could not preserve download.log: {error}"
+            checkpoint(workflow, download_report="FAILED", error=error_record(error, "download_report"))
+            with execution_log.open("a", encoding="utf-8") as source_log:
+                source_log.write(reason + "\n")
     try:
         url = finalize(gse, root, status, reason)
     except Exception as error:

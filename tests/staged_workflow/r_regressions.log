@@ -1,0 +1,4030 @@
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-45643d03\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-45643d03\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-45643d03/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-45643d03/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpSqevhI\h5ad-export-28e441de7889"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+Error: Usage: test_stream_text.R REPO_ROOT PYTHON_EXECUTABLE
+R_SCRIPT_ERROR: stage=test_stream_text.R script=D:\CodexProjects\single-cell-skill\tests\test_stream_text.R exit=1
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-dd36b3ae\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-dd36b3ae\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-dd36b3ae/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-dd36b3ae/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpG2QxJ8\h5ad-export-785478d70"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256915 227.4    7348914 392.5  7348914 392.5
+Vcells 8076709  61.7   14786712 112.9 14786533 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-8aaec61c\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-8aaec61c\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-8aaec61c/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-8aaec61c/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpoHBKc3\h5ad-export-949852c5c4c"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256942 227.4    7348914 392.5  7348914 392.5
+Vcells 8076740  61.7   14786712 112.9 14786711 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-1567a1eb\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-1567a1eb\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-1567a1eb/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-1567a1eb/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpmcHwfZ\h5ad-export-650c3a7e6b0a"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256934 227.4    7348951 392.5  7348951 392.5
+Vcells 8076741  61.7   14786712 112.9 14786564 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-6e98864f\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-6e98864f\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-6e98864f/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-6e98864f/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\Rtmp8suHgU\h5ad-export-3b4027d233d3"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256952 227.4    7348867 392.5  7348867 392.5
+Vcells 8076899  61.7   14786712 112.9 14786706 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-8608ada8\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-8608ada8\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-8608ada8/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-8608ada8/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpqAyOEO\h5ad-export-81dcea35f83"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256949 227.4    7348938 392.5  7348938 392.5
+Vcells 8076742  61.7   14786712 112.9 14786565 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-6388e602\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-6388e602\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-6388e602/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-6388e602/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\Rtmp6Fwa8M\h5ad-export-9954485c84c"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4256932 227.4    7348720 392.5  7348720 392.5
+Vcells 8076740  61.7   14786712 112.9 14786695 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-984d2648\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-984d2648\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-984d2648/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-984d2648/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpI1kv8s\h5ad-export-b3b82a573d03"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+PASS: last elbow, strict cumulative, fallback, variance diagnostics, dynamic PCA, small sample, same-embedding subset, violin order and stable colors.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.28255
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.019305
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  2.6315e-16
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.00031431
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.22185
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.079181
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.0093916
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4286903  229    8108284 433.1  8108284 433.1
+Vcells 8125748   62   14786712 112.9 14786675 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Error: unexpected string constant in:
+"          as.integer(removal_report$value[removal_report$sampted_removed_fraction" &
+                removal_report$status==""
+R_SCRIPT_ERROR: stage=test_qc.R script=D:\CodexProjects\single-cell-skill\tests\test_qc.R exit=1
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-06a181fd\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-06a181fd\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-06a181fd/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-06a181fd/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\Rtmpi8xffa\h5ad-export-ac5430dc67d1"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+PASS: last elbow, strict cumulative, fallback, variance diagnostics, dynamic PCA, small sample, same-embedding subset, violin order and stable colors.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.28255
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.019305
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  2.6315e-16
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.00031431
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.22185
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.079181
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.0093916
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+There were 16 warnings (use warnings() to see them)
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+以下样本细胞数不足100，不建议单独运行DoubletFinder：
+SampleB (42 cells; group=Control)
+请用户决定：删除样本；保留但跳过DoubletFinder；或修改最低细胞数阈值。
+          used (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 4286925  229    8108301 433.1  8108301 433.1
+Vcells 8125579   62   14786712 112.9 14786689 112.9
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: QC precheck, strict boundaries/removal decisions, cell-cycle coverage, PC selection, doublet flow, spatial plots, raw counts, reports and clean final object.
+未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+package 'future' was built under R version 4.5.3
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-ff2ca4a7\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-ff2ca4a7\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-ff2ca4a7/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-ff2ca4a7/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpYdJmXe\h5ad-export-15a82ee87b30"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+PASS: last elbow, strict cumulative, fallback, variance diagnostics, dynamic PCA, small sample, same-embedding subset, violin order and stable colors.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.28255
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.019305
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  2.6315e-16
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.00031431
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.22185
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.079181
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.0093916
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+There were 16 warnings (use warnings() to see them)
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+Error in file(filename, "r", encoding = encoding) :
+  cannot open the connection
+Calls: source -> file
+In addition: Warning message:
+In file(filename, "r", encoding = encoding) :
+  cannot open file 'D:/CodexProjects/single-cell-skill/.runtime/r45/regression-ff2ca4a7/tests/test_qc_stages.R': No such file or directory
+R_SCRIPT_ERROR: stage=test_qc.R script=D:\CodexProjects\single-cell-skill\tests\test_qc.R exit=1
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+Standard raw Seurat counts, metadata, cell alignment and clean structure validated
+PASS: placeholder 10x feature IDs receive stable names while ordinary trios remain unchanged.
+Warning: Some features names are NA. Replacing NA names with ID from the opposite column requested
+
+FixtureA FixtureH FixtureT FixtureZ
+       4        4        4        4
+
+Fixture_A Fixture_B
+        4        12
+
+GSE999999999
+          16
+PASS: independent clean RDS read; raw counts only, no author analysis state, exact metadata and cell order
+PASS: global min.cells keeps 3-cell cross-sample gene, removes 2-cell gene, reorders identical feature sets, and rejects differing sets.
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+Warning: Feature names cannot have underscores ('_'), replacing with dashes ('-')
+[1] TRUE
+[1] TRUE
+PASS: pooled input and separate metadata are each read once, custom mapping keys work, cells stay unsplit, and shared-input errors are rejected.
+Expected rejection: anndata H5AD export failed: Traceback (most recent call last):
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-19454ea8\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 58, in <module>
+    a = p.parse_args(); export(a.source, a.count_source, a.output)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodexProjects\single-cell-skill\.runtime\r45\regression-19454ea8\.agents\skills\geo-single-cell-loader\scripts\h5ad_to_mtx.py", line 46, in export
+    raise ValueError('Selected H5AD matrix is not finite nonnegative integer counts')
+ValueError: Selected H5AD matrix is not finite nonnegative integer counts
+Expected rejection: H5AD is not 10x H5
+Expected rejection: Not a supported 10x HDF5 matrix schema
+Expected rejection: Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Cell sample mapping changed
+Expected rejection: Missing metadata: database
+Expected rejection: Missing metadata: sample
+Expected rejection: Missing metadata: tissue
+Expected rejection: Missing metadata: disease
+Expected rejection: Missing metadata: source_type
+Expected rejection: Missing metadata: group
+Expected rejection: Metadata mapping error: group
+Expected rejection: orig.ident/sample mismatch
+Expected rejection: Sample prefix mismatch
+Expected rejection: Metadata/cell order mismatch
+Expected rejection: Standard raw RNA assay must contain one counts layer only
+Expected rejection: Dense RDS exceeds 25% of total physical RAM or RAM is unknown: class=matrix,array; object_bytes=24744; total_ram_bytes=100
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Counts must be finite, nonnegative integers; normalized data unsupported
+Expected rejection: Missing/duplicate gene or cell IDs
+Expected rejection: Missing/duplicate gene or cell IDs
+
+FixtureZ
+       4
+
+Fixture_B
+        4
+
+GSE999999999
+           4
+Expected rejection: Select the single explicit counts layer; split RDS counts layers must first be resolved
+Expected rejection: Unsupported RDS class: list
+Expected rejection: Dense RDS data.frame contains nonnumeric count columns
+PASS: reader contracts; trio, H5 schema, H5AD layer/raw/gzip, CSV/TSV/TXT orientations, Seurat/sparse RDS and rds.gz, count validation, and split-layer rejection.
+Warning message:
+In system2(python, shQuote(c(helper, path, chosen, tmp)), stdout = TRUE,  :
+  running command '"C:\Python312\python.exe" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-19454ea8/.agents/skills/geo-single-cell-loader/scripts/h5ad_to_mtx.py" "D:/CodexProjects/single-cell-skill/.runtime/r45/regression-19454ea8/data/GSE999999999/raw/counts.h5ad.gz" "X" "C:\Users\22241\AppData\Local\Temp\RtmpErtFn6\h5ad-export-9ca069af3809"' had status 1
+'as(<lgCMatrix>, "dgCMatrix")' is deprecated.
+Use 'as(., "dMatrix")' instead.
+See help("Deprecated") and help("Matrix-deprecated").
+PASS: streaming text routes and pre-probed blank CSV ID header preserve sparse raw counts.
+UTF-8 manifest labels pass with and without BOM
+PASS: last elbow, strict cumulative, fallback, variance diagnostics, dynamic PCA, small sample, same-embedding subset, violin order and stable colors.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.28255
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.019305
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  2.6315e-16
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.00031431
+Warning messages:
+1: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 0.22185
+2: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.079181
+3: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0
+4: In simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.0093916
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+There were 16 warnings (use warnings() to see them)
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+In SingleExIPlot(type = type, data = data[, x, drop = FALSE], idents = idents,  :
+  All cells have the same value of pHB.
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: staged QC paths, retained-cell >3 gene rule, refreshed metrics, capture grouping, DF_adj, cycle scoring, separate DecontX assay, immutable inputs/checkpoints and figures.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: The default method for RunUMAP has changed from calling Python UMAP via reticulate to the R-native UWOT using the cosine metric
+To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
+This message will be shown once per session
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning in svd.function(A = t(x = object), nv = npcs, ...) :
+  You're computing too large a percentage of total singular values, use a standard svd instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning: Default search for "data" layer in "RNA" assay yielded no results; utilizing "counts" layer instead.
+Warning message:
+package 'future' was built under R version 4.5.3
+[1] "Creating artificial doublets for pN = 5%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 10%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 15%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 20%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 25%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+[1] "Creating artificial doublets for pN = 30%"
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Defining neighborhoods..."
+[1] "Computing pANN across all pK..."
+[1] "pK = 0.08..."
+[1] "pK = 0.09..."
+[1] "pK = 0.1..."
+[1] "pK = 0.11..."
+[1] "pK = 0.12..."
+[1] "pK = 0.13..."
+[1] "pK = 0.14..."
+[1] "pK = 0.15..."
+[1] "pK = 0.16..."
+[1] "pK = 0.17..."
+[1] "pK = 0.18..."
+[1] "pK = 0.19..."
+[1] "pK = 0.2..."
+[1] "pK = 0.21..."
+[1] "pK = 0.22..."
+[1] "pK = 0.23..."
+[1] "pK = 0.24..."
+[1] "pK = 0.25..."
+[1] "pK = 0.26..."
+[1] "pK = 0.27..."
+[1] "pK = 0.28..."
+[1] "pK = 0.29..."
+[1] "pK = 0.3..."
+NULL
+[1] "Creating 43 artificial doublets..."
+[1] "Creating Seurat object..."
+[1] "Normalizing Seurat object..."
+[1] "Finding variable genes..."
+[1] "Scaling data..."
+[1] "Running PCA..."
+[1] "Calculating PC distance matrix..."
+[1] "Computing pANN..."
+[1] "Classifying doublets.."
+PASS: real DoubletFinder paramSweep, pK selection, two calls and classifications.
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Normalizing layer: counts
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Finding variable features for layer counts
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Centering and scaling data matrix
+
+  |
+  |                                                                      |   0%
+  |
+  |======================================================================| 100%
+Warning message:
+package 'future' was built under R version 4.5.3

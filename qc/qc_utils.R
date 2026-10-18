@@ -1,18 +1,38 @@
 if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
-qc_script_dir <- dirname(normalizePath(sys.frame(1)$ofile, winslash="/", mustWork=TRUE))
+qc_source_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use.names=FALSE)
+qc_script_dir <- dirname(normalizePath(tail(qc_source_files,1L),winslash="/",mustWork=TRUE))
 qc_required_packages <- c("Seurat", "SeuratObject", "Matrix", "yaml", "jsonlite", "ggplot2", "patchwork", "DoubletFinder")
 qc_blank <- function(x) is.na(x) | !nzchar(trimws(as.character(x)))
 
 qc_paths <- function(root, gse) {
   if (length(gse) != 1L || !grepl("^GSE[0-9]+$", gse)) stop("Expected one GSE accession")
   root <- normalizePath(root, winslash="/", mustWork=TRUE)
-  dataset <- file.path(root, "data", gse)
-  if (!dir.exists(dataset) || !identical(normalizePath(dataset,winslash="/"), dataset)) stop("Dataset directory missing or redirected")
-  qc <- file.path(dataset, "qc")
-  dir.create(qc, showWarnings=FALSE)
-  list(root=root, gse=gse, raw=file.path(dataset,"seurat_raw.rds"), qc=qc,
-       report=file.path(qc,"qc_report.csv"), decision=file.path(qc,"qc_decision.json"),
-       final=file.path(qc,"seurat_qc.rds"))
+  dataset <- file.path(root,"results",gse)
+  legacy <- file.path(root,"data",gse)
+  canonical_raw <- file.path(dataset,"01_download","seurat_raw.rds")
+  raw <- if(file.exists(canonical_raw)) canonical_raw else file.path(legacy,"seurat_raw.rds")
+  qc <- file.path(dataset,"02_QC")
+  dir.create(qc,recursive=TRUE,showWarnings=FALSE)
+  if(!identical(normalizePath(qc,winslash="/"),qc)) stop("QC directory redirected")
+  decision <- file.path(qc,"qc_decision.json")
+  if(!file.exists(decision) && file.exists(file.path(legacy,"qc","qc_decision.json")))
+    decision <- file.path(legacy,"qc","qc_decision.json")
+  dirs <- c(qc1="01_basic_QC",qc2="02_doublet_cellcycle",qc3="03_ambient_RNA")
+  list(root=root,gse=gse,dataset=dataset,raw=raw,qc=qc,
+       report=file.path(qc,"qc_report.csv"),decision=decision,
+       stage_dirs=stats::setNames(file.path(qc,dirs),names(dirs)),
+       final=file.path(qc,dirs[["qc2"]],"seurat_QC-2.rds"),
+       legacy_final=file.path(legacy,"qc","seurat_qc.rds"))
+}
+
+qc_stage_paths <- function(paths,step) {
+  if(!step %in% names(paths$stage_dirs)) stop("Unknown QC step")
+  paths$qc <- paths$stage_dirs[[step]]
+  dir.create(paths$qc,recursive=TRUE,showWarnings=FALSE)
+  if(!identical(normalizePath(paths$qc,winslash="/"),paths$qc)) stop("QC step directory redirected")
+  paths$report <- file.path(paths$qc,"qc_report.csv")
+  paths$final <- file.path(paths$qc,paste0("seurat_QC-",match(step,c("qc1","qc2","qc3")),".rds"))
+  paths
 }
 
 qc_report_new <- function() {
@@ -119,17 +139,55 @@ qc_validate_input <- function(object, gse) {
   counts
 }
 
+qc_refresh_metrics <- function(object,preserve=TRUE) {
+  counts <- qc_counts(object)
+  current <- list(nCount_RNA=as.numeric(Matrix::colSums(counts)),nFeature_RNA=as.numeric(Matrix::colSums(counts>0)))
+  for(field in c("nCount_RNA","nFeature_RNA")) {
+    original <- paste0(field,"_before_QC")
+    metadata_field <- paste0(field,"_input_metadata")
+    if(preserve && !metadata_field %in% names(object@meta.data)) object[[metadata_field]] <- object@meta.data[[field]]
+    if(preserve && !original %in% names(object@meta.data)) object[[original]] <- current[[field]]
+  }
+  object$nCount_RNA <- as.numeric(Matrix::colSums(counts))
+  object$nFeature_RNA <- as.numeric(Matrix::colSums(counts>0))
+  object
+}
+
+qc_capture_libraries <- function(object) {
+  meta <- object@meta.data
+  if("library_id" %in% names(meta)) {
+    if(any(qc_blank(meta$library_id))) stop("AMBIGUOUS_CAPTURE_LIBRARY: library_id is incomplete; provide an explicit cell-to-capture-library mapping")
+    object$library_id <- as.character(meta$library_id)
+    if(!"capture_mapping_source" %in% names(meta)) object$capture_mapping_source <- "library_id"
+    else if(any(qc_blank(meta$capture_mapping_source))) stop("AMBIGUOUS_CAPTURE_LIBRARY: capture_mapping_source is incomplete")
+    return(object)
+  }
+  if("capture_id" %in% names(meta) && !any(qc_blank(meta$capture_id))) {
+    object$library_id <- as.character(meta$capture_id)
+    object$capture_mapping_source <- "capture_id"
+    return(object)
+  }
+  clues <- intersect(c("source_type","technology","capture_layout","pool_id"),names(meta))
+  pooled <- length(clues) && any(grepl("pool|multiplex|demultiplex|multiple.capture",unlist(meta[clues]),ignore.case=TRUE))
+  runs <- if("sequencing_run" %in% names(meta)) tapply(as.character(meta$sequencing_run),meta$sample,function(x) length(unique(x[!qc_blank(x)]))) else 1L
+  if(pooled || any(runs>1L)) stop("AMBIGUOUS_CAPTURE_LIBRARY: pooled/multiple-run metadata cannot establish capture libraries; supply library_id before DoubletFinder")
+  object$library_id <- as.character(meta$sample)
+  object$capture_mapping_source <- "legacy_sample_mapping_unverified"
+  object
+}
+
 qc_patterns <- function(species) {
   if (species == "human") c(pMT="^MT-",pRP="^RP[SL]",pHB="^HB[^(P)]")
   else c(pMT="^mt-",pRP="^Rp[sl]",pHB="^Hb[^(p)]")
 }
 qc_add_percentages <- function(object, species) {
+  object <- qc_refresh_metrics(object)
   for (metric in names(qc_patterns(species))) {
-    if (!metric %in% names(object@meta.data)) {
-      object <- Seurat::PercentageFeatureSet(object,pattern=qc_patterns(species)[[metric]],col.name=metric)
-    } else if (any(!is.finite(object@meta.data[[metric]]) | object@meta.data[[metric]] < 0 | object@meta.data[[metric]] > 100)) {
-      stop("FAILED_INPUT: invalid existing QC percentage: ",metric)
-    }
+    original <- paste0(metric,"_before_QC")
+    metadata_field <- paste0(metric,"_input_metadata")
+    if(metric %in% names(object@meta.data) && !metadata_field %in% names(object@meta.data)) object[[metadata_field]] <- object@meta.data[[metric]]
+    object <- Seurat::PercentageFeatureSet(object,pattern=qc_patterns(species)[[metric]],col.name=metric)
+    if(!original %in% names(object@meta.data)) object[[original]] <- object@meta.data[[metric]]
   }
   object
 }

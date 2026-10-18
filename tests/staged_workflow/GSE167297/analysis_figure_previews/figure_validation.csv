@@ -1,0 +1,15 @@
+file,kind,pages,width,height,dpi,status
+01_pca_regression/elbow_plot.pdf,PDF,1,,,vector,PASS
+01_pca_regression/elbow_plot.png,PNG,1,3000,1800,300,PASS
+01_pca_regression/pca_diagnostics.pdf,PDF,1,,,vector,PASS
+01_pca_regression/pca_diagnostics.png,PNG,1,4800,1650,300,PASS
+02_harmony/integration_diagnostics.pdf,PDF,1,,,vector,PASS
+02_harmony/integration_diagnostics.png,PNG,1,3300,1650,300,PASS
+02_harmony/umap_before_integration.pdf,PDF,1,,,vector,PASS
+02_harmony/umap_before_integration.png,PNG,1,3300,1650,300,PASS
+03_clustering/cluster_resolution_review.pdf,PDF,1,,,vector,PASS
+03_clustering/cluster_resolution_review_1.png,PNG,1,4800,4800,300,PASS
+03_clustering/clustree.pdf,PDF,1,,,vector,PASS
+03_clustering/clustree.png,PNG,1,3000,1800,300,PASS
+99_workflow_audit/20261018T143212530428Z/workflow_audit.pdf,PDF,35,,,vector,PASS
+99_workflow_audit/workflow_audit.pdf,PDF,32,,,vector,PASS

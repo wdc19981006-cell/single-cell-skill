@@ -1,8 +1,9 @@
 # Invoke through runtime/r45/run_r45.py.
-qc_precheck_source <- if(sys.nframe() >= 1L && !is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
+qc_precheck_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use.names=FALSE)
+qc_precheck_source <- if(length(qc_precheck_files)) tail(qc_precheck_files,1L) else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(qc_precheck_source,winslash="/",mustWork=TRUE)),"qc_utils.R"))
 
-qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE)) {
+qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE),step="qc2") {
   paths <- qc_paths(root,gse)
   report <- qc_report_new()
   started <- proc.time()[["elapsed"]]
@@ -17,7 +18,9 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     message("未找到 seurat_raw.rds，请先完成数据下载和原始对象构建。")
     return(finish("FAILED_INPUT",note))
   }
-  missing <- qc_check_dependencies(report,package_available)
+  required <- if(step=="qc1") setdiff(qc_required_packages,"DoubletFinder") else qc_required_packages
+  missing <- required[!vapply(required,package_available,logical(1))]
+  for(p in missing) qc_report_add(report,"RUN",metric="missing_package",value=p,status="FAILED_INPUT",note=paste("R:",R.version.string,"; .libPaths():",paste(.libPaths(),collapse="; ")))
   if (length(missing)) return(finish("FAILED_INPUT","Required package missing; no packages were installed"))
   object <- tryCatch(readRDS(paths$raw),error=function(e)e)
   if (inherits(object,"error")) return(finish("FAILED_INPUT",conditionMessage(object)))
@@ -56,7 +59,7 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     if (hits==0L) needs <- c(needs,paste(metric,"features absent"))
   }
   cycle_features <- qc_cycle_features(object)
-  for (entry in names(c(S="s",G2M="g2m"))) {
+  for (entry in if(step=="qc1") character() else names(c(S="s",G2M="g2m"))) {
     hits <- length(cycle_features[[c(S="s",G2M="g2m")[[entry]]]])
     qc_report_add(report,"CELL_CYCLE",metric=paste0(entry,"_features_matched"),value=hits,
       status=if(hits<5L) "NEEDS_USER_DECISION" else "PASS",
@@ -64,6 +67,14 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     if(hits<5L) needs <- c(needs,paste(entry,"cell-cycle genes matched fewer than five"))
   }
   object <- qc_add_percentages(object,cfg$species)
+  if(step!="qc1") {
+    object <- tryCatch(qc_capture_libraries(object),error=function(e)e)
+    if(inherits(object,"error")) return(finish("NEEDS_USER_DECISION",conditionMessage(object)))
+    for(library in unique(object$library_id)) qc_report_add(report,"CAPTURE_LIBRARY",library,"mapping_source",
+      paste(unique(object$capture_mapping_source[object$library_id==library]),collapse=";"),
+      status=if(any(object$capture_mapping_source=="legacy_sample_mapping_unverified")) "CAPTURE_MAPPING_WARNING" else "PASS",
+      note="DoubletFinder runs by capture library. Legacy sample mapping requires provenance review; pooled/multiple-run ambiguity stops.")
+  }
   metadata <- object@meta.data
   removed <- decision$removed_samples %||% character()
   kept <- decision$kept_low_cell_samples %||% character()
@@ -77,7 +88,7 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
       qc_report_add(report,"SAMPLE",sample,"decision","removed",status="USER_CONFIRMED_REMOVAL",note=decision$user_statement)
       next
     }
-    if (cells < cfg$doublet$min_cells) {
+    if (step!="qc1" && !"library_id" %in% names(metadata) && cells < cfg$doublet$min_cells) {
       if (sample %in% kept) {
         qc_report_add(report,"SAMPLE",sample,"doublet_decision","NotEvaluated",status="USER_CONFIRMED_SKIP",
                       note=paste("group=",group,"; cells=",cells,"; ",decision$user_statement,sep=""))
@@ -104,14 +115,16 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
   report_removal <- function(sample,input,after) {
     removed_cells <- input-after
     fraction <- removed_cells/input
+    required_samples <- if(sample=="ALL") setdiff(samples,removed) else sample
+    accepted <- isTRUE(decision$accept_qc_removal) && all(required_samples %in% decision$affected_samples)
     fields <- list(input_cells=input,predicted_after_qc_cells=after,
                    predicted_removed_cells=removed_cells,predicted_removed_fraction=round(fraction,4))
     for (name in names(fields)) {
       qc_report_add(report,"CELL_QC",sample,name,fields[[name]],
         status=if(name=="predicted_removed_fraction" && fraction>removal_limit &&
-                  !isTRUE(decision$accept_qc_removal)) "NEEDS_USER_DECISION" else "PASS")
+                  !accepted) "NEEDS_USER_DECISION" else "PASS")
     }
-    if(fraction>removal_limit && !isTRUE(decision$accept_qc_removal))
+    if(fraction>removal_limit && !accepted)
       needs <<- c(needs,paste(sample,"predicted QC removal exceeds",removal_limit))
   }
   report_removal("ALL",sum(active),sum(predicted_keep))
@@ -121,10 +134,18 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     if(count==0L) {
       qc_report_add(report,"CELL_QC",sample,"predicted_after_qc_cells",count,status="NEEDS_USER_DECISION",note="Default QC would empty this sample")
       needs <- c(needs,paste("Cell QC would empty",sample))
-    } else if(count<cfg$doublet$min_cells && !sample %in% kept) {
-      qc_report_add(report,"SAMPLE",sample,"predicted_after_qc_cells",count,status="LOW_CELL_SAMPLE",
-                    note="DoubletFinder minimum would not be met after cell QC")
-      needs <- c(needs,paste0(sample," (",count," cells after QC; group=",unique(metadata$group[metadata$sample==sample]),")"))
+    }
+  }
+  if(step!="qc1") for(library in unique(as.character(metadata$library_id[active]))) {
+    selected <- predicted_keep & metadata$library_id==library
+    biological_samples <- unique(as.character(metadata$sample[active & metadata$library_id==library]))
+    count <- sum(selected)
+    partial_skip <- any(biological_samples %in% kept) && !all(biological_samples %in% kept)
+    if(partial_skip) needs <- c(needs,paste("Partial skip within capture library",library))
+    if(count<cfg$doublet$min_cells && !all(biological_samples %in% kept)) {
+      qc_report_add(report,"CAPTURE_LIBRARY",library,"predicted_after_qc_cells",count,status="LOW_CELL_SAMPLE",
+        note=paste("samples=",paste(biological_samples,collapse=";"),"; min_cells_for_doublet=",cfg$doublet$min_cells,sep=""))
+      needs <- c(needs,paste0(library," (",count," cells after QC; group=",paste(unique(metadata$group[selected]),collapse=";"),")"))
     }
   }
   if(length(needs)) {
@@ -139,8 +160,8 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
 
 if (sys.nframe()==0L) {
   args <- commandArgs(trailingOnly=TRUE)
-  if(length(args)!=2L) stop("Usage: run_r45.py qc/qc_precheck.R REPOSITORY_ROOT GSE")
-  status <- qc_precheck(args[1],args[2])
+  if(!length(args) %in% c(2L,3L)) stop("Usage: run_r45.py qc/qc_precheck.R REPOSITORY_ROOT GSE [qc1|qc2]")
+  status <- qc_precheck(args[1],args[2],step=if(length(args)>2L) args[3] else "qc2")
   cat("QC precheck:",status,"\n")
   if(status!="PASS") quit(status=1L)
 }

@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "fixture": "D:\\CodexProjects\\single-cell-skill\\.runtime\\download-layout-31588e7843",
+  "results": [
+    {
+      "step": "build_seurat.R",
+      "exit_code": 0,
+      "duration_seconds": 5.969
+    },
+    {
+      "step": "validate_seurat.R",
+      "exit_code": 0,
+      "duration_seconds": 2.672
+    },
+    {
+      "step": "validate_seurat.R",
+      "exit_code": 0,
+      "duration_seconds": 2.562
+    },
+    {
+      "step": "report_download.R",
+      "exit_code": 0,
+      "duration_seconds": 2.64
+    },
+    {
+      "step": "report_download.R",
+      "exit_code": 0,
+      "duration_seconds": 2.672
+    },
+    {
+      "step": "changed_metadata_refused",
+      "status": "PASS"
+    }
+  ],
+  "raw_sha256": {
+    "barcodes.tsv.gz": "c1ab30291446eb95f3b7152f6751e3961885df1be3f59dd21d1a57b976670c3a",
+    "features.tsv.gz": "0a8daec3c6cf4b98c40742d827a8a2326f8772150d6c93f995c14a23419d7911",
+    "matrix.mtx.gz": "49556703f9df085757341c6c04a2d977444dfa1eb4e268e8ba6f1b6eeec74659"
+  },
+  "rds_sha256": "fa0e0963d50e96092da207425508ec75303a196f61f0a66134be8806cd756bfd",
+  "receipt_sha256": "c35bf8e34bfda6779438abe621055adfcd0461975b68622e4e9fdf7055956b1e",
+  "pdf_sha256": "83440bbf76b5b3ef352d3ab8e236f8768d21356ac127db501d6a2fc4bc0a15ff",
+  "note": "metadata.csv intentionally modified by final refusal test; genuine artifacts retained before that boundary"
+}

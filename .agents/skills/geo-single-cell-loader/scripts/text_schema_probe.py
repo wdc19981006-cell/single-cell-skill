@@ -6,7 +6,7 @@ import os
 import re
 from decimal import Decimal, InvalidOperation
 
-from common import TRANSFORMED_EXPRESSION, local, missing
+from common import TRANSFORMED_EXPRESSION, dataset_relative, local, missing
 
 MAX_LINE = 8 * 1024 * 1024
 GENE_COLUMNS = {'gene', 'genes', 'geneid', 'gene_id', 'gene_symbol', 'symbol',
@@ -145,7 +145,7 @@ def _orientation(header, rows, header_missing_id):
 
 def probe_text(row, root, total_ram_bytes=None):
     """Return only reliable technical fields and observed evidence."""
-    area = f"data/{row['database']}/raw"
+    area = dataset_relative(root, row['database']) + '/raw'
     path = local(root, row['local_path'], area)
     if not path.is_file():
         raise ValueError('Text schema probe input is missing: ' + row['local_path'])

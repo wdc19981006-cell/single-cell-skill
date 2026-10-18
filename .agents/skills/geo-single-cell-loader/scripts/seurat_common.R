@@ -25,6 +25,24 @@ repo_path <- function(root, relative, area = "data") {
   if (!startsWith(tolower(path), paste0(tolower(base), "/"))) stop("Input outside permitted dataset directory")
   path
 }
+dataset_relative <- function(root,gse) {
+  if (length(gse)!=1L || !grepl("^GSE[0-9]+$",gse)) stop("Expected GSE accession")
+  legacy <- paste0("data/",gse)
+  canonical <- paste0("results/",gse,"/01_download")
+  old <- file.path(root,legacy); new <- file.path(root,canonical)
+  if (dir.exists(old) && dir.exists(new)) stop("Both legacy and canonical download roots exist; review explicitly before continuing")
+  base <- if (dir.exists(old)) legacy else canonical
+  # Check the complete declared directory, including ancestor redirects.
+  declared <- file.path(root,base)
+  if (dir.exists(declared) && !identical(tolower(normalizePath(declared,winslash="/")),tolower(declared)))
+    stop("Dataset directory redirects outside its declared location")
+  base
+}
+manifest_dataset <- function(relative) {
+  if (!grepl("^(data/GSE[0-9]+|results/GSE[0-9]+/01_download)/\\.workflow/[^/]+\\.csv$",relative))
+    stop("Manifest must be under a legacy or canonical download .workflow/")
+  sub("/\\.workflow/[^/]+\\.csv$","",relative)
+}
 read_manifest <- function(path, root) {
   need(c("jsonlite"))
   m <- read_utf8_csv(path, na.strings=c("", "NA"))
@@ -52,16 +70,21 @@ read_manifest <- function(path, root) {
     evidence <- paste0(field, "_evidence")
     if (any(!blank(m[[field]])) && (!evidence %in% names(m) || any(!blank(m[[field]]) & blank(m[[evidence]])))) stop("Missing public evidence for ", field)
   }
-  repo_path(root, substring(normalizePath(path,winslash="/"), nchar(root)+2L), paste0("data/",m$database[1],"/.workflow"))
+  manifest_relative <- substring(normalizePath(path,winslash="/"), nchar(root)+2L)
+  base <- manifest_dataset(manifest_relative)
+  expected <- if (startsWith(base,"data/")) paste0("data/",m$database[1]) else paste0("results/",m$database[1],"/01_download")
+  if (!identical(base,expected)) stop("Manifest belongs to a different GSE")
+  repo_path(root, manifest_relative, paste0(base,"/.workflow"))
+  attr(m,"dataset_relative") <- base
   for (i in seq_len(nrow(m))) {
-    repo_path(root, m$local_path[i], paste0("data/", m$database[i],"/raw"))
+    repo_path(root, m$local_path[i], paste0(base,"/raw"))
   }
   cell_map_paths <- unique(m$cell_map_path[!blank(m$cell_map_path)])
   for (relative in cell_map_paths) {
     rows <- m[!blank(m$cell_map_path) & m$cell_map_path == relative,,drop=FALSE]
     expected <- unique(vapply(seq_len(nrow(rows)),function(i) value(rows[i,,drop=FALSE],"cell_map_md5"),character(1)))
     if (length(expected) != 1L || !nzchar(expected)) stop("Shared cell map has inconsistent or missing confirmation hash")
-    area <- paste0("data/",rows$database[1],if (startsWith(relative,paste0("data/",rows$database[1],"/cell_map/"))) "/cell_map" else "/.workflow")
+    area <- paste0(base,if (startsWith(relative,paste0(base,"/cell_map/"))) "/cell_map" else "/.workflow")
     cellmap <- repo_path(root,relative,area)
     if (!identical(unname(tools::md5sum(cellmap)),expected)) stop("Cell map changed; review and reconfirm")
   }
@@ -134,7 +157,12 @@ route_input <- function(row, root) {
   if (type %in% c("fastq","sra","raw_reads")) stop("Only FASTQ/SRA inputs are available; processed expression matrix is required for Stage B V1.")
   routes <- c(`10x_mtx`="Seurat::Read10X",`10x_h5`="Seurat::Read10X_h5",h5ad="H5AD explicit counts source",text="data.table::fread",rds="readRDS/validated raw counts")
   if (!type %in% names(routes)) stop("Unsupported input format: ", type)
-  path <- repo_path(root, row$local_path, paste0("data/", row$database,"/raw"))
+  base <- attr(row,"dataset_relative")
+  if (is.null(base)) {
+    base <- if (startsWith(row$local_path,paste0("data/",row$database,"/raw/")))
+      paste0("data/",row$database) else paste0("results/",row$database,"/01_download")
+  }
+  path <- repo_path(root, row$local_path, paste0(base,"/raw"))
   if (type == "text") {
     size <- file.info(path)$size
     if (stream_text_candidate(row,size))
@@ -417,7 +445,10 @@ map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=defau
   cell_map_reads <- 0L
   if (any(nzchar(map_values))) {
     relative <- unique(map_values[nzchar(map_values)])
-    area <- paste0("data/",rows$database[1],if (startsWith(relative,paste0("data/",rows$database[1],"/cell_map/"))) "/cell_map" else "/.workflow")
+    base <- attr(rows,"dataset_relative")
+    if (is.null(base)) base <- if (startsWith(relative,paste0("data/",rows$database[1],"/")))
+      paste0("data/",rows$database[1]) else paste0("results/",rows$database[1],"/01_download")
+    area <- paste0(base,if (startsWith(relative,paste0(base,"/cell_map/"))) "/cell_map" else "/.workflow")
     map_path <- repo_path(root,relative,area)
     if (exists(map_path,envir=cell_map_cache,inherits=FALSE)) {
       cellmap <- get(map_path,envir=cell_map_cache,inherits=FALSE)
@@ -573,6 +604,9 @@ validate_object <- function(object, manifest=NULL) {
   unexpected_metadata <- setdiff(names(object@meta.data),c("orig.ident","nCount_RNA","nFeature_RNA",required_fields,optional_fields))
   if (length(unexpected_metadata)) stop("Standard raw object contains nonstandard metadata: ",paste(unexpected_metadata,collapse=", "))
   for (field in c("nCount_RNA","nFeature_RNA")) if (!field %in% names(object@meta.data)) stop("Missing metadata: ",field)
+  if (!isTRUE(all.equal(unname(as.numeric(object$nCount_RNA)),unname(as.numeric(Matrix::colSums(counts))),tolerance=1e-8)) ||
+      !identical(unname(as.numeric(object$nFeature_RNA)),unname(as.numeric(Matrix::colSums(counts>0)))))
+    stop("RNA feature/count metadata differ from current counts")
   for (field in required_fields) if (!field %in% names(object@meta.data) || any(blank(object[[field]][,1]))) stop("Missing metadata: ", field)
   if (!"orig.ident" %in% names(object@meta.data) || !identical(unname(as.character(object$orig.ident)),unname(as.character(object$sample)))) stop("orig.ident/sample mismatch")
   if (any(!startsWith(colnames(object), paste0(object$sample,"_")))) stop("Sample prefix mismatch")
@@ -587,4 +621,25 @@ validate_object <- function(object, manifest=NULL) {
   }
   print(table(object$sample)); print(table(object$group)); print(table(object$database))
   invisible(TRUE)
+}
+load_existing_raw <- function(root,gse) {
+  base <- dataset_relative(root,gse)
+  need("jsonlite")
+  approval <- jsonlite::fromJSON(repo_path(root,paste0(base,"/group_confirmation.json"),base))
+  if (!identical(approval$confirmed_by,"user") || blank(approval$user_statement)) stop("User confirmation missing")
+  info <- readLines(repo_path(root,paste0(base,"/sample_info.txt"),base),encoding="UTF-8",warn=FALSE)
+  if (!length(info) || !identical(info[1],"STATUS: COMPLETE_RAW")) stop("Archived raw object is not recorded COMPLETE_RAW")
+  object <- readRDS(repo_path(root,paste0(base,"/seurat_raw.rds"),base))
+  validate_object(object)
+  expected_groups <- unname(as.character(unlist(approval$groups[object$sample])))
+  if (!setequal(unique(object$sample),names(approval$groups)) ||
+      !identical(unname(as.character(object$group)),expected_groups)) stop("Archived object differs from confirmed groups")
+  if (!identical(unique(as.character(object$database)),gse)) stop("Dataset identity mismatch")
+  expected <- function(label) {
+    position <- tail(which(info==label),1)
+    if (!length(position)) stop("Archived summary lacks ",label)
+    as.integer(info[position+1L])
+  }
+  if (ncol(object)!=expected("Total cells:") || nrow(object)!=expected("Total genes:")) stop("Archived dimensions differ")
+  list(object=object,base=base,info=info)
 }

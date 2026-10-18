@@ -1,0 +1,21 @@
+{
+  "dataset": "SYNTHETIC_GSE999999_LABEL_ONLY",
+  "cells": 160,
+  "genes": 400,
+  "r_version": "4.5.0",
+  "status": "PASS",
+  "formal_selection": "TEST FIXTURE ONLY",
+  "input_sha256": "e8a24ec0401f1415fc81e7f893f9ecbe84d516f159a5a085d2d35601e928c26c",
+  "final_sha256": "280e4a757eea3ac85dc2d15f5f9d31e1c51db1b453391342a1368dfe14d6bfe1",
+  "verified": [
+    "fresh PCA",
+    "crossed-batch Harmony",
+    "same-coordinate resolution scan",
+    "clustree rendering",
+    "user decision gate",
+    "final RDS roundtrip",
+    "original counts preserved",
+    "audit",
+    "resume without recomputation"
+  ]
+}

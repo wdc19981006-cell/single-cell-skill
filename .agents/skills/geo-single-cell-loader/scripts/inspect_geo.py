@@ -8,12 +8,12 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from common import ROOT, choose_filtered, dataset_paths, file_type, write_csv
+from common import ROOT, choose_filtered, dataset_paths, dataset_relative, file_type, write_csv
 from sample_info import render
 
-def propose_input(gse, sample, urls):
+def propose_input(gse, sample, urls, root=ROOT):
     """Use GEO's sample ownership, never infer biological IDs from filenames."""
-    base = 'data/' + gse + '/raw/' + sample
+    base = dataset_relative(root, gse) + '/raw/' + sample
     trio = {}
     for role in ('matrix.mtx', 'features.tsv', 'barcodes.tsv'):
         matches = [u for u in urls if u.endswith((role, role + '.gz'))]
@@ -93,7 +93,7 @@ def inspect(gse, root, max_samples=None, fallback_reason=None):
         # Preserve author facts verbatim; semantic standardization requires evidence review.
         report.append(dict(database=gse, sample=gsm, author_sample='; '.join(f.get('Sample_title', [])), tissue='', disease='', source_type='', sample_description='; '.join(f.get('Sample_source_name_ch1', []) + characteristics), metadata_evidence=source))
         for u in supplementary(f): files.append(dict(scope=gsm, url=u, format=file_type(u)))
-        input_plans[gsm] = propose_input(gse,gsm,supplementary(f))
+        input_plans[gsm] = propose_input(gse,gsm,supplementary(f),root)
     papers = []
     for pmid in fields.get('Series_pubmed_id', []):
         paper_url = 'https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pubmed.cgi/BioC_xml/' + pmid + '/unicode'

@@ -1,0 +1,2 @@
+"input_cells","output_cells","genes","original_UMI","corrected_UMI","mean_contamination","median_contamination","source_assay","corrected_assay","cells_removed"
+22420,22420,20555,88967262,80145940.2807409,0.0858048233959378,0.0134300799632383,"RNA","decontX",0
