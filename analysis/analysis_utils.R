@@ -19,13 +19,25 @@ analysis_config <- function(cfg) {
     if(!scalar(cfg[[field]]) || cfg[[field]]>100) stop("Invalid PCA selection threshold: ",field)
   if(!is.character(cfg$assay) || length(cfg$assay)!=1L || !nzchar(cfg$assay)) stop("Select one expression assay")
   cfg$sensitivity <- unlist(cfg$sensitivity,use.names=FALSE)
-  if(any(!cfg$sensitivity %in% c("rna_total","cell_cycle"))) stop("Sensitivity must target rna_total or cell_cycle")
+  cfg$sensitivity[cfg$sensitivity=="rna_total"] <- "count"
+  if(any(!cfg$sensitivity %in% c("feature","count","cell_cycle"))) stop("Unknown targeted sensitivity scheme")
+  for(field in c("cluster_eta_warning","similar_ari","similar_subspace","association_tolerance"))
+    if(!scalar(cfg$regression_review[[field]]) || cfg$regression_review[[field]]>1) stop("Invalid regression review threshold: ",field)
+  if(!is.logical(cfg$regression_review$auto_numeric) || length(cfg$regression_review$auto_numeric)!=1L ||
+     !scalar(cfg$regression_review$comparison_resolution,.Machine$double.eps)) stop("Invalid regression review settings")
   cfg$resolutions <- as.numeric(unlist(cfg$resolutions,use.names=FALSE))
   if(length(cfg$resolutions)<2L || any(!is.finite(cfg$resolutions) | cfg$resolutions<=0) || anyDuplicated(cfg$resolutions))
     stop("At least two unique positive clustering resolutions required")
   cfg$resolutions <- sort(cfg$resolutions)
   if(!cfg$cluster_reduction %in% c("auto","pca","harmony")) stop("Unknown cluster_reduction")
   cfg$markers <- as.character(unlist(cfg$markers,use.names=FALSE))
+  cfg$proliferation_markers <- as.character(unlist(cfg$proliferation_markers,use.names=FALSE))
+  if(!is.null(cfg$regression_decision)) {
+    d <- cfg$regression_decision
+    if(!identical(d$confirmed_by,"user") || !d$scheme %in% c("feature","count","cell_cycle") ||
+       !is.character(d$user_statement) || length(d$user_statement)!=1L || !nzchar(trimws(d$user_statement)))
+      stop("A new formal regression requires the user's literal scheme decision")
+  }
   if(!is.logical(cfg$harmony$enabled) || length(cfg$harmony$enabled)!=1L ||
      !is.logical(cfg$harmony$allow_sample) || length(cfg$harmony$allow_sample)!=1L)
     stop("Harmony enabled and allow_sample must be boolean")
@@ -78,6 +90,9 @@ analysis_save <- function(object,path) {
   if(!identical(colnames(rebuilt),colnames(object)) ||
      !identical(analysis_counts(rebuilt,"RNA"),analysis_counts(object,"RNA")))
     stop("Serialized analysis cells or original RNA counts changed")
+  assay <- object@misc$workflow_analysis$assay
+  if(!is.null(assay) && (!identical(analysis_counts(rebuilt,assay),analysis_counts(object,assay)) ||
+      !identical(rebuilt@meta.data,object@meta.data))) stop("Serialized selected assay or metadata changed")
   invisible(path)
 }
 
@@ -104,9 +119,11 @@ analysis_umap <- function(object,reduction,dims,name,seed) {
     seed.use=seed,verbose=FALSE)
 }
 
-analysis_pca <- function(object,cfg,regress="pMT") {
+analysis_pca <- function(object,cfg,regress="pMT",features=NULL) {
   original_rna <- analysis_counts(object,"RNA")
-  analysis_counts(object,cfg$assay)
+  original_meta <- object@meta.data
+  selected_counts <- analysis_counts(object,cfg$assay)
+  if(!identical(dimnames(selected_counts),dimnames(original_rna))) stop("Selected assay must preserve original RNA gene/cell IDs and order")
   analysis_metadata(object)
   SeuratObject::DefaultAssay(object) <- cfg$assay
   # Clear diagnostic reductions/graphs from DoubletFinder and any prior input;
@@ -118,24 +135,34 @@ analysis_pca <- function(object,cfg,regress="pMT") {
   for(field in old) object[[field]] <- NULL
   SeuratObject::Idents(object) <- object$sample
   object <- Seurat::NormalizeData(object,assay=cfg$assay,verbose=FALSE)
-  object <- Seurat::FindVariableFeatures(object,assay=cfg$assay,nfeatures=min(cfg$nfeatures,nrow(object)-1L),verbose=FALSE)
-  features <- SeuratObject::VariableFeatures(object,assay=cfg$assay)
+  if(is.null(features)) {
+    object <- Seurat::FindVariableFeatures(object,assay=cfg$assay,nfeatures=min(cfg$nfeatures,nrow(object[[cfg$assay]])-1L),verbose=FALSE)
+    features <- SeuratObject::VariableFeatures(object,assay=cfg$assay)
+  } else {
+    if(anyDuplicated(features) || !all(features %in% rownames(object[[cfg$assay]]))) stop("Fixed HVGs invalid")
+    SeuratObject::VariableFeatures(object[[cfg$assay]]) <- features
+  }
   max_pc <- min(cfg$max_pcs,ncol(object)-1L,length(features)-1L,nrow(object)-1L)
   if(max_pc<2L) stop("Fewer than two usable PCA dimensions; retain input and review dataset size")
   if(any(!regress %in% names(object@meta.data)) ||
      any(!vapply(object@meta.data[,regress,drop=FALSE],function(x) is.numeric(x) && all(is.finite(x)),logical(1))))
     stop("Regression variables must have finite numeric metadata")
-  object <- Seurat::ScaleData(object,assay=cfg$assay,vars.to.regress=regress,verbose=FALSE)
-  object <- Seurat::RunPCA(object,assay=cfg$assay,npcs=max_pc,seed.use=cfg$seed,verbose=FALSE)
+  object <- Seurat::ScaleData(object,assay=cfg$assay,features=features,vars.to.regress=regress,verbose=FALSE)
+  object <- Seurat::RunPCA(object,assay=cfg$assay,features=features,npcs=max_pc,seed.use=cfg$seed,verbose=FALSE)
   if(!identical(analysis_counts(object,"RNA"),original_rna)) stop("Formal PCA changed original RNA counts")
+  fields <- intersect(c("pMT","nCount_RNA","nFeature_RNA","S.Score","G2M.Score","Phase"),names(original_meta))
+  if(!identical(object@meta.data[,fields,drop=FALSE],original_meta[,fields,drop=FALSE])) stop("Formal analysis changed QC metadata")
   selection <- qc_pc_selection(object[["pca"]]@stdev,cfg,max_pc)
   object@misc$workflow_analysis <- list(assay=cfg$assay,regress=regress,
-    pc_selection=selection,formal_pca=TRUE,seed=cfg$seed)
+    pc_selection=selection,formal_pca=TRUE,seed=cfg$seed,features=features,
+    regression_decision=cfg$regression_decision,
+    metric_source="QC metadata from original RNA; expression from selected assay; corrected counts retain fractional values")
   object
 }
 
 analysis_regression_diagnostics <- function(object,cfg) {
-  embedding <- SeuratObject::Embeddings(object[["pca"]])[,seq_len(object@misc$workflow_analysis$pc_selection$pc_used),drop=FALSE]
+  embedding <- SeuratObject::Embeddings(object[["pca"]])
+  selected_pcs <- object@misc$workflow_analysis$pc_selection$pc_used
   variables <- c("pMT","nCount_RNA","nFeature_RNA","S.Score","G2M.Score")
   rows <- lapply(variables,function(variable) do.call(rbind,lapply(seq_len(ncol(embedding)),function(pc) {
     available <- variable %in% names(object@meta.data)
@@ -144,7 +171,8 @@ analysis_regression_diagnostics <- function(object,cfg) {
     estimable <- sum(valid)>=3L && stats::sd(x[valid])>0 && stats::sd(embedding[valid,pc])>0
     rho <- if(estimable) stats::cor(x[valid],embedding[valid,pc],method="spearman") else NA_real_
     data.frame(variable=variable,pc=pc,rho=rho,n=sum(valid),
-      risk=if(is.finite(rho)) abs(rho)>=cfg$risk_correlation else FALSE,
+      selected_pc=pc<=selected_pcs,
+      risk=if(is.finite(rho)) pc<=selected_pcs && abs(rho)>=cfg$risk_correlation else FALSE,
       status=if(!available) "MISSING_METADATA" else if(!estimable) "NOT_ESTIMABLE" else "MEASURED")
   })))
   do.call(rbind,rows)
@@ -157,9 +185,16 @@ analysis_pc_selection_table <- function(selection) {
     note="Selection uses standard-deviation share; variance explained is diagnostic only")
 }
 
-analysis_finish <- function(step,status,out,summary,warnings) {
+analysis_finish <- function(step,status,out,summary,warnings,cfg=NULL,provenance=NULL,details=NULL) {
   analysis_write_csv(summary,file.path(out,paste0(gsub("-","_",step),"_summary.csv")))
   analysis_write_csv(warnings,file.path(out,paste0(gsub("-","_",step),"_warnings.csv")))
-  jsonlite::write_json(list(step=step,status=status),file.path(out,paste0(gsub("-","_",step),"_result.json")),
+  jsonlite::write_json(list(step=step,status=status,input=provenance$input,
+    outputs=list.files(out,full.names=TRUE),parameters=cfg,statistics=summary,unresolved_issues=warnings,
+    needs_user_decision=status %in% c("NEEDS_RESOLUTION_SELECTION","USER_REVIEW_REQUIRED"),details=details,
+    next_command=switch(step,pca="analysis/run_workflow.py DATASET --step harmony",
+      harmony="analysis/run_workflow.py DATASET --step cluster-review",
+      `cluster-review`="analysis/run_workflow.py DATASET --step regression-review",
+      `regression-review`="Review comparisons then finalize with the user's resolution-decision JSON",
+      finalize="workflow_audit/run_audit.py DATASET")),file.path(out,paste0(gsub("-","_",step),"_result.json")),
                         auto_unbox=TRUE,pretty=TRUE)
 }

@@ -1,9 +1,9 @@
 # Single-cell workflow Skills
 
-项目使用现有 **R 4.5.0**，分为下载、三步 QC、正式分析三个独立阶段。固定 R 脚本负责运算，Skill 负责调用、解释和需要用户判断的决定。新任务采用以下布局；历史 `data/<GSE>/` 原地兼容，已有确认回执不改写，原始数据和有效 RDS 不覆盖。
+项目使用现有 **R 4.5.0**，分为下载、三步 QC、正式分析三个独立阶段。固定 R 脚本负责运算，Skill 负责调用、解释和需要用户判断的决定。集中配置 `runtime/output_config.json` 决定默认结果根目录，所有 Python 入口支持 `--output-root`，代码仓库保持原位。非 GEO 数据可使用经过安全校验的名称（如 Study_A）。新任务采用以下布局；历史 `data/<GSE>/` 原地兼容，已有确认回执不改写，原始数据和有效 RDS 不覆盖。
 
 ```text
-results/<GSE>/
+D:/Desktop/codex-result/single-cell-skill/<GSE>/
 ├── 01_download/               raw、seurat_raw.rds、metadata、下载统计/日志/PDF
 ├── 02_QC/
 │   ├── 01_basic_QC/           seurat_QC-1.rds、细胞/基因过滤记录、前后图、配置/日志
@@ -30,7 +30,9 @@ results/<GSE>/
 /c/Python312/python.exe D:/CodexProjects/single-cell-skill/workflow_audit/run_audit.py GSE123
 ```
 
-默认阈值保持不变；QC-1 新增保留细胞中表达数 >3 的基因过滤，并重算当前 counts 对应的 nCount/nFeature。QC-2 按实际 capture library 执行 DoubletFinder，只按 `DF_adj` 去双细胞，细胞周期只评分。QC-3 不按固定污染阈值删除细胞，也不覆盖 RNA counts。正式分析默认用 RNA 和 pMT 回归，DecontX assay、额外回归和校正字段需要明确配置。Harmony 先检查设计；无可靠批次或混杂时保留未整合结果，不把 group 当校正变量。分辨率扫描复用同一 UMAP，最终标签需用户明确选择。
+默认阈值保持不变；QC-1 新增保留细胞中表达数 >3 的基因过滤，并重算当前 counts 对应的 nCount/nFeature。QC-2 按实际 capture library 执行 DoubletFinder，只按 `DF_adj` 去双细胞，细胞周期只评分。QC-3 不按固定污染阈值删除细胞，也不覆盖 RNA counts。正式分析默认用 decontX 和 pMT 回归，原始 RNA/QC metadata 保留；缺失或无效校正矩阵明确停止。完成聚类后仅按实际风险运行 nFeature/nCount 对照；细胞周期对照先复核增殖 Marker。Harmony 默认按 sample，混杂时记录解释限制并保存未整合结果，不把 group 当校正变量，也不重复询问默认字段。分辨率扫描复用同一 UMAP，最终标签需用户明确选择。
+
+替代分析使用 `--run-id decontx-v1`，结果写入该数据集的 `03_analysis/runs/decontx-v1/`；历史 `results/` 不移动、不删除，使用 `--input` 显式读取，或以 `--root OLD_WORKSPACE` 恢复旧布局。常规执行优先读取阶段 JSON 摘要，只有实际异常才读取日志；定向复核使用固定脚本，开发调试只运行受影响测试。详见 [正式分析配置与运行说明](analysis/README.md)。
 
 科学审计读取既有统计和警告，不无条件重跑分析；缺失证据明确列出，已有报告在证据变化后版本化保存。它与下载阶段私有仓库的十文件审计分开。包缺失只停止相关步骤；不安装包、不升级 R。
 
@@ -49,7 +51,7 @@ results/<GSE>/
 3. 告诉用户“group 尚未创建，请确认分组方式。”确认前不批量下载表达矩阵。
 4. 用户确认后，保存分组记录、生成并校验 manifest、自动下载源表达文件。
 5. 创建并独立重新读取验证 Seurat 对象，更新结果说明。
-6. 新下载结果保存在 `results/<GSE>/01_download/`；历史 `data/<GSE>/` 原地兼容。Loader 以 `COMPLETE_RAW` 结束并询问是否继续 QC；未获用户确认不会自动质控。
+6. 新下载结果保存在 `D:/Desktop/codex-result/single-cell-skill/<GSE>/01_download/`；历史 `data/<GSE>/` 原地兼容。Loader 以 `COMPLETE_RAW` 结束并询问是否继续 QC；未获用户确认不会自动质控。
 
 ## GEO MCP-first Stage A
 
@@ -81,7 +83,7 @@ manifest 中多个 sample 可以共享一个 pooled expression matrix，但必�
 
 Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后形成 genes × cells 的 raw integer sparse counts。所有 input 完成 feature reconciliation 后，只调用一次 `CreateSeuratObject()`。
 
-**Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，新任务最终写为 `results/<GSE>/01_download/seurat_raw.rds`（历史目录不迁移）：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
+**Standard output：**无论来源是 10x、H5AD、RDS、text 或 pooled matrix，新任务最终写为 `D:/Desktop/codex-result/single-cell-skill/<GSE>/01_download/seurat_raw.rds`（历史目录不迁移）：一个 clean Seurat 对象、一个 RNA raw counts layer、标准 sample/cell metadata；不继承作者 PCA、UMAP、SCT/integrated assay、graph、neighbor、cluster 或 normalized expression。
 
 ## 独立单细胞 QC
 
@@ -95,7 +97,7 @@ Stage B 的所有 reader 都返回同一 contract，并在 `assert_counts()` 后
 
 启动器固定 R 和 library，只在子进程设置 profile、`CLI_NO_THREAD=1` 和 `LC_ALL=C`。分析期间使用真实架构，仅退出 cleanup 阶段选择已验证的 cli workaround。正常 R 错误保留原始非零退出码；139 / Windows access violation 记录为 `R_NATIVE_CRASH`，即使输出 PASS 也不会被视为成功。没有 R 环境 fallback，不安装、升级或删除包，不修改系统设置。
 
-`--healthcheck` 输出 `.runtime/r45/health.json`；`--route qc1|qc|ambient|analysis_pca|harmony|clustering|text|10x_h5|h5ad_native` 只要求对应的额外包。每个独立 workflow 至少检查一次。每次 R 调用的环境、阶段、脚本、stdout/stderr、退出码和时长写入忽略的 `.runtime/r45/`。临时验证使用 `--expr "sessionInfo()"`。旧 `qc/r450_rscript.sh` 保留为兼容入口。
+`--healthcheck` 输出 `.runtime/r45/health.json`；`--route qc1|qc|ambient|analysis_pca|harmony|clustering|text|10x_h5|h5ad_native` 只要求对应的额外包。每个独立 workflow 至少检查一次。每次 R 调用的环境、阶段、脚本、stdout/stderr、退出码和时长写入数据集目录的 `.runtime/r45/`（开发临时检查仍可写仓库 `.runtime/`）。临时验证使用 `--expr "sessionInfo()"`。旧 `qc/r450_rscript.sh` 保留为兼容入口。
 
 下载完成、原始对象完成、QC 完成分别记录为 `DOWNLOAD_COMPLETE`、`COMPLETE_RAW`、`COMPLETE_QC`。中断恢复先校验已有 bytes/provenance 或最终 RDS；不覆盖 final、不重复构建已完成大矩阵。`.workflow/state.json` 在审计清理前记录 checkpoint，原始 manifest/receipt 和状态随十文件审计保存；清理后可通过 `audit_run.py resume GSE` 恢复。已有 QC final 使用独立验证恢复。详见 [Runtime 说明](runtime/r45/README.md) 与 [历史退出问题记录](docs/r450-cli-exit-139.md)。
 

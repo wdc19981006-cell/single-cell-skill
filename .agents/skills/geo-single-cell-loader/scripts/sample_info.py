@@ -2,6 +2,7 @@
 import argparse
 import json
 from pathlib import Path
+from common import configure_output_cli
 from common import ROOT, OPTIONAL, dataset_paths, missing, read_csv, validate_manifest, verify_confirmation
 
 LINE = '=' * 60
@@ -60,6 +61,6 @@ def refresh(root, gse):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('gse'); parser.add_argument('--root', type=Path, default=ROOT)
-    args = parser.parse_args()
+    parser.add_argument('gse'); parser.add_argument('--root', type=Path, default=None); parser.add_argument("--output-root", type=Path)
+    args = configure_output_cli(parser, parser.parse_args())
     print(refresh(args.root.resolve(), args.gse))

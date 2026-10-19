@@ -107,6 +107,10 @@ class DownloadLayoutTests(unittest.TestCase):
         self.assertEqual(published.call_args.args[2],'failure')
         self.assertEqual(paths['final'].read_bytes(),b'explicitly synthetic already-validated fixture')
         self.assertEqual(json.loads((workflow/'state.json').read_text())['download_report'],'FAILED')
+        summary=json.loads((paths['dataset']/'download_result.json').read_text())
+        self.assertEqual(summary['status'],'FAILURE')
+        self.assertEqual(summary['audit_status'],'UPLOADED')
+        self.assertTrue(summary['unresolved_issues'])
 
     @staticmethod
     def row(area):

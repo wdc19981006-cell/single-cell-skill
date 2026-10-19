@@ -2,7 +2,7 @@
 analysis_source <- if(sys.nframe()>=1L && !is.null(sys.frame(1)$ofile)) sys.frame(1)$ofile else
   sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 analysis_runner_dir <- dirname(normalizePath(analysis_source,winslash="/",mustWork=TRUE))
-for(module in c("analysis_utils.R","validate_analysis.R","pca_regression.R","harmony.R","clustering.R"))
+for(module in c("analysis_utils.R","validate_analysis.R","pca_regression.R","harmony.R","clustering.R","regression_review.R"))
   source(file.path(analysis_runner_dir,module))
 
 if(sys.nframe()==0L) {
@@ -16,6 +16,7 @@ if(sys.nframe()==0L) {
     pca=analysis_run_pca(args[2],args[3],cfg,request$provenance),
     harmony=analysis_run_harmony(args[2],args[3],cfg,request$provenance),
     `cluster-review`=analysis_run_cluster_review(args[2],args[3],cfg,request$provenance),
+    `regression-review`=analysis_run_regression_review(args[2],args[3],cfg,request$provenance),
     finalize=analysis_finalize(args[2],args[3],cfg,request$provenance,request$decision),
     stop("Unknown analysis step"))
   cat("PASS: analysis stage ",step,"\n",sep="")

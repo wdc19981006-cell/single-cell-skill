@@ -1,8 +1,18 @@
 analysis_validate_object <- function(object,kind="pca") {
+  if(kind=="regression-review") {
+    if(!is.list(object) || !object$status %in% c("COMPLETE","USER_REVIEW_REQUIRED") ||
+       is.null(object$baseline_input)) stop("Invalid regression review record")
+    return(invisible(TRUE))
+  }
   analysis_counts(object,"RNA")
   analysis_metadata(object)
   info <- object@misc$workflow_analysis
-  if(!isTRUE(info$formal_pca) || !identical(info$regress,"pMT"))
+  decision <- info$regression_decision
+  approved <- is.list(decision) && identical(decision$confirmed_by,"user") &&
+    is.character(decision$user_statement) && nzchar(trimws(decision$user_statement)) &&
+    decision$scheme %in% c("feature","count","cell_cycle") &&
+    identical(info$regress,c("pMT",switch(decision$scheme,feature="nFeature_RNA",count="nCount_RNA",cell_cycle=c("S.Score","G2M.Score"))))
+  if(!isTRUE(info$formal_pca) || (!identical(kind,"sensitivity") && !identical(info$regress,"pMT") && !approved))
     stop("Formal baseline PCA with pMT-only regression is required")
   analysis_counts(object,info$assay)
   if(!"pca" %in% names(object@reductions)) stop("Missing formal PCA reduction")

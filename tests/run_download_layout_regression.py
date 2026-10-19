@@ -4,6 +4,7 @@ Uses generated sparse counts only; never initiates a real GEO run or download.
 Retains the isolated fixture and JSON evidence under .runtime/ for review.
 """
 import gzip
+import argparse
 import hashlib
 import json
 import sys
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT/'.agents/skills/geo-single-cell-loader/scripts'
 sys.path.insert(0,str(SCRIPTS))
 sys.path.insert(0,str(ROOT/'runtime/r45'))
-from common import dataset_paths, read_csv, write_csv
+from common import dataset_paths, read_csv, write_csv, storage_root, runtime_output
 from build_manifest import confirm
 from runtime import RRunError, run_r45
 
@@ -23,36 +24,45 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def main():
-    fixture = ROOT/'.runtime'/('download-layout-'+uuid.uuid4().hex[:10])
-    fixture.mkdir(parents=True)
+def main(output_root=None, resume_fixture=False):
+    fixture = storage_root(ROOT,output_root) if output_root else ROOT/'.runtime'/('download-layout-'+uuid.uuid4().hex[:10])
+    fixture.mkdir(parents=True,exist_ok=True)
     gse = 'GSE999999999'
     paths = dataset_paths(fixture,gse)
+    fresh = not paths['dataset'].exists()
+    if not fresh and (not resume_fixture or paths['final'].exists()):
+        raise ValueError('Existing build fixture preserved; resume only an explicitly selected failed fixture without a final RDS')
+    runtime_output(fixture,gse)
     trio = paths['raw']/'Synthetic1'
-    trio.mkdir(parents=True)
-    with gzip.open(trio/'matrix.mtx.gz','wt') as stream:
-        stream.write('%%MatrixMarket matrix coordinate integer general\n250 4 1000\n')
-        for cell in range(1,5):
-            for gene in range(1,251): stream.write(f'{gene} {cell} 2\n')
-    with gzip.open(trio/'features.tsv.gz','wt') as stream:
-        for gene in range(1,251): stream.write(f'ENSG{gene}\tGene{gene}\tGene Expression\n')
-    with gzip.open(trio/'barcodes.tsv.gz','wt') as stream:
-        stream.write('\n'.join('ACGTACGTACGTACG'+str(cell)+'-1' for cell in range(4))+'\n')
+    trio.mkdir(parents=True,exist_ok=True)
+    if fresh:
+        with gzip.open(trio/'matrix.mtx.gz','wt') as stream:
+            stream.write('%%MatrixMarket matrix coordinate integer general\n250 4 1000\n')
+            for cell in range(1,5):
+                for gene in range(1,251): stream.write(f'{gene} {cell} 2\n')
+        with gzip.open(trio/'features.tsv.gz','wt') as stream:
+            for gene in range(1,251): stream.write(f'ENSG{gene}\tGene{gene}\tGene Expression\n')
+        with gzip.open(trio/'barcodes.tsv.gz','wt') as stream:
+            stream.write('\n'.join('ACGTACGTACGTACG'+str(cell)+'-1' for cell in range(4))+'\n')
     area = paths['dataset'].relative_to(fixture).as_posix()
     row = dict(database=gse,sample='Synthetic1',tissue='Synthetic',disease='Synthetic',
         source_type='Tissue',group='Fixture',local_path=area+'/raw/Synthetic1',file_type='10x_mtx',
         count_source='counts',count_evidence='Generated integer fixture counts',
         metadata_evidence='Synthetic fixture only',files_json='[]')
-    workflow = paths['workflow']; workflow.mkdir()
-    report = workflow/'sample_report.csv'; write_csv(report,[row])
+    workflow = paths['workflow']; workflow.mkdir(exist_ok=True)
+    report = workflow/'sample_report.csv'
+    if fresh: write_csv(report,[row])
     approval = workflow/'group_confirmation.json'
-    approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED FIXTURE ONLY',
+    if fresh: approval.write_text(json.dumps(dict(confirmed_by='user',user_statement='SIMULATED FIXTURE ONLY',
         groups={'Synthetic1':'Fixture'})),encoding='utf-8')
     manifest = workflow/'sample_manifest.csv'
-    confirm(report,approval,manifest,fixture)
+    if fresh: confirm(report,approval,manifest,fixture)
+    else:
+        from common import verify_confirmation
+        verify_confirmation(manifest)
     raw_sha = {p.name:sha(p) for p in trio.iterdir()}
     receipt_sha = sha(manifest.with_suffix('.confirmation.json'))
-    log = fixture/'regression.log'
+    log = paths['dataset']/'regression.log'
     results = []
     def run(name,args):
         result = run_r45(SCRIPTS/name,args,cwd=fixture,stage='download_layout_'+name,log_path=log)
@@ -92,9 +102,12 @@ def main():
     evidence = dict(status='PASS',fixture=str(fixture),results=results,raw_sha256=raw_sha,
         rds_sha256=rds_sha,receipt_sha256=receipt_sha,pdf_sha256=report_sha,
         note='metadata.csv intentionally modified by final refusal test; genuine artifacts retained before that boundary')
-    (fixture/'test_results.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
+    (paths['dataset']/'test_results.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
     print(json.dumps(evidence,indent=2))
 
 
 if __name__=='__main__':
-    main()
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output-root',type=Path)
+    parser.add_argument('--resume-fixture',action='store_true')
+    main(**vars(parser.parse_args()))

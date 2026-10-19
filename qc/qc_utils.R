@@ -1,13 +1,14 @@
 if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
 qc_source_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use.names=FALSE)
 qc_script_dir <- dirname(normalizePath(tail(qc_source_files,1L),winslash="/",mustWork=TRUE))
+source(file.path(dirname(qc_script_dir),"runtime/project_paths.R"))
 qc_required_packages <- c("Seurat", "SeuratObject", "Matrix", "yaml", "jsonlite", "ggplot2", "patchwork", "DoubletFinder")
 qc_blank <- function(x) is.na(x) | !nzchar(trimws(as.character(x)))
 
 qc_paths <- function(root, gse) {
-  if (length(gse) != 1L || !grepl("^GSE[0-9]+$", gse)) stop("Expected one GSE accession")
+  sc_dataset_name(gse)
   root <- normalizePath(root, winslash="/", mustWork=TRUE)
-  dataset <- file.path(root,"results",gse)
+  dataset <- sc_project_path(root,gse)
   legacy <- file.path(root,"data",gse)
   canonical_raw <- file.path(dataset,"01_download","seurat_raw.rds")
   raw <- if(file.exists(canonical_raw)) canonical_raw else file.path(legacy,"seurat_raw.rds")
@@ -135,7 +136,7 @@ qc_validate_input <- function(object, gse) {
     if (!field %in% names(metadata) || !is.numeric(metadata[[field]]) ||
         any(!is.finite(metadata[[field]]) | metadata[[field]]<0))
       stop("FAILED_INPUT: missing or invalid QC metric: ",field)
-  if (any(as.character(metadata$database) != gse)) stop("FAILED_INPUT: database metadata differs from GSE")
+  if (grepl("^GSE[0-9]+$",gse) && any(as.character(metadata$database) != gse)) stop("FAILED_INPUT: database metadata differs from GSE")
   counts
 }
 
@@ -202,6 +203,27 @@ qc_cell_filter_rules <- function(meta, thresholds) {
        pRP_max=meta$pRP >= thresholds$pRP_max)
 }
 qc_cell_keep <- function(meta, thresholds) !Reduce(`|`,qc_cell_filter_rules(meta,thresholds))
+
+# Rule hits overlap. Only total_removed_cells is the deduplicated union.
+qc_filter_reasons <- function(meta,thresholds,removed_samples=character()) {
+  rules <- as.data.frame(qc_cell_filter_rules(meta,thresholds))
+  hits <- rowSums(rules)
+  do.call(rbind,lapply(unique(as.character(meta$sample)),function(sample) {
+    selected <- meta$sample==sample
+    excluded <- sample %in% removed_samples
+    row <- data.frame(sample=sample,input_cells=sum(selected),stringsAsFactors=FALSE)
+    for(rule in names(rules)) {
+      row[[paste0(rule,"_hits")]] <- sum(rules[[rule]][selected])
+      row[[paste0(rule,"_only")]] <- sum(rules[[rule]][selected] & hits[selected]==1L)
+    }
+    row$multiple_conditions <- sum(hits[selected]>1L)
+    row$qc_removed_cells <- sum(hits[selected]>0L)
+    row$user_removed_sample_cells <- if(excluded) sum(selected) else 0L
+    row$total_removed_cells <- if(excluded) sum(selected) else row$qc_removed_cells
+    row$removed_fraction <- row$total_removed_cells/row$input_cells
+    row
+  }))
+}
 
 qc_cycle_features <- function(object) {
   reference <- Seurat::cc.genes

@@ -8,6 +8,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from common import configure_output_cli
 from common import ROOT, choose_filtered, dataset_paths, dataset_relative, file_type, write_csv
 from sample_info import render
 
@@ -122,10 +123,10 @@ def search(query):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('gse', nargs='?'); p.add_argument('--search'); p.add_argument('--root', type=Path, default=ROOT)
+    p.add_argument('gse', nargs='?'); p.add_argument('--search'); p.add_argument('--root', type=Path, default=None); p.add_argument("--output-root", type=Path)
     p.add_argument('--max-samples', type=int, help='Development discovery only; never treat this as a full sample report')
     p.add_argument('--fallback-reason', help='Required concrete reason why the global geo MCP call could not complete Stage A')
-    a = p.parse_args()
+    a = configure_output_cli(p, p.parse_args())
     if (a.gse or a.search) and not a.fallback_reason: p.error('--fallback-reason is required because inspect_geo.py is only an MCP fallback')
     if a.search: print(search(a.search))
     elif a.gse: inspect(a.gse.upper(), a.root.resolve(), a.max_samples, a.fallback_reason)

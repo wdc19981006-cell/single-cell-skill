@@ -13,6 +13,47 @@ spec.loader.exec_module(audit)
 
 
 class AuditTests(unittest.TestCase):
+    def test_qc_checkpoint_checksum_mismatch_is_failed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();area=root/"results/GSE123/02_QC/01_basic_QC"
+            area.mkdir(parents=True)
+            (area/"sample_QC_summary.csv").write_text("sample,input_cells,retained_cells\nS1,100,95\n")
+            artifact=area/"seurat_QC-1.rds";artifact.write_bytes(b"synthetic validated fixture")
+            state=area.parent/".workflow/state.json";state.parent.mkdir()
+            state.write_text(json.dumps(dict(qc1="COMPLETE_QC1",qc1_sha256=audit.digest(artifact))))
+            rows,_,_=audit.collect(root,"GSE123")
+            self.assertTrue(any(row['metric']=='checkpoint_validation' and row['status']=='PASS' for row in rows))
+            artifact.write_bytes(b"changed")
+            _,warnings,_=audit.collect(root,"GSE123")
+            self.assertTrue(any(w['category']=='FILE_STATE_INCONSISTENCY' and w['status']=='FAILED' for w in warnings))
+
+    def test_missing_numeric_diagnostic_remains_missing_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();area=root/"results/GSE123/03_analysis/01_pca_regression"
+            area.mkdir(parents=True)
+            (area/"regression_diagnostics.csv").write_text("variable,pc,rho,status\nS.Score,1,,MISSING_METADATA\n")
+            _,warnings,_=audit.collect(root,"GSE123")
+            self.assertTrue(any(w['status']=='MISSING_EVIDENCE' and 'S.Score' in w['message'] for w in warnings))
+
+    def test_verified_finalize_resolves_only_historical_resolution_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve(); area=root/"results/GSE123/03_analysis"
+            state=area/".workflow/state.json"; state.parent.mkdir(parents=True)
+            state.write_text(json.dumps({"cluster-review":"NEEDS_RESOLUTION_SELECTION","finalize":"COMPLETE"}))
+            source=area/"seurat_cluster_review.rds"; source.write_bytes(b"review fixture")
+            final=area/"seurat_analysis.rds"; final.write_bytes(b"validated final fixture")
+            manifest=area/".workflow/finalize.json"
+            manifest.write_text(json.dumps(dict(status="COMPLETE",binding=dict(input=str(source),input_sha256=audit.digest(source),
+                decision=dict(resolution=.3,confirmed_by="user",user_statement="TEST FIXTURE: select .3")),
+                outputs={str(final):audit.digest(final)})))
+            rows,warnings,_=audit.collect(root,"GSE123")
+            self.assertTrue(any(r['metric']=='resolution_selection' and r['status']=='RESOLVED' for r in rows))
+            self.assertTrue(any(w['status']=='RESOLVED' and 'NEEDS_RESOLUTION_SELECTION' in w['message'] for w in warnings))
+            final.write_bytes(b"modified")
+            _,warnings,_=audit.collect(root,"GSE123")
+            self.assertTrue(any(w['category']=='FILE_STATE_INCONSISTENCY' and w['status']=='FAILED' for w in warnings))
+            self.assertFalse(any(w['status']=='RESOLVED' for w in warnings))
+
     def test_partial_evidence_is_observed_with_missing_stages_reported(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()

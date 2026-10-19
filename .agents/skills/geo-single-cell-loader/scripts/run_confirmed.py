@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from audit_run import finalize, restore_provenance, restore_workflow, run_id
+from common import configure_output_cli, storage_root, runtime_output
 from common import ROOT, dataset_paths, local, read_csv
 from stage_a_policy import UnsupportedModality, assess_single_cell_modality
 
@@ -17,6 +18,8 @@ SCRIPTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "runtime/r45"))
 from runtime import RRunError, run_r45
 from workflow import checkpoint, failure
+from run_r45 import atomic_json
+from project_paths import flat_storage
 
 
 def error_record(error, stage):
@@ -151,7 +154,10 @@ def healthcheck_inputs(manifest, log, root):
     log.flush()
 
 
-def run(gse, root=ROOT):
+def run(gse, root=None, output_root=None):
+    root = storage_root(root, output_root)
+    root.mkdir(parents=True, exist_ok=True)
+    runtime_output(root, gse)
     paths = dataset_paths(root, gse)
     workflow = paths["workflow"]
     if not workflow.exists() and (paths["dataset"] / "group_confirmation.json").is_file():
@@ -264,10 +270,31 @@ def run(gse, root=ROOT):
             checkpoint(workflow, download_report="FAILED", error=error_record(error, "download_report"))
             with execution_log.open("a", encoding="utf-8") as source_log:
                 source_log.write(reason + "\n")
+    # Persistent compact handoff survives the ten-file audit's workflow cleanup.
+    summary_path = paths["dataset"] / "download_result.json"
+    summary = dict(stage="download", status="COMPLETE_RAW" if status=="success" else status.upper(),
+        input=str(paths["raw"]), output=str(paths["final"]) if paths["final"].is_file() else None,
+        outputs=[str(p) for p in paths["dataset"].iterdir() if p.name!=".workflow"],
+        parameters=dict(min_cells=3,min_features=200,assay="RNA",layer="counts"),
+        statistics=read_csv(workflow / "sample_summary.csv") if (workflow / "sample_summary.csv").is_file() else [],
+        unresolved_issues=[reason] if reason else [],needs_user_decision=False,
+        next_stage_requires_authorization=True,audit_status="PENDING",
+        next_command=[sys.executable,str(ROOT / "qc/run_workflow.py"),gse,
+            "--output-root" if flat_storage(root) else "--root",str(root),"--precheck"])
+    try:
+        atomic_json(summary_path,summary)
+    except Exception as error:
+        status="failure";reason += f"; Could not preserve download summary: {error}"
+        checkpoint(workflow,download_report="FAILED",error=error_record(error,"download_report"))
     try:
         url = finalize(gse, root, status, reason)
     except Exception as error:
+        summary.update(audit_status="FAILED",unresolved_issues=summary["unresolved_issues"]+[str(error)])
+        try: atomic_json(summary_path,summary)
+        except Exception: pass  # Preserve the audit failure as the primary error.
         raise RuntimeError(f"Audit upload failed; local workflow retained for retry: {error}") from error
+    summary.update(audit_status="UPLOADED",audit_url=url)
+    atomic_json(summary_path,summary)
     print(f"Audit: {url}")
     if status != "success":
         raise RuntimeError(f"{status}: {reason}")
@@ -281,8 +308,8 @@ def main():
     signal.signal(signal.SIGTERM, interrupted)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("gse")
-    parser.add_argument("--root", type=Path, default=ROOT)
-    args = parser.parse_args()
+    parser.add_argument("--root", type=Path, default=None); parser.add_argument("--output-root", type=Path)
+    args = configure_output_cli(parser, parser.parse_args())
     run(args.gse, args.root.resolve())
 
 

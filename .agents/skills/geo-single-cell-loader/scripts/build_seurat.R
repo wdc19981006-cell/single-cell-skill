@@ -5,7 +5,9 @@ source(file.path(dirname(normalizePath(script)),"seurat_common.R"))
 if (length(argv) != 2L) stop("Usage: run_r45.py build_seurat.R REPOSITORY_ROOT MANIFEST_RELATIVE_PATH")
 root <- normalizePath(argv[1],winslash="/",mustWork=TRUE)
 base <- manifest_dataset(argv[2])
-gse <- strsplit(base,"/",fixed=TRUE)[[1]][2]
+parts <- strsplit(base,"/",fixed=TRUE)[[1]]
+gse <- parts[grepl("^GSE[0-9]+$",parts)]
+if(length(gse)!=1L) stop("Manifest dataset ID is ambiguous")
 if (!identical(base,dataset_relative(root,gse))) stop("Manifest is outside the active dataset download root")
 out <- file.path(root,base)
 if (dir.exists(out) && !identical(tolower(normalizePath(out,winslash="/")),tolower(out))) stop("Dataset directory redirects outside its declared location")

@@ -1,5 +1,6 @@
 if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
 geo_scripts_dir <- dirname(normalizePath(sys.frame(1)$ofile,winslash="/",mustWork=TRUE))
+source(file.path(dirname(dirname(dirname(dirname(geo_scripts_dir)))),"runtime/project_paths.R"))
 required_fields <- c("database", "sample", "tissue", "disease", "source_type", "group")
 optional_fields <- c("patient", "specimen", "cohort", "treatment")
 blank <- function(x) is.na(x) | tolower(trimws(as.character(x))) %in% c("", "na", "nan", "null", "none")
@@ -28,7 +29,7 @@ repo_path <- function(root, relative, area = "data") {
 dataset_relative <- function(root,gse) {
   if (length(gse)!=1L || !grepl("^GSE[0-9]+$",gse)) stop("Expected GSE accession")
   legacy <- paste0("data/",gse)
-  canonical <- paste0("results/",gse,"/01_download")
+  canonical <- if(sc_flat_storage(root)) paste0(gse,"/01_download") else paste0("results/",gse,"/01_download")
   old <- file.path(root,legacy); new <- file.path(root,canonical)
   if (dir.exists(old) && dir.exists(new)) stop("Both legacy and canonical download roots exist; review explicitly before continuing")
   base <- if (dir.exists(old)) legacy else canonical
@@ -39,7 +40,7 @@ dataset_relative <- function(root,gse) {
   base
 }
 manifest_dataset <- function(relative) {
-  if (!grepl("^(data/GSE[0-9]+|results/GSE[0-9]+/01_download)/\\.workflow/[^/]+\\.csv$",relative))
+  if (!grepl("^(data/GSE[0-9]+|(results/)?GSE[0-9]+/01_download)/\\.workflow/[^/]+\\.csv$",relative))
     stop("Manifest must be under a legacy or canonical download .workflow/")
   sub("/\\.workflow/[^/]+\\.csv$","",relative)
 }
@@ -72,7 +73,7 @@ read_manifest <- function(path, root) {
   }
   manifest_relative <- substring(normalizePath(path,winslash="/"), nchar(root)+2L)
   base <- manifest_dataset(manifest_relative)
-  expected <- if (startsWith(base,"data/")) paste0("data/",m$database[1]) else paste0("results/",m$database[1],"/01_download")
+  expected <- dataset_relative(root,m$database[1])
   if (!identical(base,expected)) stop("Manifest belongs to a different GSE")
   repo_path(root, manifest_relative, paste0(base,"/.workflow"))
   attr(m,"dataset_relative") <- base
@@ -160,7 +161,7 @@ route_input <- function(row, root) {
   base <- attr(row,"dataset_relative")
   if (is.null(base)) {
     base <- if (startsWith(row$local_path,paste0("data/",row$database,"/raw/")))
-      paste0("data/",row$database) else paste0("results/",row$database,"/01_download")
+      paste0("data/",row$database) else dataset_relative(root,row$database)
   }
   path <- repo_path(root, row$local_path, paste0(base,"/raw"))
   if (type == "text") {
@@ -447,7 +448,7 @@ map_input_cells <- function(input,rows,root,cell_map_cache,cell_map_reader=defau
     relative <- unique(map_values[nzchar(map_values)])
     base <- attr(rows,"dataset_relative")
     if (is.null(base)) base <- if (startsWith(relative,paste0("data/",rows$database[1],"/")))
-      paste0("data/",rows$database[1]) else paste0("results/",rows$database[1],"/01_download")
+      paste0("data/",rows$database[1]) else dataset_relative(root,rows$database[1])
     area <- paste0(base,if (startsWith(relative,paste0(base,"/cell_map/"))) "/cell_map" else "/.workflow")
     map_path <- repo_path(root,relative,area)
     if (exists(map_path,envir=cell_map_cache,inherits=FALSE)) {

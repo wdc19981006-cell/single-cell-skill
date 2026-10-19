@@ -1,18 +1,24 @@
 # DecontX estimates contamination from raw RNA counts. No cell removal is applied.
-qc_run_ambient <- function(object,paths,report,api=NULL,seed=42L) {
+qc_run_ambient <- function(object,paths,report,api=NULL,seed=42L,cfg=NULL) {
+  if("decontX" %in% names(object@assays)) stop("Existing decontX assay preserved; use read-only ambient review")
+  cfg <- qc_ambient_config(cfg)
   original <- qc_counts(object)
+  original_meta <- object@meta.data
   object <- qc_capture_libraries(object)
   if(any(Matrix::colSums(original)<=0)) stop("DECONTX_INPUT: zero-count cell found; preserve QC-2 and review input")
   if(is.null(api)) {
     needed <- c("celda","SingleCellExperiment","SummarizedExperiment")
     missing <- needed[!vapply(needed,requireNamespace,logical(1),quietly=TRUE)]
     if(length(missing)) stop("DECONTX_DEPENDENCY: missing ",paste(missing,collapse=", "),"; QC-2 remains available")
-    api <- list(run=function(sce,batch,seed) celda::decontX(sce,batch=batch,seed=seed,verbose=FALSE),
+    api <- list(run=function(sce,batch,seed,...) celda::decontX(sce,batch=batch,seed=seed,verbose=FALSE,...),
                 counts=function(sce) celda::decontXcounts(sce))
   }
   sce <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=original),
     colData=S4Vectors::DataFrame(object@meta.data))
-  corrected <- api$run(sce,batch=as.character(object$library_id),seed=seed)
+  background <- qc_ambient_background(cfg$background_manifest,object)
+  arguments <- list(sce=sce,batch=as.character(object$library_id),seed=seed)
+  if(!is.null(background)) arguments <- c(arguments,list(background=background$counts,background_batch=background$batch))
+  corrected <- do.call(api$run,arguments)
   contamination <- as.numeric(SummarizedExperiment::colData(corrected)$decontX_contamination)
   corrected_counts <- api$counts(corrected)
   if(!inherits(corrected_counts,"sparseMatrix")) corrected_counts <- Matrix::Matrix(corrected_counts,sparse=TRUE)
@@ -27,9 +33,14 @@ qc_run_ambient <- function(object,paths,report,api=NULL,seed=42L) {
   object$decontX_removed_UMI <- object$decontX_original_UMI-object$decontX_corrected_UMI
   SeuratObject::DefaultAssay(object) <- "RNA"
   if(!identical(qc_counts(object),original)) stop("DECONTX_RESULT: original RNA counts changed")
+  if(!identical(object@meta.data[,names(original_meta),drop=FALSE],original_meta))
+    stop("DECONTX_RESULT: original QC metadata changed: ",paste(names(original_meta)[!vapply(names(original_meta),
+      function(field) identical(object@meta.data[[field]],original_meta[[field]]),logical(1))],collapse=","))
   object@misc$ambient_RNA <- list(method="celda::decontX",input_assay="RNA",input_layer="counts",
     output_assay="decontX",output_layer="counts",batch="library_id",seed=seed,
-    cell_removal="none",default_analysis_assay="RNA",package_version=as.character(utils::packageVersion("celda")))
+    cell_removal="none",default_analysis_assay="decontX",diagnostic_thresholds=cfg,
+    background=if(is.null(background)) "not supplied" else background[c("manifest","manifest_md5","sources")],
+    metric_source="QC metadata from RNA; decontX_*_UMI from corrected counts",package_version=as.character(utils::packageVersion("celda")))
   cells <- data.frame(cell_id=colnames(object),sample=as.character(object$sample),library_id=as.character(object$library_id),
     contamination=contamination,original_UMI=object$decontX_original_UMI,
     corrected_UMI=object$decontX_corrected_UMI,removed_UMI=object$decontX_removed_UMI)
@@ -57,5 +68,6 @@ qc_run_ambient <- function(object,paths,report,api=NULL,seed=42L) {
   save_sc_plot(comparison,"decontX_comparison","diagnostics",paths$qc,ncol(object),length(unique(object$sample)),report)
   qc_report_add(report,"AMBIENT_RNA",metric="cells_removed",value=0L,note="Evaluation and correction only; no fixed contamination threshold")
   qc_report_add(report,"AMBIENT_RNA",metric="mean_contamination",value=mean(contamination))
+  qc_review_ambient(object,paths,report,cfg)
   object
 }

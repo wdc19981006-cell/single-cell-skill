@@ -3,6 +3,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from common import configure_output_cli
 from common import ROOT, dataset_paths, dataset_relative, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
 from sample_info import render
 
@@ -62,12 +63,12 @@ def confirm(report, confirmation, output, root):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--root', type=Path, default=ROOT)
+    p.add_argument('--root', type=Path, default=None); p.add_argument("--output-root", type=Path)
     p.add_argument('--report', type=Path)
     p.add_argument('--confirmation', type=Path)
     p.add_argument('--output', type=Path)
     p.add_argument('--validate', type=Path)
-    a = p.parse_args()
+    a = configure_output_cli(p, p.parse_args())
     if a.validate:
         validate_manifest(read_csv(a.validate), a.root.resolve(), allow_pending_probes=True); verify_confirmation(a.validate)
         print('Manifest and confirmation valid; pending text/pooled probes must finish before build')

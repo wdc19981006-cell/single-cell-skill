@@ -40,3 +40,13 @@ plots:
   save_singlet_dimplot: true
   save_cell_cycle_phase: true
   save_cell_cycle_score: true
+
+# Diagnostic alerts only. These values never filter cells or samples.
+ambient:
+  mean_warning: 0.5
+  median_warning: 0.5
+  p95_warning: 0.8
+  high_contamination: 0.5
+  marker_retention_warning: 0.2
+  background_manifest: null
+  markers: [PTPRC, EPCAM, COL1A1, PECAM1, CD3D, MS4A1, LYZ, ALB, KRT19]

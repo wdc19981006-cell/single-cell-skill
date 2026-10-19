@@ -3,7 +3,11 @@
 `run_r45.py` is the only supported R process launcher. It uses the fixed
 installation in `config.py`, a process-local startup profile, `CLI_NO_THREAD=1`,
 and `LC_ALL=C`. It records stdout, stderr, exit code and environment in ignored
-`.runtime/r45/runs/` files. Native crashes remain failures.
+dataset-local `.runtime/r45/runs/` files when launched by a workflow. The shared
+result root is configured in `runtime/output_config.json`; workflow entrypoints
+accept `--output-root`. Standalone development checks retain the repository
+`.runtime/r45/` fallback. Request records, health reports and incidental unnamed
+graphics use the same dataset-local runtime directory. Native crashes remain failures.
 
 Use `/c/Python312/python.exe D:/CodexProjects/single-cell-skill/runtime/r45/run_r45.py --healthcheck` before a raw
 build, or add `--route qc1`, `qc`, `ambient`, `analysis_pca`, `harmony`,

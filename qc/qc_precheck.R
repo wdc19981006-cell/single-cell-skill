@@ -3,8 +3,9 @@ qc_precheck_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use
 qc_precheck_source <- if(length(qc_precheck_files)) tail(qc_precheck_files,1L) else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 source(file.path(dirname(normalizePath(qc_precheck_source,winslash="/",mustWork=TRUE)),"qc_utils.R"))
 
-qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE),step="qc2") {
+qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(p,quietly=TRUE),step="qc2",input=NULL) {
   paths <- qc_paths(root,gse)
+  if(!is.null(input)) paths$raw <- normalizePath(input,winslash="/",mustWork=TRUE)
   report <- qc_report_new()
   started <- proc.time()[["elapsed"]]
   finish <- function(status,note="") {
@@ -111,6 +112,10 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
     if(conflict) needs <- c(needs,paste("Default",metric,"conflicts with data distribution"))
   }
   predicted_keep <- active & qc_cell_keep(metadata,cfg$cell_qc)
+  reasons <- qc_filter_reasons(metadata,cfg$cell_qc,removed)
+  for(i in seq_len(nrow(reasons))) for(metric in setdiff(names(reasons),"sample"))
+    qc_report_add(report,"FILTER_REASONS",reasons$sample[i],metric,reasons[[metric]][i],
+      note="*_hits overlap; *_only are exclusive; total_removed_cells is deduplicated")
   removal_limit <- cfg$cell_qc$max_predicted_qc_removal_fraction
   report_removal <- function(sample,input,after) {
     removed_cells <- input-after
@@ -160,8 +165,8 @@ qc_precheck <- function(root,gse,package_available=function(p) requireNamespace(
 
 if (sys.nframe()==0L) {
   args <- commandArgs(trailingOnly=TRUE)
-  if(!length(args) %in% c(2L,3L)) stop("Usage: run_r45.py qc/qc_precheck.R REPOSITORY_ROOT GSE [qc1|qc2]")
-  status <- qc_precheck(args[1],args[2],step=if(length(args)>2L) args[3] else "qc2")
+  if(!length(args) %in% 2:4) stop("Usage: run_r45.py qc/qc_precheck.R STORAGE_ROOT DATASET [qc1|qc2] [INPUT_RDS]")
+  status <- qc_precheck(args[1],args[2],step=if(length(args)>2L) args[3] else "qc2",input=if(length(args)>3L) args[4] else NULL)
   cat("QC precheck:",status,"\n")
   if(status!="PASS") quit(status=1L)
 }

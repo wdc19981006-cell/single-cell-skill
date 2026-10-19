@@ -14,6 +14,23 @@ spec.loader.exec_module(analysis)
 
 
 class AnalysisWorkflowTests(unittest.TestCase):
+    def test_regression_tradeoff_needs_an_explicit_formal_scheme_choice(self):
+        def comparison_r(*args,**kwargs):
+            self.fake_r(*args,**kwargs)
+            if kwargs["stage"]=="analysis_regression-review":
+                staging=Path(args[1][2])
+                (staging/"regression_review_result.json").write_text(json.dumps(dict(status="USER_REVIEW_REQUIRED")))
+        with patch.object(analysis,"run_r45",side_effect=comparison_r):
+            analysis.run("GSE123",self.root)
+            decision=self.root/"choice.json"
+            value=dict(confirmed_by="user",user_statement="TEST: choose .3",resolution=.3)
+            decision.write_text(json.dumps(value))
+            with self.assertRaisesRegex(ValueError,"formal-scheme choice"):
+                analysis.run("GSE123",self.root,step="finalize",resolution_decision=decision)
+            value.update(regression_scheme="baseline",regression_statement="TEST: keep baseline after comparison review")
+            decision.write_text(json.dumps(value))
+            self.assertEqual(analysis.run("GSE123",self.root,step="finalize",resolution_decision=decision),"COMPLETE")
+
     def setUp(self):
         audit_patch = patch.object(analysis, "audit")
         self.audit = audit_patch.start()
@@ -55,6 +72,12 @@ class AnalysisWorkflowTests(unittest.TestCase):
         self.assertNotIn("analysis_finalize", stages)
         self.assertTrue((self.area / "seurat_cluster_review.rds").is_file())
         self.audit.assert_called_once_with("GSE123", self.root)
+        for path in self.area.rglob("*_result.json"):
+            if ".workflow" in path.parts: continue
+            result=json.loads(path.read_text())
+            self.assertTrue(Path(result['output_object']).is_file())
+            self.assertTrue(all(Path(output).exists() for output in result['outputs']))
+            self.assertFalse(any(Path(output).name=='request.json' for output in result['outputs']))
 
     def test_resume_validates_existing_rds_without_recomputation(self):
         with patch.object(analysis, "run_r45", side_effect=self.fake_r):
@@ -67,7 +90,7 @@ class AnalysisWorkflowTests(unittest.TestCase):
         with patch.object(analysis, "run_r45", side_effect=self.fake_r):
             analysis.run("GSE123", self.root, step="pca")
         config = self.root / "config.json"
-        config.write_text('{"assay":"decontX"}')
+        config.write_text('{"assay":"RNA"}')
         with patch.object(analysis, "run_r45", side_effect=self.fake_r):
             with self.assertRaisesRegex(ValueError, "different inputs/configuration"):
                 analysis.run("GSE123", self.root, step="pca", config=config)
@@ -124,6 +147,9 @@ class AnalysisWorkflowTests(unittest.TestCase):
         with patch.object(analysis, "run_r45", side_effect=self.fake_r) as calls:
             analysis.run("GSE123", self.root, step="pca")
         self.assertEqual([c.kwargs["stage"] for c in calls.call_args_list], ["analysis_validation"])
+        state=json.loads((self.area/".workflow/state.json").read_text())
+        self.assertEqual(state["pca"],"COMPLETE")
+        self.assertIsNone(state["error"])
 
     def test_audit_failure_keeps_completed_analysis(self):
         self.audit.side_effect = RuntimeError("audit failed")

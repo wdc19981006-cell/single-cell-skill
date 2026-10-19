@@ -25,6 +25,10 @@ if (!nzchar(Sys.getenv("PROCESSOR_ARCHITECTURE"))) {
   Sys.setenv(PROCESSOR_ARCHITECTURE=actual_arch)
 }
 options(r45.runtime.active=TRUE, r45.cli_exit_workaround=TRUE)
+# Some plot-layout helpers open an unnamed graphics device even without drawing.
+# Keep that incidental device with this invocation's logs, never as repo/Rplots.pdf.
+if(nzchar(Sys.getenv("R45_DEFAULT_PLOT"))) options(device=function(...)
+  grDevices::pdf(file=Sys.getenv("R45_DEFAULT_PLOT"),...))
 
 # The architecture seen by calculations is unchanged. Only cli's process-exit
 # cleanup branch is selected after calculations have finished.

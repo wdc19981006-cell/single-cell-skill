@@ -9,10 +9,14 @@ The audit repository contains only the ten specified text/JSON/CSV files.
 After successful upload, remove only temporary download `.workflow` files.
 Retain raw inputs, the final RDS, sample_info.txt, group_confirmation.json,
 cell maps, and the stage-local metadata, summaries, reports and logs.
-Retain temporary workflow files if upload fails. New datasets use
-`results/<GSE>/01_download`; existing `data/<GSE>` remains readable in place.
-QC writes `results/<GSE>/02_QC/{01_basic_QC,02_doublet_cellcycle,03_ambient_RNA}`;
-formal analysis and its diagnostic audit write `results/<GSE>/03_analysis`.
+Retain temporary workflow files if upload fails. New datasets use the default collection root in `runtime/output_config.json`:
+`D:/Desktop/codex-result/single-cell-skill/<DATASET>/01_download`. All launchers
+support `--output-root`; explicit `--root OLD_WORKSPACE` preserves legacy results
+layout. Existing `results/<GSE>` and `data/<GSE>` remain readable in place and are
+never moved/deleted. Code and result roots are independent; non-GEO names are
+path-validated. New analysis alternatives use `--run-id` and isolated checkpoints.
+QC writes `<OUTPUT_ROOT>/<DATASET>/02_QC/{01_basic_QC,02_doublet_cellcycle,03_ambient_RNA}`;
+formal analysis and its diagnostic audit write `<OUTPUT_ROOT>/<DATASET>/03_analysis`.
 The local scientific audit is distinct from the ten-file download audit.
 
 During a real run, record issues and avoid broad restructuring. Subsequent

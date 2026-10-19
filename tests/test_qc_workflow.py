@@ -13,6 +13,15 @@ spec.loader.exec_module(qc)
 
 
 class QCWorkflowTests(unittest.TestCase):
+    def test_explicit_historical_raw_can_start_qc1_without_a_new_download(self):
+        old=self.root/"historical_raw.rds"
+        self.raw.replace(old)
+        with patch.object(qc,"run_r45",side_effect=self.complete) as calls:
+            self.assertEqual(qc.run("GSE123",self.root,step="qc1",input_path=old),"COMPLETE_QC1")
+        processing=[c for c in calls.call_args_list if c.kwargs["stage"]=="qc1"]
+        self.assertEqual(processing[0].args[1][-1],old)
+        self.assertEqual(old.read_bytes(),b"immutable raw fixture")
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)

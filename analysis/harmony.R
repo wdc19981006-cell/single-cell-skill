@@ -41,12 +41,32 @@ analysis_design_check <- function(meta,cfg) {
     if(length(unique(meta[[selected]]))<2L) "ONE_BATCH_LEVEL" else
     if(selected=="sample" && !isTRUE(cfg$harmony$allow_sample)) "SAMPLE_INTEGRATION_NOT_APPROVED" else
     if(selected!="sample" && !selected %in% trusted) "TECHNICAL_MEANING_UNCONFIRMED" else
-    if(!group_ok && !acknowledged) "BIOLOGICAL_GROUP_UNAVAILABLE" else
-    if(isTRUE(confounding(selected)) && !acknowledged) "BATCH_GROUP_CONFOUNDED" else "ELIGIBLE"
+    if(selected!="sample" && !group_ok && !acknowledged) "BIOLOGICAL_GROUP_UNAVAILABLE" else
+    if(selected!="sample" && isTRUE(confounding(selected)) && !acknowledged) "BATCH_GROUP_CONFOUNDED" else "ELIGIBLE"
   table$decision <- reason
   list(table=table,selected=selected,eligible=identical(reason,"ELIGIBLE"),reason=reason,
        confounded=if(is.null(selected)) NA else confounding(selected),group_available=group_ok,
        acknowledgement=if(acknowledged) acknowledgement else NULL)
+}
+
+analysis_apply_harmony <- function(object,field,dims,seed) {
+  analysis_require("harmony")
+  method <- getS3method("RunHarmony","Seurat",envir=asNamespace("harmony"))
+  arguments <- list(object=object,group.by.vars=field,dims.use=dims,
+    reduction.save="harmony",project.dim=FALSE,verbose=FALSE)
+  if("reduction.use" %in% names(formals(method))) arguments$reduction.use <- "pca"
+  else if("reduction" %in% names(formals(method))) arguments$reduction <- "pca"
+  else stop("Unsupported installed Harmony Seurat method")
+  set.seed(seed)
+  do.call(harmony::RunHarmony,arguments)
+}
+
+analysis_integration_input <- function(object) {
+  for(name in intersect(c("harmony","umap_harmony","umap_unintegrated","umap"),names(object@reductions)))
+    object[[name]] <- NULL
+  object@graphs <- list(); object@neighbors <- list()
+  object@misc$workflow_analysis$harmony_completed <- FALSE
+  object
 }
 
 analysis_neighbors <- function(embedding,k=20L) {
@@ -89,6 +109,7 @@ analysis_run_harmony <- function(input,out,cfg,provenance) {
   analysis_require(c("Seurat","SeuratObject","jsonlite","yaml","ggplot2","patchwork","RANN"))
   object <- readRDS(input)
   analysis_validate_object(object,"pca")
+  object <- analysis_integration_input(object)
   original_rna <- analysis_counts(object,"RNA")
   warnings <- analysis_warning_table()
   design <- analysis_design_check(object@meta.data,cfg)
@@ -122,16 +143,7 @@ analysis_run_harmony <- function(input,out,cfg,provenance) {
     "Biological group metadata are unavailable or incomplete; confounding cannot be checked",
     "Provide biological design metadata before interpreting corrected structure")
   if(design$eligible) {
-    analysis_require("harmony")
-    # Installed Harmony S3 methods differ between reduction.use and reduction.
-    method <- getS3method("RunHarmony","Seurat",envir=asNamespace("harmony"))
-    arguments <- list(object=object,group.by.vars=design$selected,dims.use=dims,
-      reduction.save="harmony",project.dim=FALSE,verbose=FALSE)
-    if("reduction.use" %in% names(formals(method))) arguments$reduction.use <- "pca"
-    else if("reduction" %in% names(formals(method))) arguments$reduction <- "pca"
-    else stop("Unsupported installed Harmony Seurat method: missing reduction argument")
-    set.seed(cfg$seed)
-    object <- do.call(harmony::RunHarmony,arguments)
+    object <- analysis_apply_harmony(object,design$selected,dims,cfg$seed)
     object <- analysis_umap(object,"harmony",dims,"umap_harmony",cfg$seed)
     object@misc$workflow_analysis$harmony_completed <- TRUE
     after <- lapply(fields,function(field) analysis_embedding_panel(object,field,"umap_harmony",paste("After:",field)))
@@ -182,5 +194,5 @@ analysis_run_harmony <- function(input,out,cfg,provenance) {
     pc_used=pc_used,seed=cfg$seed),file.path(out,"harmony_config.yaml"))
   summary <- data.frame(metric=c("cells","pc_used","batch_field","design_decision","group_confounded","harmony_status"),
     value=c(ncol(object),pc_used,design$selected %||% "NONE",design$reason,design$confounded,status))
-  analysis_finish("harmony",status,out,summary,warnings)
+  analysis_finish("harmony",status,out,summary,warnings,cfg,provenance)
 }

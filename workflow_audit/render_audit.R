@@ -33,7 +33,7 @@ stages <- c("download","qc1","qc2","qc3","pca","harmony","clustering")
 overview <- c(paste("Generated UTC:",format(Sys.time(),tz="UTC",usetz=TRUE)),
   "This audit summarizes saved evidence. File presence alone is not scientific validation.",
   "Missing evidence and biological decisions remain explicit. No analysis was rerun.","",
-  vapply(stages,function(s) paste(s,":",sum(audit$stage==s),"observed fields;",sum(warnings$stage==s),"review items"),character(1)))
+  vapply(stages,function(s) paste(s,":",sum(audit$stage==s),"observed fields;",sum(warnings$stage==s & !warnings$status %in% c("RESOLVED","PASS")),"current review items"),character(1)))
 text_page("Single-cell workflow audit",wrap(overview))
 for(stage in stages) {
   rows <- audit[audit$stage==stage,,drop=FALSE]
@@ -60,10 +60,16 @@ for(stage in stages) {
   text_page(paste("Observed evidence:",stage),wrap(lines))
 }
 if(nrow(warnings)) {
-  lines <- unlist(lapply(seq_len(nrow(warnings)),function(i) c(
-    paste0("[",warnings$stage[i]," / ",warnings$category[i]," / ",warnings$severity[i],"] ",warnings$message[i]),
-    paste("Action:",warnings$recommendation[i]),"")))
-  text_page("Warnings and required review",wrap(lines))
+  current <- warnings[!warnings$status %in% c("RESOLVED","PASS"),,drop=FALSE]
+  keys <- unique(paste(current$stage,current$category,current$status,sep=" | "))
+  lines <- unlist(lapply(keys,function(key) {
+    rows <- current[paste(current$stage,current$category,current$status,sep=" | ")==key,,drop=FALSE]
+    c(paste0("[",key,"] ",nrow(rows)," record(s)"),head(rows$message,3L),
+      if(nrow(rows)>3L) "Additional records preserved in workflow_warnings.csv",paste("Action:",rows$recommendation[1]),"")
+  }))
+  text_page("Current warnings and required decisions",wrap(if(length(lines)) lines else "No unresolved warnings."))
+  historical <- warnings[warnings$status=="RESOLVED",,drop=FALSE]
+  if(nrow(historical)) text_page("Resolved historical decisions",wrap(paste("[RESOLVED]",unique(historical$message))))
 } else text_page("Warnings and required review","No warnings were present in the collected tables; this is not proof that all biological risks are absent.")
 grDevices::dev.off()
 cat("Audit PDF pages:",page,"\n")

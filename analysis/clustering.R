@@ -34,6 +34,16 @@ analysis_cluster_associations <- function(meta,columns,resolutions) {
   }))))
 }
 
+analysis_cluster_metric_profiles <- function(meta,labels) {
+  variables <- intersect(c("pMT","nCount_RNA","nFeature_RNA","S.Score","G2M.Score"),names(meta))
+  do.call(rbind,lapply(variables,function(variable) do.call(rbind,lapply(unique(labels),function(cluster) {
+    x <- meta[[variable]]; value <- x[labels==cluster & is.finite(x)]
+    data.frame(cluster=cluster,variable=variable,cells=length(value),median=stats::median(value),
+      mean=mean(value),p10=as.numeric(stats::quantile(value,.1)),p90=as.numeric(stats::quantile(value,.9)),
+      standardized_mean_shift=if(stats::sd(x,na.rm=TRUE)>0) (mean(value)-mean(x,na.rm=TRUE))/stats::sd(x,na.rm=TRUE) else NA_real_)
+  }))))
+}
+
 analysis_run_cluster_review <- function(input,out,cfg,provenance) {
   analysis_require(c("Seurat","SeuratObject","jsonlite","yaml","ggplot2","patchwork","clustree"))
   object <- readRDS(input)
@@ -116,11 +126,45 @@ analysis_run_cluster_review <- function(input,out,cfg,provenance) {
     "Review marker structure, cluster size, clustree and stability, then provide a resolution decision",severity="ACTION_REQUIRED")
   summary <- data.frame(metric=c("cells","representation","pc_used","candidate_resolutions","status"),
     value=c(ncol(object),reduction,length(dims),paste(cfg$resolutions,collapse=";"),"NEEDS_RESOLUTION_SELECTION"))
-  analysis_finish("cluster-review","NEEDS_RESOLUTION_SELECTION",out,summary,warnings)
+  analysis_finish("cluster-review","NEEDS_RESOLUTION_SELECTION",out,summary,warnings,cfg,provenance)
+}
+
+analysis_final_diagnostics <- function(object,out,cfg,resolution) {
+  directory <- file.path(out,paste0("selected_resolution_",format(resolution,trim=TRUE,scientific=FALSE)))
+  dir.create(directory,recursive=TRUE,showWarnings=FALSE)
+  markers <- unique(c(cfg$markers,cfg$proliferation_markers))
+  present <- intersect(markers,rownames(object[[SeuratObject::DefaultAssay(object)]]))
+  analysis_write_csv(data.frame(marker=markers,status=ifelse(markers %in% present,"MEASURED","MARKER_ABSENT")),
+    file.path(directory,"marker_availability.csv"))
+  if(length(present)) {
+    analysis_plot(Seurat::DotPlot(object,features=present,assay=SeuratObject::DefaultAssay(object))+theme_sc()+
+      ggplot2::labs(title=paste("Selected resolution",resolution,"markers; annotation review only")),"marker_dotplot","diagnostics",directory)
+    size <- sc_plot_dimensions("umap_single")
+    grDevices::pdf(file.path(directory,"marker_featureplots.pdf"),width=size[1],height=size[2])
+    tryCatch(for(marker in present) print(Seurat::FeaturePlot(object,features=marker,reduction="umap",
+      pt.size=get_umap_point_size(ncol(object)))+theme_sc_umap()),finally=grDevices::dev.off())
+  } else {
+    grDevices::pdf(file.path(directory,"marker_featureplots.pdf")); grid::grid.newpage()
+    grid::grid.text("Configured markers absent: provide relevant symbols; no annotation inferred"); grDevices::dev.off()
+  }
+  fields <- intersect(c("nCount_RNA","nFeature_RNA","pMT","S.Score","G2M.Score"),names(object@meta.data))
+  panels <- lapply(fields,function(field) ggplot2::ggplot(object@meta.data,
+    ggplot2::aes(x=seurat_clusters,y=.data[[field]],fill=seurat_clusters))+
+    ggplot2::geom_violin(scale="width")+ggplot2::geom_boxplot(width=.15,outlier.shape=NA,fill="white")+
+    theme_sc()+ggplot2::labs(x="Cluster",y=field)+ggplot2::theme(legend.position="none"))
+  analysis_plot(patchwork::wrap_plots(panels,ncol=2),"qc_cycle_distributions","diagnostics",directory)
+  composition <- analysis_composition(object,as.character(object$seurat_clusters),"selected")
+  analysis_write_csv(composition,file.path(directory,"sample_group_cycle_composition.csv"))
+  analysis_plot(ggplot2::ggplot(composition,ggplot2::aes(x=cluster,y=cells,fill=value))+
+    ggplot2::geom_col(position="fill")+ggplot2::facet_wrap(~field)+theme_sc()+
+    ggplot2::labs(y="Fraction",fill="Sample / group / phase"),"sample_group_composition","diagnostics",directory)
+  sizes <- table(object$seurat_clusters)
+  analysis_write_csv(data.frame(cluster=names(sizes),cells=as.integer(sizes),fraction=as.numeric(sizes)/ncol(object)),
+    file.path(directory,"final_cluster_sizes.csv"))
 }
 
 analysis_finalize <- function(input,out,cfg,provenance,decision) {
-  analysis_require(c("Seurat","SeuratObject","jsonlite","yaml"))
+  analysis_require(c("Seurat","SeuratObject","jsonlite","yaml","ggplot2","patchwork"))
   object <- readRDS(input)
   analysis_validate_object(object,"cluster-review")
   if(!is.list(decision) || !identical(decision$confirmed_by,"user") ||
@@ -138,8 +182,9 @@ analysis_finalize <- function(input,out,cfg,provenance,decision) {
   object@misc$workflow_analysis$resolution_decision <- decision
   object@misc$workflow_analysis$final_provenance <- provenance
   yaml::write_yaml(decision,file.path(out,"selected_resolution.yaml"))
+  analysis_final_diagnostics(object,out,cfg,decision$resolution)
   analysis_save(object,file.path(out,"seurat_analysis.rds"))
   summary <- data.frame(metric=c("cells","clusters","selected_resolution","confirmed_by"),
     value=c(ncol(object),length(unique(labels)),decision$resolution,"user"))
-  analysis_finish("finalize","COMPLETE",out,summary,analysis_warning_table())
+  analysis_finish("finalize","COMPLETE",out,summary,analysis_warning_table(),cfg,provenance)
 }

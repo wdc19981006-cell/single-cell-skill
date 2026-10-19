@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from common import configure_output_cli
 from common import ROOT, dataset_paths, read_csv, write_csv
 
 AUDIT_REPO = "https://github.com/wdc19981006-cell/single-cell-skill-audit.git"
@@ -324,11 +325,11 @@ def main():
     for action in ("start", "restore-provenance", "resume", "finalize"):
         command = sub.add_parser(action)
         command.add_argument("gse")
-        command.add_argument("--root", type=Path, default=ROOT)
+        command.add_argument("--root", type=Path, default=None); command.add_argument("--output-root", type=Path)
         if action == "finalize":
             command.add_argument("--status", choices=("success", "failure", "interrupted"), required=True)
             command.add_argument("--reason", default="")
-    args = parser.parse_args()
+    args = configure_output_cli(parser, parser.parse_args())
     root = args.root.resolve()
     if args.action == "start":
         print(run_id(dataset_paths(root, args.gse)["workflow"], require_clean=True))

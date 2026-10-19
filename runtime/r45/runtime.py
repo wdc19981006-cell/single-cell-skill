@@ -3,6 +3,7 @@ import subprocess
 import sys
 import json
 import uuid
+import os
 from pathlib import Path
 from config import RUNTIME_LOG
 
@@ -18,7 +19,7 @@ class RRunError(RuntimeError):
 
 
 def run_r45(script=None, args=(), stage="adhoc", log_path=None, cwd=None, route=None, env=None, expression=None):
-    record_path = RUNTIME_LOG / "requests" / (uuid.uuid4().hex + ".json")
+    record_path = Path((env or os.environ).get("SINGLE_CELL_RUNTIME_ROOT", str(RUNTIME_LOG))) / "requests" / (uuid.uuid4().hex + ".json")
     command = [sys.executable, str(LAUNCHER), "--stage", stage, "--record", str(record_path)]
     if route:
         command += ["--route", route]

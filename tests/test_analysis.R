@@ -6,24 +6,17 @@ cfg <- analysis_config(jsonlite::fromJSON(file.path(root,"analysis/default_confi
 meta <- data.frame(sample=rep(c("S1","S2","S3","S4"),each=10),
   group=rep(c("Normal","Tumor"),each=20),batch=rep(c("B1","B2"),20))
 default <- analysis_design_check(meta,cfg)
-stopifnot(!default$eligible,default$reason=="NO_CONFIRMED_TECHNICAL_BATCH")
+stopifnot(default$eligible,default$selected=="sample",default$confounded,is.null(default$acknowledgement))
+cfg$harmony$batch_field <- "batch"
 cfg$harmony$technical_fields <- "batch"
 crossed <- analysis_design_check(meta,cfg)
 stopifnot(crossed$eligible,identical(crossed$selected,"batch"),!crossed$confounded)
-confounded <- meta
-confounded$batch <- confounded$group
+confounded <- meta; confounded$batch <- confounded$group
 stopifnot(analysis_design_check(confounded,cfg)$reason=="BATCH_GROUP_CONFOUNDED")
-cfg$harmony$technical_fields <- character()
-cfg$harmony$allow_sample <- TRUE
-stopifnot(analysis_design_check(meta,cfg)$reason=="BATCH_GROUP_CONFOUNDED")
-cfg$harmony$confounding_acknowledgement <- list(confirmed_by="user",user_statement="Synthetic test: compare with explicit confounding warning")
-stopifnot(analysis_design_check(meta,cfg)$eligible,analysis_design_check(meta,cfg)$confounded)
 bad <- cfg; bad$harmony$batch_field <- "group"
 stopifnot(inherits(try(analysis_config(bad),silent=TRUE),"try-error"))
-cfg$harmony$batch_field <- NULL
-cfg$harmony$technical_fields <- "batch"
-cfg$harmony$allow_sample <- FALSE
-cfg$harmony$confounding_acknowledgement <- NULL
+single <- meta; single$batch <- "one"
+stopifnot(analysis_design_check(single,cfg)$reason=="ONE_BATCH_LEVEL")
 stopifnot(analysis_ari(c(1,1,2,2),c("b","b","a","a"))==1,
           abs(analysis_ari(c(1,1,2,2),c(1,2,1,2))+.5)<1e-10,
           analysis_ari(rep(1,4),rep("a",4))==1)
@@ -57,6 +50,8 @@ object[["pca"]] <- SeuratObject::CreateDimReducObject(
   embeddings=matrix(0,n,3,dimnames=list(colnames(object),paste0("PC_",1:3))),key="PC_",assay="RNA")
 object$seurat_clusters <- "stale_qc_cluster"
 cfg$nfeatures <- 200L; cfg$max_pcs <- 12L
+stopifnot(inherits(try(analysis_pca(object,cfg),silent=TRUE),"try-error"))
+object[["decontX"]] <- SeuratObject::CreateAssay5Object(counts=counts*.9)
 fresh <- analysis_pca(object,cfg)
 stopifnot(identical(analysis_counts(fresh),original),!"seurat_clusters" %in% names(fresh@meta.data),
           any(SeuratObject::Embeddings(fresh[["pca"]])!=0),
@@ -64,6 +59,11 @@ stopifnot(identical(analysis_counts(fresh),original),!"seurat_clusters" %in% nam
           fresh@misc$workflow_analysis$pc_selection$pc_used>=2L,
           fresh@misc$workflow_analysis$pc_selection$pc_used<=12L)
 analysis_validate_object(fresh,"pca")
+stale <- fresh; stale[["harmony"]] <- stale[["pca"]]
+stale@misc$workflow_analysis$harmony_completed <- TRUE
+reset <- analysis_integration_input(stale)
+stopifnot(!isTRUE(reset@misc$workflow_analysis$harmony_completed),!"harmony" %in% names(reset@reductions),
+  identical(analysis_counts(reset),analysis_counts(fresh)))
 fractional <- object
 fractional[["RNA"]] <- SeuratObject::CreateAssay5Object(counts=counts*0.5)
 stopifnot(inherits(try(analysis_counts(fractional),silent=TRUE),"try-error"))
@@ -79,7 +79,7 @@ if(length(args)>1L) {
   dir.create(out,recursive=TRUE,showWarnings=FALSE)
   saveRDS(object,file.path(out,"synthetic_qc.rds"))
   jsonlite::write_json(list(nfeatures=200L,max_pcs=12L,
-    harmony=list(technical_fields="batch"),markers=c("g1","g50","g100","absent_marker"),
-    resolutions=c(.2,.6,1)),file.path(out,"analysis_config.json"),auto_unbox=TRUE,pretty=TRUE)
+    harmony=list(batch_field="batch",technical_fields="batch"),markers=c("g1","g50","g100","absent_marker"),
+    regression_review=list(comparison_resolution=.6),resolutions=c(.2,.3,.6,1)),file.path(out,"analysis_config.json"),auto_unbox=TRUE,pretty=TRUE)
 }
 cat("PASS: design confounding/role/group guards, ARI, fresh formal PCA, counts preservation and corrected-assay selection\n")

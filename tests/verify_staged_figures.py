@@ -17,7 +17,8 @@ def run(project, output):
     if not poppler or not pdfinfo:
         raise RuntimeError("Poppler pdftoppm/pdfinfo required for actual PDF rendering")
     rows, previews = [], []
-    files = sorted(p for p in project.rglob("*") if p.suffix.lower() in (".pdf", ".png") and ".workflow" not in p.parts)
+    files = sorted(p for p in project.rglob("*") if p.suffix.lower() in (".pdf", ".png")
+        and not any(part in p.parts for part in (".workflow", ".runtime")) and not p.is_relative_to(output))
     for path in files:
         relative = path.relative_to(project).as_posix()
         if path.suffix.lower() == ".png":

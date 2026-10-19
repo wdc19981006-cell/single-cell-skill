@@ -9,6 +9,8 @@ import uuid
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "runtime"))
+from project_paths import storage_root, project_path, analysis_path, runtime_output, dataset_name, flat_storage
 sys.path.insert(0, str(REPO / "runtime/r45"))
 from runtime import run_r45
 from run_r45 import atomic_json
@@ -18,6 +20,7 @@ STEPS = {
     "pca": ("01_pca_regression", "seurat_pca.rds", "analysis_pca"),
     "harmony": ("02_harmony", "seurat_harmony.rds", "harmony"),
     "cluster-review": ("03_clustering", "seurat_cluster_review.rds", "clustering"),
+    "regression-review": ("01_pca_regression/regression_sensitivity", "regression_review.rds", "analysis_pca"),
     "finalize": ("03_clustering", "seurat_analysis.rds", "analysis_pca"),
 }
 
@@ -43,7 +46,7 @@ def qc_input(root, gse, explicit=None):
         if not path.is_file():
             raise ValueError(f"Analysis input does not exist: {path}")
         return path
-    project = root / "results" / gse
+    project = project_path(root, gse)
     candidates = [project / "02_QC/03_ambient_RNA/seurat_QC-3.rds",
                   project / "02_QC/02_doublet_cellcycle/seurat_QC-2.rds",
                   root / "data" / gse / "qc/seurat_qc.rds"]
@@ -68,10 +71,11 @@ def selection(path):
 def stage_configuration(cfg, step):
     keys = {
         "pca": ("assay", "seed", "nfeatures", "max_pcs", "pc_cumulative_variance",
-                "pc_individual_variance", "pc_elbow_drop", "risk_correlation", "sensitivity"),
+                "pc_individual_variance", "pc_elbow_drop", "risk_correlation", "regression_decision"),
         "harmony": ("seed", "harmony", "markers"),
         "cluster-review": ("seed", "resolutions", "cluster_reduction"),
-        "finalize": (),
+        "regression-review": tuple(cfg),
+        "finalize": ("markers", "proliferation_markers"),
     }[step]
     return {key: cfg[key] for key in keys}
 
@@ -81,11 +85,11 @@ def validate(artifact, kind, log):
             stage="analysis_validation", log_path=log, cwd=REPO)
 
 
-def audit(gse, root):
+def audit(gse, root, run_id=None):
     spec = importlib.util.spec_from_file_location("analysis_workflow_audit", REPO / "workflow_audit/run_audit.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.run(gse, root)
+    return module.run(gse, root, run_id=run_id) if run_id else module.run(gse, root)
 
 
 def publish(pending_path):
@@ -116,7 +120,7 @@ def publish(pending_path):
     pending_path.unlink()
 
 
-def execute(step, source, area, cfg, decision=None):
+def execute(step, source, area, cfg, decision=None, continuation_command=None):
     directory, artifact_name, route = STEPS[step]
     output = area / directory
     output.mkdir(parents=True, exist_ok=True)
@@ -126,8 +130,8 @@ def execute(step, source, area, cfg, decision=None):
                "configuration": stage_configuration(cfg, step), "decision": decision}
     manifest = state / f"{step}.json"
     pending_path = state / f"{step}.pending.json"
-    final = area / artifact_name
-    log_name = {"pca": "pca.log", "harmony": "harmony.log",
+    final = (output if step=="regression-review" else area) / artifact_name
+    log_name = {"pca": "pca.log", "harmony": "harmony.log", "regression-review": "regression_review.log",
                 "cluster-review": "clustering.log", "finalize": "finalize.log"}[step]
     with (output / log_name).open("a", encoding="utf-8") as log:
         if pending_path.exists():
@@ -147,6 +151,9 @@ def execute(step, source, area, cfg, decision=None):
                     kind = "pca" if Path(path).name == "seurat_unintegrated.rds" else step
                     if "regression_sensitivity" not in path:
                         validate(Path(path), kind, log)
+                    elif Path(path).name=="seurat_sensitivity.rds":
+                        validate(Path(path), "sensitivity", log)
+            checkpoint(state, **{step: record["status"]}, error=None)
             return record["status"]
         if final.exists():
             validate(final, step, log)
@@ -189,7 +196,7 @@ def execute(step, source, area, cfg, decision=None):
                     "runtime_run_id": record.get("run_id"), "input_sha256": before})
             result_path = staging / f"{step.replace('-', '_')}_result.json"
             result = json.loads(result_path.read_text(encoding="utf-8"))
-            if result["status"] not in ("COMPLETE", "NEEDS_RESOLUTION_SELECTION", "SKIPPED_DESIGN"):
+            if result["status"] not in ("COMPLETE", "NEEDS_RESOLUTION_SELECTION", "SKIPPED_DESIGN", "USER_REVIEW_REQUIRED"):
                 raise ValueError("Analysis stage did not complete")
             artifact = staging / artifact_name
             if step != "harmony" or result["status"] != "SKIPPED_DESIGN":
@@ -200,17 +207,33 @@ def execute(step, source, area, cfg, decision=None):
                 validate(staging / "seurat_unintegrated.rds", "pca", log)
             if digest(source) != before:
                 raise ValueError("Analysis input changed during computation")
+            def publication_target(file):
+                relative = Path(file).relative_to(staging)
+                if relative.as_posix()==artifact_name:
+                    return final
+                if relative.as_posix()=="seurat_unintegrated.rds":
+                    return area / relative
+                return output / relative
+            def published_path(value):
+                if isinstance(value, str) and value.startswith(str(staging)):
+                    return str(publication_target(value))
+                if isinstance(value, list): return [published_path(v) for v in value]
+                if isinstance(value, dict): return {k: published_path(v) for k,v in value.items()}
+                return value
+            result = published_path(result)
+            result["input"] = str(source)
+            result["outputs"] = [str(publication_target(file)) for file in sorted(staging.rglob("*"))
+                                 if file.is_file() and file!=request]
+            result["output_object"] = str(area / "seurat_unintegrated.rds" if
+                step=="harmony" and result["status"]=="SKIPPED_DESIGN" else final)
+            if continuation_command:
+                result["next_command"] = continuation_command
+            atomic_json(result_path, result)
             items = []
             for file in sorted(staging.rglob("*")):
                 if not file.is_file() or file == request:
                     continue
-                relative = file.relative_to(staging)
-                if file.name == artifact_name:
-                    target = final
-                elif file.name == "seurat_unintegrated.rds":
-                    target = area / file.name
-                else:
-                    target = output / relative
+                target = publication_target(file)
                 items.append({"source": str(file), "target": str(target), "sha256": digest(file)})
             atomic_json(pending_path, {"binding": binding, "status": result["status"],
                                      "files": items, "manifest": str(manifest)})
@@ -219,20 +242,37 @@ def execute(step, source, area, cfg, decision=None):
             return result["status"]
         except BaseException as error:
             checkpoint(state, **{step: "FAILED"}, error=failure(error, stage_name, script))
+            atomic_json(output / f"{step.replace('-', '_')}_failure.json", dict(stage=step,status="FAILED",
+                input=str(source),output=str(final),parameters=stage_configuration(cfg,step),
+                unresolved_issues=[str(error)],needs_user_decision=False,
+                next_command="Resume this same fixed stage after resolving the concrete error"))
             raise
         finally:
             if digest(source) != before:
                 raise RuntimeError("Analysis source RDS changed; results were not approved for use")
 
 
-def run(gse, root=REPO, step="all", input_path=None, config=None, resolution_decision=None):
-    if not re.fullmatch(r"GSE\d+", gse):
-        raise ValueError("Expected GSE accession")
-    root = Path(root).resolve()
-    area = root / "results" / gse / "03_analysis"
+def run(gse, root=None, step="all", input_path=None, config=None, resolution_decision=None,
+        output_root=None, run_id=None, regression_decision=None):
+    dataset_name(gse)
+    root = storage_root(root, output_root)
+    runtime_output(root, gse)
+    area = analysis_path(root, gse, run_id)
     area.mkdir(parents=True, exist_ok=True)
     cfg = configuration(config)
-    steps = ["pca", "harmony", "cluster-review"] if step == "all" else [step]
+    if regression_decision:
+        cfg["regression_decision"] = json.loads(Path(regression_decision).read_text(encoding="utf-8-sig"))
+    if cfg["regression_decision"] is not None:
+        d = cfg["regression_decision"]
+        if (not run_id or d.get("confirmed_by")!="user" or not d.get("user_statement","").strip()
+                or d.get("scheme") not in ("feature","count","cell_cycle")):
+            raise ValueError("Adopting regression requires a new --run-id and a literal user scheme decision")
+        evidence = json.loads(Path(d["comparison_config"]).read_text(encoding="utf-8-sig"))
+        expected = {"feature":["pMT","nFeature_RNA"],"count":["pMT","nCount_RNA"],"cell_cycle":["pMT","S.Score","G2M.Score"]}[d["scheme"]]
+        if (evidence.get("input_sha256") != digest(qc_input(root,gse,input_path)) or
+                evidence.get("configuration",{}).get("assay") != cfg["assay"] or evidence.get("regress") != expected):
+            raise ValueError("Regression decision comparison must use this same QC input and assay")
+    steps = ["pca", "harmony", "cluster-review", "regression-review"] if step == "all" else [step]
     if step == "all" and resolution_decision:
         selection(resolution_decision)
         steps.append("finalize")
@@ -254,7 +294,26 @@ def run(gse, root=REPO, step="all", input_path=None, config=None, resolution_dec
         if not source.is_file():
             raise ValueError(f"Required prior analysis RDS is missing: {source}")
         decision = selection(resolution_decision) if current == "finalize" else None
-        status = execute(current, source.resolve(), area, cfg, decision)
+        comparison_manifest = area / ".workflow/regression-review.json"
+        if current=="finalize" and comparison_manifest.is_file():
+            comparison=json.loads(comparison_manifest.read_text(encoding="utf-8"))
+            if comparison.get("status")=="USER_REVIEW_REQUIRED" and (
+                    decision.get("regression_scheme")!="baseline" or not decision.get("regression_statement","").strip()):
+                raise ValueError("Regression tradeoff needs the user's formal-scheme choice: record regression_scheme=baseline and literal regression_statement to keep this run, or adopt a candidate in a new --run-id")
+        next_step={"pca":"harmony","harmony":"cluster-review","cluster-review":"regression-review",
+                   "regression-review":"finalize","finalize":None}[current]
+        command=[sys.executable,str(REPO / "analysis/run_workflow.py"),gse,
+                 "--output-root" if flat_storage(root) else "--root",str(root)]
+        if run_id: command += ["--run-id",run_id]
+        if config: command += ["--config",str(Path(config).resolve())]
+        if regression_decision: command += ["--regression-decision",str(Path(regression_decision).resolve())]
+        if next_step: command += ["--step",next_step]
+        if next_step=="finalize": command += ["--resolution-decision","<user-confirmed-decision.json>"]
+        if current=="finalize": command=[sys.executable,str(REPO / "workflow_audit/run_audit.py"),gse,
+            "--output-root" if flat_storage(root) else "--root",str(root)]+(["--run-id",run_id] if run_id else [])
+        status = execute(current, source.resolve(), area, cfg, decision, command)
+        if current == "regression-review" and step == "all":
+            status = "NEEDS_RESOLUTION_SELECTION"
     # A later `all` invocation also validates a previously authorized final
     # selection; the stored literal user decision remains authoritative.
     final_manifest = area / ".workflow/finalize.json"
@@ -262,9 +321,9 @@ def run(gse, root=REPO, step="all", input_path=None, config=None, resolution_dec
         previous = json.loads(final_manifest.read_text(encoding="utf-8"))
         status = execute("finalize", (area / "seurat_cluster_review.rds").resolve(), area,
                          cfg, previous["binding"]["decision"])
-    if step in ("all", "cluster-review", "finalize"):
+    if step in ("all", "cluster-review", "finalize", "regression-review"):
         try:
-            audit(gse, root)
+            audit(gse, root, run_id) if run_id else audit(gse, root)
         except BaseException as error:
             checkpoint(area / ".workflow", workflow_audit="FAILED",
                        error=failure(error, "workflow_audit", REPO / "workflow_audit/run_audit.py"))
@@ -275,7 +334,10 @@ def run(gse, root=REPO, step="all", input_path=None, config=None, resolution_dec
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("gse")
-    parser.add_argument("--root", type=Path, default=REPO)
+    parser.add_argument("--root", type=Path)
+    parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--run-id", help="Isolated analysis run; never reads another run's checkpoints")
+    parser.add_argument("--regression-decision", type=Path)
     parser.add_argument("--step", choices=[*STEPS, "all"], default="all")
     parser.add_argument("--input", dest="input_path", type=Path)
     parser.add_argument("--config", type=Path)

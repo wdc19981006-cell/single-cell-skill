@@ -7,9 +7,19 @@ import math
 import os
 import re
 from pathlib import Path
+import sys
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT / 'runtime'))
+from project_paths import storage_root, flat_storage, runtime_output
+
+def configure_output_cli(parser, args):
+    args.root = storage_root(args.root, args.output_root)
+    args.root.mkdir(parents=True, exist_ok=True)
+    if getattr(args, 'gse', None): runtime_output(args.root, args.gse)
+    return args
+
 REQUIRED = ('database', 'sample', 'tissue', 'disease', 'source_type', 'group')
 OPTIONAL = ('patient', 'specimen', 'cohort', 'treatment')
 
@@ -333,9 +343,9 @@ def dataset_relative(root, gse):
         raise ValueError('Expected GSE accession')
     root = Path(root).resolve()
     legacy = f'data/{gse}'
-    canonical = f'results/{gse}/01_download'
+    canonical = f'{gse}/01_download' if flat_storage(root) else f'results/{gse}/01_download'
     old = local(root, legacy, 'data')
-    new = local(root, canonical, f'results/{gse}')
+    new = local(root, canonical, canonical.rsplit('/', 1)[0])
     if old.exists() and new.exists():
         raise ValueError('Both legacy and canonical download roots exist; review explicitly before continuing')
     return legacy if old.exists() else canonical

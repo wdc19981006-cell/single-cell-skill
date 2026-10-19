@@ -12,6 +12,29 @@ import run_r45 as launcher
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_atomic_state_retries_transient_windows_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"state.json"
+            path.write_text('{"status":"old"}')
+            replace=Path.replace
+            calls=[]
+            def locked_once(source,target):
+                calls.append(source)
+                if len(calls)==1: raise PermissionError("Synthetic Windows sharing violation")
+                return replace(source,target)
+            with patch.object(Path,"replace",locked_once),patch.object(launcher.time,"sleep"):
+                launcher.atomic_json(path,{"status":"new"})
+            self.assertEqual(path.read_text().strip(),'{\n  "status": "new"\n}')
+            self.assertEqual(len(calls),2)
+
+    def test_persistent_lock_preserves_previous_state_and_pending_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"state.json";path.write_text("old")
+            with patch.object(Path,"replace",side_effect=PermissionError("Locked")),patch.object(launcher.time,"sleep"):
+                with self.assertRaises(PermissionError): launcher.atomic_json(path,{"status":"new"})
+            self.assertEqual(path.read_text(),"old")
+            self.assertEqual(len(list(path.parent.glob("*.pending"))),1)
+
     def test_native_crash_even_after_pass_and_original_error_code(self):
         for code in (139, -1073741819, 3221225477, 7):
             with self.subTest(code=code), tempfile.TemporaryDirectory() as temporary:

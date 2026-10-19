@@ -23,10 +23,20 @@ def atomic_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     pending = path.with_name(path.name + "." + uuid.uuid4().hex + ".pending")
     pending.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
-    pending.replace(path)
+    # Windows virus scanners/indexers can briefly hold JSON files open.
+    # Keep the pending file on a persistent failure; never truncate the old state.
+    for attempt in range(6):
+        try:
+            pending.replace(path)
+            break
+        except PermissionError:
+            if attempt == 5:
+                raise
+            time.sleep(.05 * 2**attempt)
 
 
 def run(script=None, args=(), *, expression=None, stage="adhoc", route=None, cwd=None, record_path=None):
+    runtime_log = Path(os.environ.get("SINGLE_CELL_RUNTIME_ROOT", str(RUNTIME_LOG)))
     if script is None and expression is None:
         raise ValueError("Provide an R script or --expr")
     if script is not None and expression is not None:
@@ -50,11 +60,13 @@ def run(script=None, args=(), *, expression=None, stage="adhoc", route=None, cwd
                   script=str(script_path) if script_path else "--expr", args=list(map(str, args)) if script_path else [expression],
                   stage=stage, route=route, cwd=str(cwd), started_at=timestamp(), command=command)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "-" + uuid.uuid4().hex[:8]
-    run_path = RUNTIME_LOG / "runs" / f"{run_id}.json"
+    run_path = runtime_log / "runs" / f"{run_id}.json"
+    env["R45_DEFAULT_PLOT"] = str(run_path.with_suffix(".plots.pdf"))
+    record["default_plot_path"] = env["R45_DEFAULT_PLOT"]
     record.update(status="RUNNING", run_id=run_id, cli_exit_workaround=True,
                   locale=env["LC_ALL"], profile=str(PROFILE))
     atomic_json(run_path, record)
-    atomic_json(RUNTIME_LOG / "latest.json", record)
+    atomic_json(runtime_log / "latest.json", record)
     started = time.monotonic()
     if not RSCRIPT.is_file():
         record.update(status="R_RUNTIME_MISSING", exit_code=2,
@@ -91,7 +103,7 @@ def run(script=None, args=(), *, expression=None, stage="adhoc", route=None, cwd
             record.update(status="R_RUNTIME_MISSING", exit_code=2, stdout="", stderr=str(error))
     record.update(ended_at=timestamp(), duration_seconds=round(time.monotonic() - started, 3))
     atomic_json(run_path, record)
-    atomic_json(RUNTIME_LOG / "latest.json", record)
+    atomic_json(runtime_log / "latest.json", record)
     if record_path:
         atomic_json(Path(record_path), record)
     return record
@@ -112,7 +124,7 @@ def health_record(record):
                   lib_paths=details.get("libraries", "").split(";"), packages=packages,
                   route=details.get("route"), cli_exit_workaround=record["status"] == "PASS",
                   checked_at=record["ended_at"], exit_code=record["exit_code"])
-    atomic_json(RUNTIME_LOG / "health.json", health)
+    atomic_json(Path(os.environ.get("SINGLE_CELL_RUNTIME_ROOT", str(RUNTIME_LOG))) / "health.json", health)
 
 
 def main():

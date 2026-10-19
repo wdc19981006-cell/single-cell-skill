@@ -2,7 +2,7 @@
 qc_runner_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use.names=FALSE)
 qc_runner_source <- if(length(qc_runner_files)) tail(qc_runner_files,1L) else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 qc_runner_dir <- dirname(normalizePath(qc_runner_source,winslash="/",mustWork=TRUE))
-for(name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R","ambient_rna.R"))
+for(name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R","ambient_review.R","ambient_rna.R"))
   source(file.path(qc_runner_dir,name))
 
 qc_md5 <- function(path) unname(tools::md5sum(path))
@@ -39,12 +39,21 @@ qc_stage_validate <- function(object,step,gse,input=NULL,paths=NULL,legacy=FALSE
   if(!is.null(paths) && !legacy) {
     samples <- if(file.exists(paths$raw)) unique(as.character(readRDS(paths$raw)$sample)) else unique(as.character(object$sample))
     current_decision <- qc_decision(paths,samples)
-    if(!identical(provenance$configuration,qc_config(paths,current_decision)) ||
+    expected_configuration <- qc_config(paths,current_decision)
+    stored_configuration <- provenance$configuration
+    if(is.null(provenance$configuration$ambient)) expected_configuration$ambient <- NULL
+    if(step %in% c("qc1","qc2")) {
+      expected_configuration$ambient <- NULL; stored_configuration$ambient <- NULL
+    }
+    if(!identical(stored_configuration,expected_configuration) ||
        (!is.null(provenance$user_decision) && !identical(provenance$user_decision,current_decision)))
       stop("QC checkpoint configuration/decision differs; preserve existing result and use a separate output root")
     stems <- switch(step,qc1=c("before_QC","after_QC"),qc2=c("doublet_umap","doublet_vlnplot","singlet_dimplot","cell_cycle_phase","cell_cycle_score"),qc3=c("decontX_contamination","decontX_comparison"))
     files <- file.path(paths$qc,c(as.vector(outer(stems,c(".pdf",".png"),paste0)),"qc_report.csv",paste0(step,"_config.yaml"),paste0(step,".log")))
     if(step=="qc3") files <- c(files,file.path(paths$qc,"decontX_config.yaml"))
+    if(identical(provenance$diagnostics_version,2L)) files <- c(files,file.path(paths$qc,
+      switch(step,qc1=c("qc_filter_reasons.csv","qc_filter_reasons.pdf"),qc2=character(),
+        qc3=c("contamination_warnings.csv","marker_correction_review.csv","marker_correction_review.pdf"))))
     if(any(!file.exists(files)) || any(file.info(files)$size<=0)) stop("QC checkpoint outputs missing or empty")
     expected_tables <- switch(step,qc1=c("cell_QC_all.csv","gene_filter_summary.csv","sample_QC_summary.csv"),
       qc2=c("doublet_cells_all.csv","doublet_summary.csv","cell_cycle_summary.csv","cell_cycle_cells.csv"),
@@ -59,7 +68,7 @@ qc_stage_validate <- function(object,step,gse,input=NULL,paths=NULL,legacy=FALSE
 
 qc_stage_save <- function(object,paths,step,input,cfg,report,status,decision=list()) {
   if(file.exists(paths$final)) stop("QC checkpoint already exists; refusing overwrite: ",paths$final)
-  object@misc$qc_pipeline[[step]] <- list(stage=step,input=normalizePath(input,winslash="/"),input_md5=qc_md5(input),
+  object@misc$qc_pipeline[[step]] <- list(stage=step,diagnostics_version=2L,input=normalizePath(input,winslash="/"),input_md5=qc_md5(input),
     output=paths$final,configuration=cfg,user_decision=decision,R=R.version.string,completed_at=format(Sys.time(),"%Y-%m-%dT%H:%M:%S%z"))
   qc_report_add(report,"RUN",metric="input_file",value=input)
   qc_report_add(report,"RUN",metric="input_md5",value=qc_md5(input))
@@ -112,7 +121,7 @@ qc_run_stage <- function(root,gse,step,package_available=function(p) requireName
   report <- qc_report_new(); qc_stage_log(paths,step,paste("START input",input))
   tryCatch({
     if(step=="qc1") {
-      status <- qc_precheck(root,gse,package_available,step="qc1")
+      status <- qc_precheck(root,gse,package_available,step="qc1",input=input)
       if(status!="PASS") stop("QC precheck stopped: ",status,"; inspect ",base$report)
     }
     object <- readRDS(input); qc_validate_input(object,gse)
@@ -125,6 +134,7 @@ qc_run_stage <- function(root,gse,step,package_available=function(p) requireName
       raw_cells <- ncol(object); raw_genes <- nrow(object)
       removed <- decision$removed_samples %||% character()
       object <- qc_add_percentages(object,cfg$species)
+      qc_write_filter_reasons(object@meta.data,cfg,paths,removed)
       qc_plot_metrics(object,paths,"before_QC","Before QC",report)
       active <- if(length(removed)) object[,!object$sample %in% removed] else object
       final <- qc_filter_cells(active,cfg,report)
@@ -150,7 +160,7 @@ qc_run_stage <- function(root,gse,step,package_available=function(p) requireName
       status <- if(doubled$unevaluated>0L) "QC_COMPLETE_WITH_UNEVALUATED_DOUBLETS" else "COMPLETE_QC"
     } else {
       qc_stage_validate(object,"qc2",gse,legacy=is.null(object@misc$qc_pipeline$qc2))
-      final <- qc_run_ambient(object,paths,report,ambient_api)
+      final <- qc_run_ambient(object,paths,report,ambient_api,cfg=cfg$ambient)
       status <- "COMPLETE_QC3"
     }
     if(is.null(final@misc$qc_pipeline)) final@misc$qc_pipeline <- object@misc$qc_pipeline

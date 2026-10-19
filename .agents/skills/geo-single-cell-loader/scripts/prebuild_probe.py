@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from common import configure_output_cli
 from common import ROOT, dataset_paths, dataset_relative, digest, local, missing, read_csv, validate_manifest, verify_confirmation, workflow_path, write_csv
 from pooled_mapping_probe import check_pooled
 from tenx_structure_probe import probe_10x_trio
@@ -122,8 +123,8 @@ def run(manifest, root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('manifest', type=Path)
-    parser.add_argument('--root', type=Path, default=ROOT)
-    args = parser.parse_args()
+    parser.add_argument('--root', type=Path, default=None); parser.add_argument("--output-root", type=Path)
+    args = configure_output_cli(parser, parser.parse_args())
     run(args.manifest, args.root)
 
 

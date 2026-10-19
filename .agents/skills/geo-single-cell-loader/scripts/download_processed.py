@@ -15,6 +15,7 @@ import http.client
 import socket
 from datetime import datetime, timezone
 from pathlib import Path
+from common import configure_output_cli
 from common import ROOT, dataset_paths, dataset_relative, local, read_csv, validate_manifest, verify_confirmation, workflow_path
 
 RETRY_DELAYS = (2, 5, 10)
@@ -233,8 +234,8 @@ def run(manifest, root):
     print(str(log))
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description=__doc__); p.add_argument('manifest', type=Path); p.add_argument('--root', type=Path, default=ROOT)
-    a = p.parse_args()
+    p = argparse.ArgumentParser(description=__doc__); p.add_argument('manifest', type=Path); p.add_argument('--root', type=Path, default=None); p.add_argument("--output-root", type=Path)
+    a = configure_output_cli(p, p.parse_args())
     if os.environ.get('GEO_AUDIT_RUN_ACTIVE') != '1':
         p.error('Real downloads must use run_confirmed.py so every terminal run is audited')
     run(a.manifest, a.root.resolve())
