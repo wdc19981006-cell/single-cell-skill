@@ -67,6 +67,19 @@ mock_ambient <- list(run=function(sce,batch,seed) {
   },counts=function(sce) SummarizedExperiment::assay(sce,"counts")*.75)
 stopifnot(qc_run(area,gse,step="qc3",ambient_api=mock_ambient)=="COMPLETE_QC3")
 qc3 <- readRDS(qc_stage_paths(paths,"qc3")$final)
+if(Sys.getenv("SC_TEST_COMPACT_QC")=="1") {
+  # Reuse the scientific fixture, but validate a separate formal compact copy.
+  old_mode <- Sys.getenv("SINGLE_CELL_STORAGE_MODE")
+  Sys.setenv(SINGLE_CELL_STORAGE_MODE="compact")
+  compact_qc <- sc_compact_formal(qc3,file.path(area,"compact_qc.rds"),"qc")
+  saveRDS(compact_qc,file.path(area,"compact_qc.rds"))
+  sc_verify_formal(readRDS(file.path(area,"compact_qc.rds")))
+  qc_stage_validate(compact_qc,"qc3",gse,qc2_path,qc_stage_paths(paths,"qc3"))
+  stopifnot(identical(qc_counts(compact_qc),qc_counts(qc3)),
+    identical(SeuratObject::LayerData(compact_qc,assay="decontX",layer="counts"),
+              SeuratObject::LayerData(qc3,assay="decontX",layer="counts")))
+  if(nzchar(old_mode)) Sys.setenv(SINGLE_CELL_STORAGE_MODE=old_mode) else Sys.unsetenv("SINGLE_CELL_STORAGE_MODE")
+}
 stopifnot(identical(qc_counts(qc3),qc_counts(qc2)),identical(colnames(qc3),colnames(qc2)),
   all(qc3$decontX_contamination==.25),"decontX" %in% names(qc3@assays),
   identical(SeuratObject::LayerData(qc3,assay="decontX",layer="counts"),qc_counts(qc2)*.75),

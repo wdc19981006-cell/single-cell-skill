@@ -1,6 +1,7 @@
 if (!isTRUE(getOption("r45.runtime.active"))) stop("Use runtime/r45/run_r45.py")
 analysis_dir <- dirname(normalizePath(sys.frame(1)$ofile,winslash="/",mustWork=TRUE))
 analysis_repo <- dirname(analysis_dir)
+source(file.path(analysis_repo,"runtime","seurat_storage.R"))
 for (module in c("qc_utils.R","doublet_finder.R","plot_utils.R"))
   source(file.path(analysis_repo,"qc",module))
 
@@ -85,6 +86,7 @@ analysis_warning <- function(table,category,message,recommendation,severity="WAR
 
 analysis_save <- function(object,path) {
   if(file.exists(path)) stop("Existing RDS preserved: ",path)
+  if(basename(path)=="seurat_analysis.rds") object <- sc_compact_formal(object,path,"analysis")
   saveRDS(object,path)
   rebuilt <- readRDS(path)
   if(!identical(colnames(rebuilt),colnames(object)) ||

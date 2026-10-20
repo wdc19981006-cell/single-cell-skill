@@ -25,4 +25,5 @@ Thumbs.db
 .r-library/
 .venv/
 .runtime/
+tests/storage_optimization/inventory/
 results/

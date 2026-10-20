@@ -11,6 +11,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "runtime"))
 from project_paths import storage_root, project_path, analysis_path, runtime_output, dataset_name
+from storage import manifest_valid, Storage, CLEANED, read
 sys.path.insert(0, str(REPO / "runtime/r45"))
 from runtime import run_r45
 from workflow import digest
@@ -63,9 +64,21 @@ def collect(root, gse, run_id=None):
     root = Path(root).resolve()
     project = project_path(root, gse)
     analysis_area = analysis_path(root, gse, run_id)
+    managed = (project / ".work/storage_policy.json").is_file()
+    scope = "analysis/runs/"+run_id if run_id else "analysis/baseline"
+    analysis_objects = project / ".work/checkpoints" / scope if managed else analysis_area
+    analysis_state = analysis_objects / "state" if managed else analysis_area / ".workflow"
+    qc_state = project / ".work/checkpoints/qc/state" if managed else project / "02_QC/.workflow"
+    registry_path = project / ".work/checkpoints/registry.json"
+    registry = read(registry_path).get("files",{}) if managed and registry_path.exists() else {}
+    def cleaned_source(path):
+        item = registry.get(str(path),{})
+        return item.get("lifecycle")==CLEANED and Storage.valid_proof(item.get("successor",{}))
+    def allowed(path):
+        return path.resolve().is_relative_to(analysis_area) or (managed and path.resolve().is_relative_to(analysis_objects))
     audit, warnings, inputs = [], [], {}
     resolved = False
-    final_manifest = analysis_area / ".workflow/finalize.json"
+    final_manifest = analysis_state / "finalize.json"
     if final_manifest.is_file():
         inputs[str(final_manifest)] = digest(final_manifest)
         saved = json.loads(final_manifest.read_text(encoding="utf-8"))
@@ -74,8 +87,8 @@ def collect(root, gse, run_id=None):
         source = Path(saved.get("binding", {}).get("input", ""))
         resolved = (saved.get("status") == "COMPLETE" and decision.get("confirmed_by") == "user"
                     and bool(decision.get("user_statement")) and bool(outputs)
-                    and source == analysis_area / "seurat_cluster_review.rds" and source.is_file()
-                    and digest(source) == saved.get("binding", {}).get("input_sha256")
+                    and source == analysis_objects / "seurat_cluster_review.rds"
+                    and ((source.is_file() and digest(source) == saved.get("binding", {}).get("input_sha256")) or cleaned_source(source))
                     and str(analysis_area / "seurat_analysis.rds") in outputs)
         for name, checksum in outputs.items():
             path = Path(name)
@@ -205,13 +218,14 @@ def collect(root, gse, run_id=None):
         for state_path in (area / "state.json", area / "analysis_state.json", area / ".workflow/state.json"):
             record_state(stage, state_path)
         if present and stage in ("pca","harmony","clustering"):
-            proof=analysis_area/".workflow"/({"clustering":"cluster-review"}.get(stage,stage)+".json")
+            proof=analysis_state/({"clustering":"cluster-review"}.get(stage,stage)+".json")
             if not proof.is_file(): warnings.append(dict(stage=stage,category="MISSING_EVIDENCE",severity="MISSING_EVIDENCE",
                 message="Summary tables exist without a validated computation checkpoint",recommendation="Supply original validation/provenance; do not infer success from tables alone",source_file=str(proof)))
         if present and stage in ("qc1","qc2","qc3"):
-            state_path=project/"02_QC/.workflow/state.json"
+            state_path=qc_state/"state.json"
             state=json.loads(state_path.read_text(encoding="utf-8")) if state_path.is_file() else {}
             artifact=area/f"seurat_QC-{stage[-1]}.rds"
+            if managed and stage!="qc3": artifact=project/".work/checkpoints/qc"/artifact.name
             checksum=state.get(f"{stage}_sha256")
             if checksum and artifact.is_file():
                 actual=inputs.get(str(artifact)) or digest(artifact);inputs[str(artifact)]=actual
@@ -219,28 +233,31 @@ def collect(root, gse, run_id=None):
                     message="QC artifact checksum differs from its validated checkpoint",recommendation="Preserve the artifact and inspect this stage's validation",source_file=str(artifact)))
                 else: audit.append(dict(stage=stage,source_file=str(artifact),source_sha256=actual,row=1,sample="ALL",
                     metric="checkpoint_validation",value=state.get(stage),status="PASS"))
+            elif managed and cleaned_source(artifact):
+                audit.append(dict(stage=stage,source_file=str(registry_path),source_sha256=digest(registry_path),row=1,
+                    sample="ALL",metric="checkpoint_validation",value=CLEANED,status="PASS"))
             else: warnings.append(dict(stage=stage,category="MISSING_EVIDENCE",severity="MISSING_EVIDENCE",
                 message="QC summaries lack a matching validated artifact checkpoint",recommendation="Supply original QC validation evidence; preserve existing results",source_file=str(state_path)))
-    record_state("qc", safe_child(project,"02_QC/.workflow/state.json"))
-    record_state("analysis", safe_child(analysis_area,".workflow/state.json"))
+    record_state("qc", qc_state/"state.json")
+    record_state("analysis", analysis_state/"state.json")
     for step in ("pca","harmony","cluster-review","regression-review"):
-        manifest=analysis_area / ".workflow" / f"{step}.json"
+        manifest=analysis_state / f"{step}.json"
         stage="clustering" if step=="cluster-review" else "pca" if step=="regression-review" else step
         if not manifest.is_file():
             continue
         saved=json.loads(manifest.read_text(encoding="utf-8")); inputs[str(manifest)]=digest(manifest)
         outputs=saved.get("outputs",{})
-        consistent=bool(outputs)
+        consistent=bool(outputs) and manifest_valid(saved)
         for name,checksum in outputs.items():
             path=Path(name)
-            permitted=path.resolve().is_relative_to(analysis_area)
+            permitted=allowed(path)
             if not permitted or not path.is_file():
                 consistent=False; continue
             actual=inputs.get(str(path)) or digest(path); inputs[str(path)]=actual
             if actual!=checksum: consistent=False
         source=Path(saved.get("binding",{}).get("input",""))
-        source_missing=not source.is_file()
-        if not source_missing:
+        source_missing=not source.is_file() and not cleaned_source(source)
+        if source.is_file():
             actual=inputs.get(str(source)) or digest(source);inputs[str(source)]=actual
             if actual!=saved.get("binding",{}).get("input_sha256"): consistent=False
         status="FAILED" if not consistent else "MISSING_EVIDENCE" if source_missing else (

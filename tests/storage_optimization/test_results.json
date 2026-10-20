@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "fixture": "SYNTHETIC_ONLY",
+  "r_version": "4.5.0",
+  "source_sha256": "e8a24ec0401f1415fc81e7f893f9ecbe84d516f159a5a085d2d35601e928c26c",
+  "final_sha256": "c82399eea46e31e3c59829cfefbe4fa443d853b113e5bc5636bbe55f2e9db625",
+  "storage": {
+    "schema_version": 1,
+    "mode": "compact",
+    "managed": true,
+    "total_before_bytes": 8995504,
+    "total_after_bytes": 5864163,
+    "current_total_bytes": 6209908,
+    "saved_bytes": 3137795,
+    "estimated_reclaimable_bytes": 0,
+    "file_count": 363,
+    "states": {
+      "COMPLETE_RETAINED": 1,
+      "COMPLETE_CLEANED": 7,
+      "INCOMPLETE": 0
+    },
+    "report": "D:\\CodexProjects\\single-cell-skill\\.runtime\\storage-acceptance-20261020-v3\\results\\SYNTHETIC_STORAGE\\storage_report.csv",
+    "references": {
+      "analysis/baseline:qc_input": {
+        "path": "D:\\CodexProjects\\single-cell-skill\\.runtime\\storage-acceptance-20261020-v3\\synthetic_qc.rds",
+        "sha256": "e8a24ec0401f1415fc81e7f893f9ecbe84d516f159a5a085d2d35601e928c26c",
+        "size_bytes": 130899,
+        "external": true,
+        "never_delete": true
+      }
+    },
+    "cleanup_events": [
+      {
+        "scope": "analysis/baseline",
+        "started_at": "2026-10-20T03:41:41.343410+00:00",
+        "total_before_bytes": 8995504,
+        "removed_checkpoint_bytes": 3137795,
+        "total_after_bytes": 5864163,
+        "net_reduction_bytes": 3131341
+      }
+    ],
+    "accounting": "logical file bytes; before/after are observed at last completed cleanup (metadata updates included); current includes later reports/logs; saved is cumulative removed checkpoint bytes; hardlinks may share allocation"
+  },
+  "verified": [
+    "exact RNA and fractional decontX counts",
+    "normalized layers",
+    "PCA/Harmony/unique UMAP",
+    "pause/resume at resolution review",
+    "literal synthetic selection",
+    "independent final RDS readback",
+    "FeaturePlot/FindMarkers/annotation API",
+    "regression candidate cleanup",
+    "manifest cleanup tombstones",
+    "restart after cleanup",
+    "existing final unchanged",
+    "audit accepts cleaned dependencies"
+  ]
+}

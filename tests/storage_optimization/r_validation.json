@@ -1,0 +1,22 @@
+[
+  {
+    "script": "D:\\CodexProjects\\single-cell-skill\\tests\\test_seurat_storage.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "started_at": "2026-10-20T03:42:18.372398+00:00",
+    "r_executable": "D:\\R\\R-4.5.0\\bin\\Rscript.exe",
+    "r_home": "D:\\R\\R-4.5.0",
+    "r_libs": "D:\\R\\R-4.5.0\\library",
+    "run_id": "20261020T034218-a21d3113"
+  },
+  {
+    "script": "D:\\CodexProjects\\single-cell-skill\\tests\\test_qc_stages.R",
+    "status": "PASS",
+    "exit_code": 0,
+    "started_at": "2026-10-20T03:33:50.080665+00:00",
+    "r_executable": "D:\\R\\R-4.5.0\\bin\\Rscript.exe",
+    "r_home": "D:\\R\\R-4.5.0",
+    "r_libs": "D:\\R\\R-4.5.0\\library",
+    "run_id": "20261020T033350-04989859"
+  }
+]

@@ -12,17 +12,25 @@ qc_paths <- function(root, gse) {
   legacy <- file.path(root,"data",gse)
   canonical_raw <- file.path(dataset,"01_download","seurat_raw.rds")
   raw <- if(file.exists(canonical_raw)) canonical_raw else file.path(legacy,"seurat_raw.rds")
+  reference <- file.path(dataset,".work","checkpoints","registry.json")
+  if(!file.exists(raw) && file.exists(reference)) {
+    saved <- jsonlite::fromJSON(reference,simplifyVector=FALSE)$references$raw
+    if(!is.null(saved)) raw <- saved$path
+  }
   qc <- file.path(dataset,"02_QC")
+  run_root <- Sys.getenv("SINGLE_CELL_QC_RUN_ROOT")
+  if(nzchar(run_root)) qc <- run_root
   dir.create(qc,recursive=TRUE,showWarnings=FALSE)
   if(!identical(normalizePath(qc,winslash="/"),qc)) stop("QC directory redirected")
-  decision <- file.path(qc,"qc_decision.json")
+  decision <- file.path(dataset,"02_QC","qc_decision.json")
   if(!file.exists(decision) && file.exists(file.path(legacy,"qc","qc_decision.json")))
     decision <- file.path(legacy,"qc","qc_decision.json")
   dirs <- c(qc1="01_basic_QC",qc2="02_doublet_cellcycle",qc3="03_ambient_RNA")
   list(root=root,gse=gse,dataset=dataset,raw=raw,qc=qc,
        report=file.path(qc,"qc_report.csv"),decision=decision,
        stage_dirs=stats::setNames(file.path(qc,dirs),names(dirs)),
-       final=file.path(qc,dirs[["qc2"]],"seurat_QC-2.rds"),
+       final=if(nzchar(Sys.getenv("SINGLE_CELL_QC_CHECKPOINT_ROOT")))
+         file.path(Sys.getenv("SINGLE_CELL_QC_CHECKPOINT_ROOT"),"seurat_QC-2.rds") else file.path(qc,dirs[["qc2"]],"seurat_QC-2.rds"),
        legacy_final=file.path(legacy,"qc","seurat_qc.rds"))
 }
 
@@ -33,6 +41,11 @@ qc_stage_paths <- function(paths,step) {
   if(!identical(normalizePath(paths$qc,winslash="/"),paths$qc)) stop("QC step directory redirected")
   paths$report <- file.path(paths$qc,"qc_report.csv")
   paths$final <- file.path(paths$qc,paste0("seurat_QC-",match(step,c("qc1","qc2","qc3")),".rds"))
+  work <- Sys.getenv("SINGLE_CELL_QC_CHECKPOINT_ROOT")
+  if(step!="qc3" && nzchar(work)) {
+    dir.create(work,recursive=TRUE,showWarnings=FALSE)
+    paths$final <- file.path(work,basename(paths$final))
+  }
   paths
 }
 

@@ -11,6 +11,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "runtime"))
 from project_paths import storage_root, project_path, analysis_path, runtime_output, dataset_name, flat_storage
+from storage import Storage, session, formal_validate, manifest_valid, RETAINED, CLEANED, read
 sys.path.insert(0, str(REPO / "runtime/r45"))
 from runtime import run_r45
 from run_r45 import atomic_json
@@ -116,21 +117,30 @@ def publish(pending_path):
                 raise ValueError(f"Published output checksum mismatch: {dst}")
     manifest = {k: v for k, v in pending.items() if k not in ("files", "manifest")}
     manifest["outputs"] = {item["target"]: item["sha256"] for item in pending["files"]}
+    manifest["lifecycle"] = RETAINED
     atomic_json(Path(pending["manifest"]), manifest)
+    # Publication used hard links. Release staging aliases only after the
+    # manifest is durable; unfinished publication keeps its pending transaction.
+    if pending.get("release_staging_aliases",False):
+        for item in pending["files"]:
+            src = Path(item["source"])
+            if src.suffix==".rds" and src.exists(): src.unlink()
     pending_path.unlink()
 
 
-def execute(step, source, area, cfg, decision=None, continuation_command=None):
+def execute(step, source, area, cfg, decision=None, continuation_command=None, lifecycle=None, scope=None):
     directory, artifact_name, route = STEPS[step]
     output = area / directory
     output.mkdir(parents=True, exist_ok=True)
-    state = area / ".workflow"
-    state.mkdir(exist_ok=True)
+    managed = lifecycle is not None and lifecycle.active
+    state = lifecycle.checkpoint_root(scope) / "state" if managed else area / ".workflow"
+    state.mkdir(parents=True,exist_ok=True)
     binding = {"step": step, "input": str(source), "input_sha256": digest(source),
                "configuration": stage_configuration(cfg, step), "decision": decision}
     manifest = state / f"{step}.json"
     pending_path = state / f"{step}.pending.json"
-    final = (output if step=="regression-review" else area) / artifact_name
+    final = ((lifecycle.checkpoint_root(scope) if managed and step!="finalize" else
+              output if step=="regression-review" else area) / artifact_name)
     log_name = {"pca": "pca.log", "harmony": "harmony.log", "regression-review": "regression_review.log",
                 "cluster-review": "clustering.log", "finalize": "finalize.log"}[step]
     with (output / log_name).open("a", encoding="utf-8") as log:
@@ -143,17 +153,19 @@ def execute(step, source, area, cfg, decision=None, continuation_command=None):
             record = json.loads(manifest.read_text(encoding="utf-8"))
             if record["binding"] != binding:
                 raise ValueError(f"Completed {step} has different inputs/configuration; use a separate project root")
-            for path, checksum in record["outputs"].items():
-                if not Path(path).is_file() or digest(path) != checksum:
-                    raise ValueError(f"Completed output is missing or changed: {path}")
+            if not manifest_valid(record):
+                raise ValueError("Completed output is missing or changed, or cleaned successor is invalid")
             for path in record["outputs"]:
                 if Path(path).suffix == ".rds":
-                    kind = "pca" if Path(path).name == "seurat_unintegrated.rds" else step
-                    if "regression_sensitivity" not in path:
-                        validate(Path(path), kind, log)
-                    elif Path(path).name=="seurat_sensitivity.rds":
-                        validate(Path(path), "sensitivity", log)
+                    kind = ("pca" if Path(path).name=="seurat_unintegrated.rds" else
+                            "sensitivity" if Path(path).name=="seurat_sensitivity.rds" else step)
+                    validate(Path(path), kind, log)
             checkpoint(state, **{step: record["status"]}, error=None)
+            if managed:
+                for path in record["outputs"]:
+                    if Path(path).suffix==".rds" and path not in lifecycle.registry["files"]:
+                        lifecycle.own(Path(path),step,scope,formal=step=="finalize",manifest=manifest)
+                lifecycle.release_staging()
             return record["status"]
         if final.exists():
             validate(final, step, log)
@@ -209,6 +221,8 @@ def execute(step, source, area, cfg, decision=None, continuation_command=None):
                 raise ValueError("Analysis input changed during computation")
             def publication_target(file):
                 relative = Path(file).relative_to(staging)
+                if managed and relative.suffix==".rds" and step!="finalize":
+                    return lifecycle.checkpoint_root(scope) / relative
                 if relative.as_posix()==artifact_name:
                     return final
                 if relative.as_posix()=="seurat_unintegrated.rds":
@@ -226,6 +240,8 @@ def execute(step, source, area, cfg, decision=None, continuation_command=None):
                                  if file.is_file() and file!=request]
             result["output_object"] = str(area / "seurat_unintegrated.rds" if
                 step=="harmony" and result["status"]=="SKIPPED_DESIGN" else final)
+            if managed and step=="harmony" and result["status"]=="SKIPPED_DESIGN":
+                result["output_object"] = str(lifecycle.checkpoint_root(scope) / "seurat_unintegrated.rds")
             if continuation_command:
                 result["next_command"] = continuation_command
             atomic_json(result_path, result)
@@ -236,11 +252,18 @@ def execute(step, source, area, cfg, decision=None, continuation_command=None):
                 target = publication_target(file)
                 items.append({"source": str(file), "target": str(target), "sha256": digest(file)})
             atomic_json(pending_path, {"binding": binding, "status": result["status"],
-                                     "files": items, "manifest": str(manifest)})
+                                     "files": items, "manifest": str(manifest),
+                                     "release_staging_aliases": managed})
             publish(pending_path)
+            if managed:
+                for item in items:
+                    path = Path(item["target"])
+                    if path.suffix==".rds": lifecycle.own(path,step,scope,formal=step=="finalize",manifest=manifest)
+                lifecycle.release_staging()
             checkpoint(state, **{step: result["status"]}, error=None)
             return result["status"]
         except BaseException as error:
+            if managed: lifecycle.incomplete(staging,step,scope)
             checkpoint(state, **{step: "FAILED"}, error=failure(error, stage_name, script))
             atomic_json(output / f"{step.replace('-', '_')}_failure.json", dict(stage=step,status="FAILED",
                 input=str(source),output=str(final),parameters=stage_configuration(cfg,step),
@@ -252,14 +275,30 @@ def execute(step, source, area, cfg, decision=None, continuation_command=None):
                 raise RuntimeError("Analysis source RDS changed; results were not approved for use")
 
 
-def run(gse, root=None, step="all", input_path=None, config=None, resolution_decision=None,
-        output_root=None, run_id=None, regression_decision=None):
+def _run(gse, root=None, step="all", input_path=None, config=None, resolution_decision=None,
+        output_root=None, run_id=None, regression_decision=None, lifecycle=None):
     dataset_name(gse)
     root = storage_root(root, output_root)
     runtime_output(root, gse)
     area = analysis_path(root, gse, run_id)
     area.mkdir(parents=True, exist_ok=True)
     cfg = configuration(config)
+    managed = lifecycle is not None and lifecycle.active
+    scope = "analysis/runs/"+run_id if run_id else "analysis/baseline"
+    state = lifecycle.checkpoint_root(scope) / "state" if managed else area / ".workflow"
+    objects = lifecycle.checkpoint_root(scope) if managed else area
+    source_qc = None
+    if managed:
+        role = scope + ":qc_input"
+        if input_path and step in ("all","pca"):
+            lifecycle.reference(role,Path(input_path))
+        elif input_path:
+            lifecycle.reference(scope+":"+step+"_input",Path(input_path))
+        if lifecycle.registry["references"].get(role):
+            source_qc = lifecycle.referenced(role)
+        elif step in ("all","pca"):
+            source_qc = qc_input(root,gse)
+            lifecycle.reference(role,source_qc)
     if regression_decision:
         cfg["regression_decision"] = json.loads(Path(regression_decision).read_text(encoding="utf-8-sig"))
     if cfg["regression_decision"] is not None:
@@ -269,9 +308,61 @@ def run(gse, root=None, step="all", input_path=None, config=None, resolution_dec
             raise ValueError("Adopting regression requires a new --run-id and a literal user scheme decision")
         evidence = json.loads(Path(d["comparison_config"]).read_text(encoding="utf-8-sig"))
         expected = {"feature":["pMT","nFeature_RNA"],"count":["pMT","nCount_RNA"],"cell_cycle":["pMT","S.Score","G2M.Score"]}[d["scheme"]]
-        if (evidence.get("input_sha256") != digest(qc_input(root,gse,input_path)) or
+        if (evidence.get("input_sha256") != digest(source_qc or qc_input(root,gse,input_path)) or
                 evidence.get("configuration",{}).get("assay") != cfg["assay"] or evidence.get("regress") != expected):
             raise ValueError("Regression decision comparison must use this same QC input and assay")
+    if managed:
+        proof = lifecycle.proof(scope)
+        final_manifest = state / "finalize.json"
+        if step in ("all","finalize") and proof and final_manifest.is_file():
+            if not lifecycle.valid_proof(proof): raise ValueError("Formal analysis changed after verification")
+            for completed in STEPS:
+                manifest = state / f"{completed}.json"
+                if not manifest.exists(): continue
+                record = read(manifest)
+                if record["binding"]["configuration"]!=stage_configuration(cfg,completed):
+                    raise ValueError("Completed analysis has different inputs/configuration; use a new --run-id")
+                if not manifest_valid(record): raise ValueError("Completed analysis evidence changed")
+            saved = read(final_manifest)
+            if resolution_decision and selection(resolution_decision)!=saved["binding"]["decision"]:
+                raise ValueError("Existing final decision differs; use a new --run-id")
+            with (area / "storage_validation.log").open("a",encoding="utf-8") as log:
+                validate(area / "seurat_analysis.rds","finalize",log)
+            lifecycle.clean(scope,proof)
+            lifecycle.report()
+            return "COMPLETE"
+        # An explicitly requested, cleaned computation is rebuilt from the same
+        # immutable QC reference in a fresh isolated run. Never overwrite the
+        # original final or reuse another run's intermediate object.
+        requested = state / f"{step}.json"
+        if step!="all" and requested.exists() and (
+                read(requested).get("lifecycle")==CLEANED or
+                not Path(read(requested)["binding"]["input"]).is_file()):
+            if source_qc is None:
+                raise ValueError("Rebuild needs this run's original QC reference; supply it in a new --run-id with --step pca --input")
+            new_id = (run_id or "baseline")[:50]+"-rebuild-"+uuid.uuid4().hex[:12]
+            order = ["pca","harmony","cluster-review","regression-review"]
+            target = order.index(step)
+            start, upstream = 0, source_qc
+            for index in range(target-1,-1,-1):
+                prior_step=order[index]
+                prior_manifest=state / f"{prior_step}.json"
+                prior_object=objects / STEPS[prior_step][1]
+                if prior_step=="harmony" and not prior_object.exists(): prior_object=objects/"seurat_unintegrated.rds"
+                if prior_object.is_file() and prior_manifest.is_file():
+                    prior=read(prior_manifest)
+                    if (prior["binding"]["configuration"]==stage_configuration(cfg,prior_step)
+                            and str(prior_object) in prior.get("outputs",{}) and manifest_valid(prior)):
+                        start,upstream=index+1,prior_object
+                        break
+            lifecycle.reference("analysis/runs/"+new_id+":qc_input",source_qc)
+            result = None
+            for index,prerequisite in enumerate(order[start:target+1]):
+                result = _run(gse,root,prerequisite,upstream if index==0 else None,
+                    config,None,run_id=new_id,regression_decision=regression_decision,lifecycle=lifecycle)
+            atomic_json(area / "last_rebuild_result.json",dict(status=result,run_id=new_id,
+                output=str(analysis_path(root,gse,new_id)),requested_step=step,source=str(upstream)))
+            return result
     steps = ["pca", "harmony", "cluster-review", "regression-review"] if step == "all" else [step]
     if step == "all" and resolution_decision:
         selection(resolution_decision)
@@ -279,22 +370,22 @@ def run(gse, root=None, step="all", input_path=None, config=None, resolution_dec
     status = None
     for current in steps:
         if current == "pca":
-            source = qc_input(root, gse, input_path)
+            source = source_qc if managed else qc_input(root, gse, input_path)
         elif input_path and step != "all":
             source = qc_input(root, gse, input_path)
         elif current == "harmony":
-            source = area / "seurat_pca.rds"
+            source = objects / "seurat_pca.rds"
         elif current == "cluster-review":
-            source = (area / "seurat_harmony.rds" if (area / "seurat_harmony.rds").is_file()
-                      else area / "seurat_unintegrated.rds")
+            source = (objects / "seurat_harmony.rds" if (objects / "seurat_harmony.rds").is_file()
+                      else objects / "seurat_unintegrated.rds")
             if not source.is_file():
-                source = area / "seurat_pca.rds"
+                source = objects / "seurat_pca.rds"
         else:
-            source = area / "seurat_cluster_review.rds"
+            source = objects / "seurat_cluster_review.rds"
         if not source.is_file():
             raise ValueError(f"Required prior analysis RDS is missing: {source}")
         decision = selection(resolution_decision) if current == "finalize" else None
-        comparison_manifest = area / ".workflow/regression-review.json"
+        comparison_manifest = state / "regression-review.json"
         if current=="finalize" and comparison_manifest.is_file():
             comparison=json.loads(comparison_manifest.read_text(encoding="utf-8"))
             if comparison.get("status")=="USER_REVIEW_REQUIRED" and (
@@ -307,28 +398,48 @@ def run(gse, root=None, step="all", input_path=None, config=None, resolution_dec
         if run_id: command += ["--run-id",run_id]
         if config: command += ["--config",str(Path(config).resolve())]
         if regression_decision: command += ["--regression-decision",str(Path(regression_decision).resolve())]
+        if managed:
+            command += ["--storage-mode",lifecycle.policy["mode"]]
+            for retained in lifecycle.policy["retain_checkpoints"]: command += ["--retain-checkpoint",retained]
         if next_step: command += ["--step",next_step]
         if next_step=="finalize": command += ["--resolution-decision","<user-confirmed-decision.json>"]
         if current=="finalize": command=[sys.executable,str(REPO / "workflow_audit/run_audit.py"),gse,
             "--output-root" if flat_storage(root) else "--root",str(root)]+(["--run-id",run_id] if run_id else [])
-        status = execute(current, source.resolve(), area, cfg, decision, command)
+        status = execute(current, source.resolve(), area, cfg, decision, command,lifecycle,scope)
+        if managed and current=="finalize":
+            with (area / "storage_validation.log").open("a",encoding="utf-8") as log:
+                proof = formal_validate(lifecycle,area / "seurat_analysis.rds","analysis",scope,run_r45,REPO,log)
+            if source_qc is not None: lifecycle.referenced(scope+":qc_input")
+            lifecycle.clean(scope,proof)
         if current == "regression-review" and step == "all":
             status = "NEEDS_RESOLUTION_SELECTION"
     # A later `all` invocation also validates a previously authorized final
     # selection; the stored literal user decision remains authoritative.
-    final_manifest = area / ".workflow/finalize.json"
+    final_manifest = state / "finalize.json"
     if step == "all" and not resolution_decision and final_manifest.is_file():
         previous = json.loads(final_manifest.read_text(encoding="utf-8"))
-        status = execute("finalize", (area / "seurat_cluster_review.rds").resolve(), area,
-                         cfg, previous["binding"]["decision"])
+        status = execute("finalize", (objects / "seurat_cluster_review.rds").resolve(), area,
+                         cfg, previous["binding"]["decision"],lifecycle=lifecycle,scope=scope)
     if step in ("all", "cluster-review", "finalize", "regression-review"):
         try:
             audit(gse, root, run_id) if run_id else audit(gse, root)
         except BaseException as error:
-            checkpoint(area / ".workflow", workflow_audit="FAILED",
+            checkpoint(state, workflow_audit="FAILED",
                        error=failure(error, "workflow_audit", REPO / "workflow_audit/run_audit.py"))
             raise
     return status
+
+
+def run(gse, root=None, step="all", input_path=None, config=None, resolution_decision=None,
+        output_root=None, run_id=None, regression_decision=None, storage_mode=None,retain_checkpoints=None):
+    root = storage_root(root,output_root)
+    lifecycle = Storage(project_path(root,gse),storage_mode,retain_checkpoints)
+    with session(lifecycle):
+        try:
+            return _run(gse,root,step,input_path,config,resolution_decision,run_id=run_id,
+                        regression_decision=regression_decision,lifecycle=lifecycle)
+        finally:
+            if lifecycle.active: lifecycle.report()
 
 
 if __name__ == "__main__":
@@ -336,6 +447,8 @@ if __name__ == "__main__":
     parser.add_argument("gse")
     parser.add_argument("--root", type=Path)
     parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--storage-mode",choices=("compact","full"))
+    parser.add_argument("--retain-checkpoint",dest="retain_checkpoints",action="append")
     parser.add_argument("--run-id", help="Isolated analysis run; never reads another run's checkpoints")
     parser.add_argument("--regression-decision", type=Path)
     parser.add_argument("--step", choices=[*STEPS, "all"], default="all")

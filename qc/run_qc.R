@@ -2,6 +2,7 @@
 qc_runner_files <- unlist(lapply(sys.frames(),function(frame) frame$ofile),use.names=FALSE)
 qc_runner_source <- if(length(qc_runner_files)) tail(qc_runner_files,1L) else sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1])
 qc_runner_dir <- dirname(normalizePath(qc_runner_source,winslash="/",mustWork=TRUE))
+source(file.path(dirname(qc_runner_dir),"runtime","seurat_storage.R"))
 for(name in c("qc_utils.R","plot_utils.R","qc_precheck.R","qc_filter.R","doublet_finder.R","cell_cycle.R","ambient_review.R","ambient_rna.R"))
   source(file.path(qc_runner_dir,name))
 
@@ -70,6 +71,7 @@ qc_stage_save <- function(object,paths,step,input,cfg,report,status,decision=lis
   if(file.exists(paths$final)) stop("QC checkpoint already exists; refusing overwrite: ",paths$final)
   object@misc$qc_pipeline[[step]] <- list(stage=step,diagnostics_version=2L,input=normalizePath(input,winslash="/"),input_md5=qc_md5(input),
     output=paths$final,configuration=cfg,user_decision=decision,R=R.version.string,completed_at=format(Sys.time(),"%Y-%m-%dT%H:%M:%S%z"))
+  if(step=="qc3") object <- sc_compact_formal(object,paths$final,"qc")
   qc_report_add(report,"RUN",metric="input_file",value=input)
   qc_report_add(report,"RUN",metric="input_md5",value=qc_md5(input))
   qc_report_add(report,"RUN",metric="final_cells",value=ncol(object))
@@ -79,7 +81,9 @@ qc_stage_save <- function(object,paths,step,input,cfg,report,status,decision=lis
   yaml::write_yaml(list(step=step,input=input,input_md5=qc_md5(input),output=paths$final,parameters=cfg),file.path(paths$qc,paste0(step,"_config.yaml")))
   if(step=="qc3") yaml::write_yaml(object@misc$ambient_RNA,file.path(paths$qc,"decontX_config.yaml"))
   qc_stage_log(paths,step,paste("COMPLETE",status,"cells",ncol(object),"genes",nrow(object)))
-  pending <- tempfile(pattern=paste0(basename(paths$final),"."),tmpdir=paths$qc,fileext=".pending")
+  pending_dir <- Sys.getenv("SINGLE_CELL_QC_CHECKPOINT_ROOT",unset=paths$qc)
+  dir.create(pending_dir,recursive=TRUE,showWarnings=FALSE)
+  pending <- tempfile(pattern=paste0(basename(paths$final),"."),tmpdir=pending_dir,fileext=".pending")
   saveRDS(object,pending)
   verified <- readRDS(pending)
   qc_stage_validate(verified,step,paths$gse,input,paths)

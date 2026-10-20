@@ -29,7 +29,8 @@ analysis_validate_object <- function(object,kind="pca") {
   }
   if(kind %in% c("cluster-review","finalize")) {
     review <- info$cluster_review
-    if(!is.list(review) || !all(review$columns %in% names(object@meta.data)) || length(review$resolutions)<2L)
+    compact <- kind=="finalize" && identical(object@misc$storage$mode,"compact")
+    if(!is.list(review) || (!compact && !all(review$columns %in% names(object@meta.data))) || length(review$resolutions)<2L)
       stop("Incomplete cluster resolution review")
     if(!"umap" %in% names(object@reductions) || !review$umap %in% names(object@reductions))
       stop("Review UMAP is unavailable")
@@ -39,7 +40,7 @@ analysis_validate_object <- function(object,kind="pca") {
     # cell IDs and numeric coordinates must remain exactly identical.
     if(!identical(rownames(actual),rownames(reference)) || !identical(unname(actual),unname(reference)))
       stop("Review UMAP coordinates differ from selected representation")
-    for(column in review$columns) if(any(qc_blank(object@meta.data[[column]]))) stop("Missing review cluster assignments")
+    if(!compact) for(column in review$columns) if(any(qc_blank(object@meta.data[[column]]))) stop("Missing review cluster assignments")
     if(kind=="cluster-review" && (isTRUE(review$selected) || "seurat_clusters" %in% names(object@meta.data)))
       stop("Review object contains formal labels before user selection")
     if(kind=="finalize") {
@@ -48,7 +49,9 @@ analysis_validate_object <- function(object,kind="pca") {
          is.null(decision$user_statement) || !nzchar(trimws(decision$user_statement)) ||
          !"seurat_clusters" %in% names(object@meta.data)) stop("Formal result lacks a valid user decision")
       index <- which(abs(review$resolutions-decision$resolution)<1e-10)
-      if(length(index)!=1L || !identical(as.character(object$seurat_clusters),object@meta.data[[review$columns[index]]]))
+      matches <- if(compact) identical(digest::digest(as.character(object$seurat_clusters),algo="sha256"),object@misc$storage$clusters_sha256) else
+        identical(as.character(object$seurat_clusters),object@meta.data[[review$columns[index]]])
+      if(length(index)!=1L || !matches)
         stop("Formal labels differ from the user's reviewed resolution")
     }
   }

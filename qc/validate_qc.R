@@ -11,7 +11,8 @@ if(step=="legacy") {
 } else {
   paths <- qc_stage_paths(base,step)
   object <- readRDS(paths$final)
-  input <- if(length(args)>3L) args[4] else object@misc$qc_pipeline[[step]]$input
+  input <- if(length(args)>3L && args[4]=="--retained") NULL else
+    if(length(args)>3L) args[4] else object@misc$qc_pipeline[[step]]$input
   qc_stage_validate(object,step,args[2],input,paths)
   path <- paths$report
 }

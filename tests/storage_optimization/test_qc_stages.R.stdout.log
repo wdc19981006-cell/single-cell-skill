@@ -1,0 +1,3 @@
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+默认 QC 参数预计删除超过15%的细胞，请确认继续使用当前阈值或修改参数。
+PASS: staged QC paths, retained-cell >3 gene rule, refreshed metrics, capture grouping, DF_adj, cycle scoring, separate DecontX assay, immutable inputs/checkpoints and figures.

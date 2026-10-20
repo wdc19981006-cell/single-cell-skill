@@ -6,18 +6,21 @@
 D:/Desktop/codex-result/single-cell-skill/<GSE>/
 ├── 01_download/               raw、seurat_raw.rds、metadata、下载统计/日志/PDF
 ├── 02_QC/
-│   ├── 01_basic_QC/           seurat_QC-1.rds、细胞/基因过滤记录、前后图、配置/日志
-│   ├── 02_doublet_cellcycle/  seurat_QC-2.rds、DF/DF_adj、周期评分、图表/配置/日志
+│   ├── 01_basic_QC/           细胞/基因过滤记录、前后图、配置/日志
+│   ├── 02_doublet_cellcycle/  DF/DF_adj、周期评分、图表/配置/日志
 │   └── 03_ambient_RNA/        seurat_QC-3.rds、decontX assay、污染评估/比较
-└── 03_analysis/
-    ├── seurat_pca.rds
-    ├── seurat_harmony.rds     仅在设计检查允许且实际运行 Harmony 时生成
-    ├── seurat_analysis.rds    用户选定已审阅分辨率后生成
-    ├── 01_pca_regression/
-    ├── 02_harmony/
-    ├── 03_clustering/
-    └── 99_workflow_audit/
+├── 03_analysis/
+│   ├── seurat_analysis.rds    用户选定已审阅分辨率后生成
+│   ├── 01_pca_regression/
+│   ├── 02_harmony/
+│   ├── 03_clustering/
+│   └── 99_workflow_audit/
+├── .work/checkpoints/        QC-1/2、PCA、Harmony、聚类/回归复核临时 RDS 与恢复状态
+├── storage_report.csv
+└── storage_summary.json
 ```
+
+新运行默认 `compact`：正式对象独立读回验证后清理冗余 RDS；未选分辨率或保存/验证失败时保留恢复检查点。`--storage-mode full` 保留中间对象，可用可重复的 `--retain-checkpoint` 单独保留某阶段。旧数据集不自动接管或删除，盘点与清理确认规则见 [存储协议](runtime/STORAGE.md)。
 
 已有数据可直接请求“对 GSE… 进行质控”；已有 QC 对象可请求“对 GSE… 做 PCA、Harmony 设计评估和聚类审阅”。技术人员独立启动示例（Git Bash）：
 

@@ -5,6 +5,8 @@ description: Download, read, process, analyze/inspect GEO single-cell scRNA-seq 
 
 # GEO single-cell loader
 
+Downstream storage defaults to compact through `runtime/storage_config.json`; `01_download/seurat_raw.rds` is retained. This does not change the loader's ten-file audit or download `.workflow` cleanup. QC/analysis fixed launchers manage temporary RDS/recovery under dataset `.work/checkpoints` and report `storage_summary.json`. User-supplied raw Seurat files can be referenced by absolute path/SHA256 through the independent QC launcher without copying/moving/deleting originals. Old results are inventory-only pending explicit cleanup confirmation. See [storage protocol](../../../runtime/STORAGE.md).
+
 The default OUTPUT_ROOT is D:/Desktop/codex-result/single-cell-skill, defined once in runtime/output_config.json. All Python entrypoints support --output-root COLLECTION_ROOT; code remains in the repository. CLI manifest paths are relative to this collection root (GSE/01_download/...), not the code repository. Use dataset_paths() for actual paths. Explicit --root OLD_WORKSPACE keeps old results/data receipts readable in place; never move or rewrite them. Runtime logs/checkpoints are dataset-local. Read fixed result summaries first; inspect code/full logs only for actual errors or development requests.
 
 

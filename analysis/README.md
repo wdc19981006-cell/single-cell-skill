@@ -15,6 +15,15 @@ explicit `assay=RNA` configuration: default `decontX` missing or invalid counts
 stop the run. RNA counts, fractional corrected counts, original QC metadata,
 and aligned gene/cell IDs are checked. Corrected counts are never rounded.
 
+Storage defaults to compact for newly enrolled runs. Temporary RDS, manifests and
+recovery files live in dataset `.work/checkpoints/analysis/baseline/` (or `runs/ID/`
+for `--run-id`). Formal objects, tables, figures, configurations and decisions
+remain in `03_analysis[/runs/ID]`. Independent final readback and actual plotting,
+Marker and annotation API checks gate cleanup. `--storage-mode full` or repeatable
+`--retain-checkpoint` retains intentional checkpoints. Existing unregistered RDS
+are protected. Read `storage_summary.json`; see [storage protocol](../runtime/STORAGE.md)
+for cleaned manifests, isolated reconstruction, reference inputs and inventory.
+
 Baseline: LogNormalize → 2,000 HVGs → ScaleData(pMT) → PCA → Harmony(sample)
 → one neighbor graph and UMAP → multiple resolutions → regression review.
 The reference standard-deviation PC selection rule is retained. `all` stops for

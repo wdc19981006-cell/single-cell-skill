@@ -30,6 +30,10 @@ class QCWorkflowTests(unittest.TestCase):
         self.raw.parent.mkdir(parents=True)
         self.raw.write_bytes(b"immutable raw fixture")
         self.area = self.dataset / "02_QC"
+        # This suite preserves historical routing contracts. New managed
+        # checkpoint paths and cleanup are exercised in test_storage.py.
+        self.area.mkdir()
+        (self.area / "historical.rds").write_bytes(b"protected legacy result")
 
     def tearDown(self):
         self.temporary.cleanup()
